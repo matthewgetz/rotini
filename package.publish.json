@@ -1,7 +1,7 @@
 {
   "name": "rotini",
   "description": "a framework for building node.js cli programs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "author": "Matt Getz",
   "main": "build/index.js",
@@ -12,7 +12,8 @@
   "files": [
     "package.json",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "build"
   ],
   "keywords": [
     "rotini",
