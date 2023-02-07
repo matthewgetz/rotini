@@ -141,13 +141,13 @@ const program = new Program({
 Creates a new rotini program configuration. ProgramConfiguration implements the [I_ProgramConfiguration](#i_programconfiguration) interface and will either return a program configuration or will throw a [ConfigurationError](#configurationerror).
 
 #### program_configuration.strict_commands
-Program configuration property "strict_commands" must be of type "boolean". Defaults to `true`.
+Program configuration property "strict_commands" must be of type "boolean". This property controls whether or not rotini will ignore parameters that it parses as commands when they cannot be mapped according to the provided program definition. Defaults to `true`.
 
 #### program_configuration.strict_flags
-Program configuration property "strict_flags" must be of type "boolean". Defaults to `true`.
+Program configuration property "strict_flags" must be of type "boolean". This property controls whether or not rotini will ignore parameters that it parses as flags when they cannot be mapped according to the provided program definition. Defaults to `true`.
 
 #### program_configuration.show_deprecation_warnings
-Program configuration property "show_deprecation_warnings" must be of type "boolean". Defaults to `true`.
+Program configuration property "show_deprecation_warnings" must be of type "boolean". This property controls whether or not rotini will emit a warning for executed commands marked as "deprecated" in the program definition. Defaults to `true`.
 
 ```js
 const program_configuration = new ProgramConfiguration({
