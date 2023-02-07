@@ -19,7 +19,7 @@ module.exports = {
   title: 'rotini',
   tagline: 'a framework for building node.js cli programs',
   titleDelimiter: '·',
-  url: 'https://matthewgetz.github.io/rotini/',
+  url: 'https://matthewgetz.github.io/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
