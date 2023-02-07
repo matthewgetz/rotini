@@ -249,7 +249,7 @@ const configuration = {
 };
 
 (async () => {
-  const program = rotini(definition, configuration);
+  const program = rotini({ definition, configuration });
   const result = await program.run().catch(program.error);
   result && console.info(result);
 })();
@@ -274,7 +274,7 @@ const configuration: I_ProgramConfiguration = {
 };
 
 (async (): void => {
-  const program = rotini(definition, configuration);
+  const program = rotini({ definition, configuration });
   const result = await program.run().catch(program.error);
   result && console.info(result);
 })();
