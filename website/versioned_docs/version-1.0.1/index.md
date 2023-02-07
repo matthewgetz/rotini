@@ -63,6 +63,20 @@ yarn add rotini
 
 rotini requires a program definition and optionally accepts a program configuration to alter how framework will behave during program building and parsing.
 
+### Program Features
+
+Auto-generated help is printed to the console when a `-h` or `--help` flag is passed to a rotini program. If a help flag is provided after a command, the help for that command is printed instead of the program help.
+
+```bash
+node index.js -h
+```
+
+The program version is printed to the console when a `-v` or `--version` flag is passed to a rotini program.
+
+```bash
+node index.js --version
+```
+
 ### Program Definition
 
 An example rotini program definition is provided below. For more information on each property, see the [I_ProgramDefinition](./api#i_programdefinition) interface in the API.
