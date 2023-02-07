@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "allowUnreachableCode": false,
+    "alwaysStrict": true,
+    "baseUrl": ".",
+    "checkJs": false,
+    "declaration": true,
+    "esModuleInterop": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "dev-build",
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2020",
+    "types": [
+      "vitest/globals"
+    ]
+  },
+  "exclude": [
+    "build",
+    "dev-build",
+    "node_modules"
+  ],
+  "include": [
+    "src/**/*",
+    "tsup.config.ts",
+    "vitest.config.ts"
+  ]
+}
