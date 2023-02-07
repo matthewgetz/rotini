@@ -1,13 +1,29 @@
 {
   "name": "rotini",
   "description": "a framework for building node.js cli programs",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "Matt Getz",
   "main": "build/index.js",
   "types": "build/index.d.ts",
-  "engines": { "node": ">=14" },
-  "files": [ "package.json", "LICENSE", "README.md" ],
-  "keywords": [ "rotini", "cli", "framework", "commands", "arguments", "flags", "argv" ],
-  "publishConfig": { "access": "public" }
+  "engines": {
+    "node": ">=14"
+  },
+  "files": [
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "rotini",
+    "cli",
+    "framework",
+    "commands",
+    "arguments",
+    "flags",
+    "argv"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
