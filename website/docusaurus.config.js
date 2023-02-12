@@ -43,7 +43,7 @@ module.exports = {
           }
         },
         blog: {
-          showReadingTime: false,
+          showReadingTime: true,
           editUrl: 'https://github.com/matthewgetz/rotini/website/blog',
         },
         theme: {

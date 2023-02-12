@@ -277,7 +277,7 @@ const configuration = {
 ```js
 #!/usr/bin/env node
 
-import rotini, { I_ProgramDefinition, I_ProgramConfiguration, } from 'rotini';
+import rotini, { I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';
 
 const definition: I_ProgramDefinition = {
   // see definition above...
@@ -287,7 +287,7 @@ const configuration: I_ProgramConfiguration = {
   // see configuration above...
 };
 
-(async (): void => {
+void (async (): Promise<void> => {
   const program = rotini({ definition, configuration });
   const result = await program.run().catch(program.error);
   result && console.info(result);

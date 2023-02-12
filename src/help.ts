@@ -35,6 +35,15 @@ const makeDescriptionSection = (description?: string): string => {
     : [].join('');
 };
 
+const makeAliasesSection = (aliases: string[]): string => {
+  return aliases.length > 0 ? [
+    '\n\n',
+    'ALIASES:',
+    '\n',
+    ...aliases.map(example => `\n  ${example}`).join(''),
+  ].join('') : '';
+};
+
 const makeCommandsSection = (commands: I_Command[] = []): string => {
   const commandNamesAndAliases = commands.map(command => {
     const name = command.name;
@@ -154,6 +163,7 @@ export const createCommandHelp = (help: I_CommandHelp): string => {
     makeUsageSection(usageString, command),
     makeDescriptionSection(command.description),
     makeExamplesSection(command.examples),
+    makeAliasesSection(command.aliases),
     makeCommandsSection(command.commands),
     makeArgumentsSection(command.arguments),
     makeFlagsSection(command.flags, false),

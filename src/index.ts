@@ -1,4 +1,5 @@
 import rotini from './rotini';
+import entrypoint from './entrypoint';
 
 export { default as Argument, I_Argument, } from './argument';
 export { default as Command, I_Command, } from './command';
@@ -10,3 +11,9 @@ export { ConfigurationError, OperationError, ParseError, } from './utils';
 
 module.exports = rotini;
 export default rotini;
+
+void (async (): Promise<void> => {
+  if (require.main === module) {
+    await entrypoint();
+  }
+})();

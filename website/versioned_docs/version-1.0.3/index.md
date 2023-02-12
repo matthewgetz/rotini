@@ -59,6 +59,37 @@ yarn add rotini
 </Tabs>
 ```
 
+## Quick Start
+
+Generate a "hello-world" rotini cli to get started!
+
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```bash
+npx rotini generate js
+npm i rotini
+node index.js
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```bash
+npx rotini generate ts
+npm i rotini
+ts-node index.ts
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
 ## Usage
 
 rotini requires a program definition and optionally accepts a program configuration to alter how framework will behave during program building and parsing.
