@@ -11,10 +11,13 @@ import {
   FcGenealogy as SubcommandIcon,
   FcReading as AutoHelpIcon,
   FcSettings as ConfigurationIcon,
-  FcFlashOn as ParserIcon,
+  FcIdea as ParserIcon,
   FcLink as CommandAliasIcon,
   FcDeployment as ShipIcon,
-  FcBinoculars as CheckTypesIcon
+  FcBinoculars as CheckTypesIcon,
+  FcFactory as GenerateIcon,
+  FcAdvertising as AutoUpdateIcon,
+  FcFlashOn as NoDependenciesIcon
 } from 'react-icons/fc';
 
 import versions from '../../versions.json'
@@ -78,7 +81,7 @@ const Blurb = () => {
           <span style={{ color: '#e3e3e3', fontSize: 50, maxWidth: 600, textAlign: 'left', lineHeight: 1, fontWeight: 'bold' }}>
             Write your CLI as <b className="text text--primary">config</b> not as <b className="text text--secondary">code</b>.
           </span>
-          <CliIcon size={130} min={130} />
+          <CliIcon size={130} />
         </div>
       </div>
       <div style={{ maxWidth: 770, margin: 'auto', paddingTop: 20, paddingLeft: 20 }}>
@@ -157,6 +160,29 @@ const Features = () => {
       <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
+            Icon={GenerateIcon}
+            title='Generate CLI'
+            info='Generate a rotini CLI program for JavaScript or TypeScript and start building immediately. A single command - npx rotini generate my-cli - will get you started.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={AutoUpdateIcon}
+            title='Auto-Update Support'
+            info='Once published, rotini can check to see when new versions of your CLI are published and will prompt users to update to the latest version.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={NoDependenciesIcon}
+            title='Dependency Free'
+            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
+          />
+        </Grid>
+      </Grid>
+      <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
             Icon={AutoHelpIcon}
             title='Auto-Generated Help Output'
             info='Program and Command help output is built from the definition you provide to rotini. When a help flag is passed or when a command syntax is incorrect, rotini will output the corresponding help.'
@@ -166,7 +192,7 @@ const Features = () => {
           <Feature
             Icon={ConfigurationIcon}
             title='Configuration File Support'
-            info='rotini returns helper functions for writing and reading a configuration file (JSON/txt) for your program when a configuration directory and file defined in the program definition.'
+            info='rotini returns helper functions for writing and reading a configuration file (json/txt) for your program when a configuration directory and file defined in the program definition.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
