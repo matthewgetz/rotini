@@ -53,7 +53,6 @@ const configuration = {
   show_deprecation_warnings: true
 };
 
-
 (async () => {
   const program = rotini({ definition, configuration });
   const result = await program.run().catch(program.error);

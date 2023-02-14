@@ -5,7 +5,7 @@
   },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
-    "build:watch": "tsup --config ./tsup.config.ts --watch",
+    "build:watch": "npm run build -- --watch",
     "compile": "tsc",
     "compile:watch": "npm run compile -- --watch",
     "deps": "npm run deps:dev",

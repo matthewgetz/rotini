@@ -9,7 +9,7 @@ export { default as ProgramConfiguration, I_ProgramConfiguration, } from './prog
 export { default as Program, I_Program as I_ProgramDefinition, } from './program';
 export { ConfigurationError, OperationError, ParseError, } from './utils';
 
-module.exports = rotini;
+// module.exports = rotini;
 export default rotini;
 
 void (async (): Promise<void> => {
