@@ -40,8 +40,12 @@ const Header = () => (
           src='https://i.imgur.com/on3MlUa.png'
           alt='rotini'
           style={{
-            width: 500,
-            height: 500,
+            width: '100%',
+            height: '100%',
+            minHeight: 300,
+            minWidth: 300,
+            maxHeight: 500,
+            maxWidth: 500,
             borderRadius: 10,
           }}
         />
@@ -54,6 +58,8 @@ const Header = () => (
           fontSize: 26,
           marginTop: -50,
           marginBottom: 70,
+          paddingLeft: 10,
+          paddingRight: 10,
         }}
       >
         a framework for building node.js cli programs
@@ -158,16 +164,16 @@ const Features = () => {
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={ShipIcon}
-            title='Ship Faster'
-            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed. Add new commands quickly, deploy new functionality faster.'
+            Icon={ConfigurationIcon}
+            title='Configuration File Support'
+            info='rotini returns helper functions for writing and reading a configuration file (JSON/txt) for your program when a configuration directory and file defined in the program definition.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={ConfigurationIcon}
-            title='Configuration File Support'
-            info='rotini returns helper functions for writing and reading a configuration file (JSON/txt) for your program when a configuration directory and file defined in the program definition.'
+            Icon={ShipIcon}
+            title='Ship Faster'
+            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed. Add new commands quickly, deploy new functionality faster.'
           />
         </Grid>
       </Grid>

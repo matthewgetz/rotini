@@ -1,7 +1,7 @@
 {
   "name": "rotini",
   "description": "a framework for building node.js cli programs",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "license": "MIT",
   "author": "Matt Getz",
   "main": "build/index.js",
@@ -11,6 +11,13 @@
   "homepage": "https://matthewgetz.github.io/rotini/",
   "engines": {
     "node": ">=14"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/index.mjs",
+      "require": "./build/index.js",
+      "types": "./build/index.d.ts"
+    }
   },
   "files": [
     "package.json",

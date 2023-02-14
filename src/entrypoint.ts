@@ -120,7 +120,7 @@ void (async (): Promise<void> => {
 const definition: I_ProgramDefinition = {
   name: 'rotini',
   description: 'a framework for building node.js cli programs',
-  version: version,
+  version,
   commands: [
     {
       name: 'generate',

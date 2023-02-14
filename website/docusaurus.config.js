@@ -96,5 +96,11 @@ module.exports = {
       theme: lightCodeTheme,
       darkTheme: darkCodeTheme,
     },
+    algolia: {
+      indexName: 'rotini',
+      appId: 'TZ4ZY4V8S4',
+      apiKey: '1b1c71a3851d3ae179fa0405815ca460',
+      contextualSearch: true,
+    },
   },
 };
