@@ -122,8 +122,8 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], isGlobal
       }
     });
 
-    if (defaultValue && !RESULTS[name]) {
-      RESULTS[name] = defaultValue;
+    if (Utils.isDefined(defaultValue) && !RESULTS[name]) {
+      RESULTS[name] = defaultValue!;
     }
 
     if (required && RESULTS[name] === undefined) {

@@ -179,7 +179,6 @@ const stringsDoNotMatch = (firstValue: string, secondValue: string): boolean => 
 export class ConfigurationError extends Error {
   constructor (message: string) {
     super(message);
-    Error.captureStackTrace(this, this.constructor);
     this.name = 'ConfigurationError';
   }
 }

@@ -4,7 +4,7 @@
     "node": ">=14"
   },
   "scripts": {
-    "build": "tsup --config ./tsup.config.ts",
+    "build": "tsup --config ./tsup.config.ts && cp ./build/* ../esm/node_modules/rotini/build",
     "build:watch": "npm run build -- --watch",
     "compile": "tsc",
     "compile:watch": "npm run compile -- --watch",
@@ -43,8 +43,7 @@
     "ignorePatterns": [
       "build",
       "dev-build",
-      "example.js",
-      "example.ts"
+      "examples"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
