@@ -1,7 +1,0 @@
-{
-  "name": "my-cli",
-  "type": "commonjs",
-  "dependencies": {
-    "rotini": "^1.0.2"
-  }
-}

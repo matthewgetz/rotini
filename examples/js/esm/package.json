@@ -1,7 +1,0 @@
-{
-  "name": "my-cli",
-  "type": "module",
-  "dependencies": {
-    "rotini": "^1.0.2"
-  }
-}

@@ -4,4 +4,5 @@ build/
 coverage/
 dev-build/
 node_modules/
+!src/**/*
 package-lock.json

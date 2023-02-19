@@ -1,10 +1,7 @@
-import Configuration, { T_GetConfiguration, T_SetConfiguration, } from './configuration';
-import Program from './program';
-import ProgramConfiguration from './program-configuration';
+import { Program, ProgramConfiguration, Configuration, createCliHelp, T_GetConfiguration, T_SetConfiguration, } from '../build';
 import { parseCommands, } from './command-parser';
 import { matchFlags, parseFlags, } from './flag-parser';
-import { createCliHelp, } from './help';
-import Utils, { ParseError, } from './utils';
+import Utils, { ParseError, } from '../utils';
 
 export const parse = async (program: Program, program_configuration: ProgramConfiguration, configuration: Configuration, parameters: { id: number, parameter: string, }[]): Promise<Function> => {
   const COMMANDS = parseCommands(program, parameters);

@@ -12,6 +12,9 @@
   "engines": {
     "node": ">=14"
   },
+  "bin": {
+    "rotini": "./build/index.global.js"
+  },
   "exports": {
     ".": {
       "import": "./build/index.mjs",

@@ -1,7 +1,7 @@
 import Command, { I_Command, } from './command';
 import Configuration, { I_Configuration, } from './configuration';
 import Flag, { HelpFlag, I_Flag, } from './flag';
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 export interface I_Program {
   name: string

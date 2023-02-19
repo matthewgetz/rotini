@@ -1,6 +1,6 @@
 import Argument, { I_Argument, } from './argument';
 import Flag, { ForceFlag, HelpFlag, I_Flag, } from './flag';
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 export type T_OperationCommands = Array<{
   name: string

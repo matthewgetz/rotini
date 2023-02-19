@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 import { homedir, } from 'os';
 
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 export interface I_Configuration {
   directory: string

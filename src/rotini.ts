@@ -1,11 +1,6 @@
-import Argument from './argument';
-import Command from './command';
-import Configuration from './configuration';
-import Flag from './flag';
-import Program, { I_Program as I_ProgramDefinition, } from './program';
-import ProgramConfiguration, { I_ProgramConfiguration, } from './program-configuration';
+import { Argument, Command, Configuration, Flag, Program, ProgramConfiguration, I_ProgramConfiguration, I_Program as I_ProgramDefinition, } from './build';
+import { parse, } from './parse';
 import { ConfigurationError, OperationError, ParseError, } from './utils';
-import { parse, } from './parser';
 
 interface I_Program {
   definition: I_ProgramDefinition

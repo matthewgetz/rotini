@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, ParseError, } from './utils';
+import Utils, { ConfigurationError, ParseError, } from '../utils';
 
 type T_ArgumentVariant = 'value' | 'variadic';
 type T_ArgumentType = 'string' | 'number' | 'boolean';
@@ -53,7 +53,7 @@ export default class Argument implements I_Argument {
   };
 
   #setVariant = (variant: T_ArgumentVariant = 'value'): Argument | never => {
-    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'value', 'variadic', ]))) {
+    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze(['value', 'variadic',]))) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
 
@@ -63,7 +63,7 @@ export default class Argument implements I_Argument {
   };
 
   #setType = (type: T_ArgumentType = 'string'): Argument | never => {
-    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', ]))) {
+    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze(['string', 'number', 'boolean',]))) {
       throw new ConfigurationError(`Argument property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for argument "${this.name}".`);
     }
 

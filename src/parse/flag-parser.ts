@@ -1,5 +1,5 @@
-import Flag from './flag';
-import Utils, { ParseError, } from './utils';
+import Flag from '../build/flag';
+import Utils, { ParseError, } from '../utils';
 
 export type T_ParseValue = string | number | boolean
 

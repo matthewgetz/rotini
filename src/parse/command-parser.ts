@@ -1,8 +1,5 @@
-import Command from './command';
-import Program from './program';
-import { T_CommandOperation, } from './command';
+import { Command, Program, createCommandHelp, T_CommandOperation, } from '../build';
 import { parseArguments, } from './argument-parser';
-import { createCommandHelp, } from './help';
 
 export type T_ParseResult = {
   id: number

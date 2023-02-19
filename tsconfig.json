@@ -7,6 +7,7 @@
     "checkJs": false,
     "declaration": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "module": "CommonJS",
     "moduleResolution": "Node",
     "noFallthroughCasesInSwitch": true,
