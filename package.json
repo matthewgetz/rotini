@@ -43,8 +43,7 @@
     ],
     "ignorePatterns": [
       "build",
-      "dev-build",
-      "examples"
+      "dev-build"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
