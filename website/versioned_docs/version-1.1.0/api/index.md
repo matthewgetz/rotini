@@ -396,15 +396,45 @@ interface I_Configuration {
 
 ```js
 interface I_Command {
-  name: string
-  description: string
-  aliases?: string[]
-  deprecated?: boolean
-  arguments?: I_Argument[]
-  flags?: I_Flag[]
-  commands?: I_Command[]
-  examples?: string[]
-  operation?: T_CommandOperation
+  name: string;
+  description: string;
+  aliases?: string[];
+  deprecated?: boolean;
+  arguments?: I_Argument[];
+  flags?: I_Flag[];
+  commands?: I_Command[];
+  examples?: string[];
+  operation?: ((props: {
+    commands: Array<{
+      name: string;
+      arguments: {
+        [key: string]: string | number | boolean | (string | number | boolean)[];
+      };
+      flags: {
+        [key: string]: string | number | boolean | (string | number | boolean)[];
+      };
+    }>;
+    flags: {
+      [key: string]: string | number | boolean | (string | number | boolean)[];
+    };
+    getConfigurationFile: () => string | object | undefined;
+    setConfigurationFile: (data: string) => void;
+  }) => unknown) | ((props: {
+    commands: Array<{
+      name: string;
+      arguments: {
+        [key: string]: string | number | boolean | (string | number | boolean)[];
+      };
+      flags: {
+        [key: string]: string | number | boolean | (string | number | boolean)[];
+      };
+    }>;
+    flags: {
+      [key: string]: string | number | boolean | (string | number | boolean)[];
+    };
+    getConfigurationFile: () => string | object | undefined;
+    setConfigurationFile: (data: string) => void;
+  }) => Promise<unknown>) | void | undefined;
 }
 ```
 
@@ -412,12 +442,12 @@ interface I_Command {
 
 ```js
 interface I_Argument {
-  name: string
-  description: string
-  variant?: T_ArgumentVariant
-  type?: T_ArgumentType
-  values?: T_ArgumentValues
-  isValid?: T_ArgumentIsValid
+  name: string;
+  description: string;
+  variant?: 'value' | 'variadic';
+  type?: 'string' | 'number' | 'boolean';
+  values?: string[] | number[] | boolean[];
+  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
 }
 ```
 
@@ -425,120 +455,15 @@ interface I_Argument {
 
 ```js
 interface I_Flag {
-  name: string
-  description: string
-  variant?: T_Variant
-  type?: T_Type
-  short_key?: string
-  long_key?: string
-  values?: string[]
-  default?: string
-  required?: boolean
-  isValid?: T_ValidateFunction
-}
-```
-
-## Types
-
-### T_ArgumentVariant
-
-```js
-type T_ArgumentVariant = 'value' | 'variadic'
-```
-
-### T_ArgumentType
-
-```js
-type T_ArgumentType = 'string' | 'number' | 'boolean'
-```
-
-### T_ArgumentValues
-
-```js
-type T_ArgumentValues = string[] | number[] | boolean[]
-```
-
-### T_ArgumentIsValid
-
-```js
-type T_ArgumentIsValid = (value: string | number | boolean) => boolean | void | never
-```
-
-### T_Type
-
-```js
-type T_Type = 'string' | 'number' | 'boolean'
-```
-
-### T_Variant
-
-```js
-type T_Variant = 'value' | 'boolean'
-```
-
-### T_ValidateFunction
-
-```js
-type T_ValidateFunction = (value: string | number | boolean) => boolean
-```
-
-### T_OperationCommands
-
-```js
-type T_OperationCommands = Array<{
   name: string;
-  arguments: {
-    [key: string]: string | number | boolean | (string | number | boolean)[]
-  }
-  flags: {
-    [key: string]: string | number | boolean | (string | number | boolean)[]
-  }
-}>
-```
-
-### T_CommandOperationProperties
-
-```js
-type T_CommandOperationProperties = {
-  commands: T_OperationCommands
-  flags: {
-    [key: string]: string | number | boolean | (string | number | boolean)[]
-  }
-  getConfigurationFile: () => string | object | undefined
-  setConfigurationFile: (data: string) => void
-}
-```
-
-### T_CommandOperation
-
-```js
-type T_CommandOperation = ((props: T_CommandOperationProperties) => unknown) | ((props: T_CommandOperationProperties) => Promise<unknown>) | void | undefined
-```
-
-### T_SetConfiguration
-
-```js
-type T_SetConfiguration = {
-  error: Error | undefined
-  hasError: boolean
-}
-```
-
-### T_GetConfiguration
-
-```js
-type T_GetConfiguration = {
-  data: object | string | undefined
-  error: Error | undefined
-  hasError: boolean
-}
-```
-
-### T_Program
-
-```js
-type T_Program = {
-  run: () => Promise<unknown> | never
-  error: (error: Error) => void
+  description: string;
+  variant?: 'value' | 'boolean';
+  type?: 'string' | 'number' | 'boolean';
+  short_key?: string;
+  long_key?: string;
+  values?: string[];
+  default?: string | number | boolean;
+  required?: boolean;
+  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
 }
 ```

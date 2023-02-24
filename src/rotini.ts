@@ -2,18 +2,7 @@ import { Argument, Command, Configuration, Flag, Program, ProgramConfiguration, 
 import { parse, } from './parse';
 import { ConfigurationError, OperationError, ParseError, } from './utils';
 
-interface I_Program {
-  definition: I_ProgramDefinition
-  configuration?: I_ProgramConfiguration
-  parameters?: string[]
-}
-
-type T_Program = {
-  run: () => Promise<unknown> | never
-  error: (error: Error) => void
-}
-
-const program = (program: I_Program): T_Program => {
+const program = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   const PROGRAM = new Program(program?.definition);
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
   const CONFIGURATION = new Configuration(program.definition.configuration!);

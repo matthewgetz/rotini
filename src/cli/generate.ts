@@ -8,13 +8,14 @@ const version = '1.0.2';
 const createTsconfigFile = (type: string): string => JSON.stringify({ compilerOptions: { target: 'es2016', module: type, forceConsistentCasingInFileNames: true, skipLibCheck: true, }, }, null, 2);
 
 const createPackageFile = (name: string, format: string, type: string): string => {
+  const devDependencies: { typescript?: string } = {};
   const data = {
     name,
     type,
     bin: {
       [name]: './index.js',
     },
-    devDependencies: {},
+    devDependencies,
     dependencies: {
       rotini: `^${version}`,
     },
@@ -91,6 +92,8 @@ ${format === 'ts' ? 'void ' : ''}(async ()${format === 'ts' ? ': Promise<void>' 
 
 const generate: I_Command = {
   name: 'generate',
+  aliases: [ 'init', ],
+  deprecated: true,
   description: 'generate a hello-world rotini cli program',
   arguments: [
     {
@@ -98,11 +101,11 @@ const generate: I_Command = {
       description: 'the name of the directory to be used for the generated program',
       type: 'string',
       variant: 'value',
-      isValid: (value: string): void => {
+      isValid: (data: string): void => {
         const allowedCharacters = /^[0-9A-Za-z_.-]+$/;
-        const containsDisallowedCharacter = !allowedCharacters.test(value);
+        const containsDisallowedCharacter = !allowedCharacters.test(data);
         if (containsDisallowedCharacter) {
-          throw new Error(`Directory name "${value}" must only contain letters, numbers, hyphens, underscores, and periods.`);
+          throw new Error(`Directory name "${data}" must only contain letters, numbers, hyphens, underscores, and periods.`);
         }
       },
     },
@@ -127,6 +130,7 @@ const generate: I_Command = {
       long_key: 'type',
       values: [ 'cjs', 'commonjs', 'esm', 'module', ],
       default: 'cjs',
+
     },
     {
       name: 'quiet',
@@ -156,6 +160,30 @@ const generate: I_Command = {
     if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile(pjson_type));
     console.info(`\ncd ${directory}\nnpm install${project_format === 'ts' ? '\ntsc\n' : '\n'}chmod +x index.js\nnpm link\n${directory} hello-world\n`);
   },
+  commands: [
+    {
+      name: 'yo',
+      aliases: [ 'what', ],
+      deprecated: true,
+      description: 'generate a hello-world rotini cli program',
+      arguments: [
+        {
+          name: 'directory',
+          description: 'the name of the directory to be used for the generated program',
+          type: 'string',
+          variant: 'value',
+          isValid: (data: string): void => {
+            const allowedCharacters = /^[0-9A-Za-z_.-]+$/;
+            const containsDisallowedCharacter = !allowedCharacters.test(data);
+            if (containsDisallowedCharacter) {
+              throw new Error(`Directory name "${data}" must only contain letters, numbers, hyphens, underscores, and periods.`);
+            }
+          },
+        },
+      ],
+      operation: (): void => console.log('yoy'),
+    },
+  ],
 };
 
 export default generate;

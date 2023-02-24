@@ -8,17 +8,6 @@ export interface I_Configuration {
   file: string
 }
 
-export type T_SetConfiguration = {
-  error: Error | undefined
-  hasError: boolean
-}
-
-export type T_GetConfiguration = {
-  data: object | string | undefined
-  error: Error | undefined
-  hasError: boolean
-}
-
 export default class Configuration implements I_Configuration {
   directory!: string;
   file!: string;
@@ -51,7 +40,7 @@ export default class Configuration implements I_Configuration {
     return this;
   };
 
-  getConfigurationFile = (): T_GetConfiguration => {
+  getConfigurationFile = (): { data: object | string | undefined, error: Error | undefined, hasError: boolean } => {
     if (Utils.isNotDefined(this.directory) || Utils.isNotDefined(this.file)) {
       throw new ConfigurationError('Configuration properties "directory" and "file" must be defined and of type "string" to interact with the program configuration file.');
     }
@@ -76,7 +65,7 @@ export default class Configuration implements I_Configuration {
     return { data, error, hasError, };
   };
 
-  setConfigurationFile = (data: string | object): T_SetConfiguration => {
+  setConfigurationFile = (data: string | object): { error: Error | undefined, hasError: boolean } => {
     if (Utils.isNotDefined(this.directory) || Utils.isNotDefined(this.file)) {
       throw new ConfigurationError('Configuration properties "directory" and "file" must be defined and of type "string" to interact with the program configuration file.');
     }

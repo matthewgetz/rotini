@@ -1,13 +1,14 @@
-import { Command, Program, createCommandHelp, T_CommandOperation, } from '../build';
+import { Command, Program, createCommandHelp, } from '../build';
 import { parseArguments, } from './argument-parser';
 
 export type T_ParseResult = {
   id: number
   command: Command
+  usage: string
   isAliasMatch: boolean
   flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
   arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
-  operation: T_CommandOperation
+  operation: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => unknown) | ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => Promise<unknown>) | void | undefined
   help: string
 }
 
@@ -40,17 +41,18 @@ export const parseCommands = (program: Program, parameters: { id: number, parame
     if (command) {
       potential_next_commands = command.commands;
 
-      const commandString = RESULTS.map(result => {
-        let usage = result.command.name;
-        if (result.command.arguments.length > 0) usage += ' [arguments]';
-        if (result.command.flags.length > 0) usage += ' [flags]';
-        return usage;
+      const usage = RESULTS.map(result => {
+        let usageString = result.command.name;
+        if (result.command.arguments.length > 0) usageString += ' [arguments]';
+        if (result.command.flags.length > 0) usageString += ' [flags]';
+        return usageString;
       }).join(' ');
-      const { results: args, parsed_parameters, unparsed_parameters, } = parseArguments(`${program.name}${commandString ? ` ${commandString}` : ''}`, program, command, WORKING_PARAMETERS);
-      const help = createCommandHelp({ commandString: `${program.name} ${commandString}`, command, program, });
+      const { results: args, parsed_parameters, unparsed_parameters, } = parseArguments(`${program.name}${usage ? ` ${usage}` : ''}`, program, command, WORKING_PARAMETERS);
+      const help = createCommandHelp({ commandString: `${program.name} ${usage}`, command, program, });
       RESULTS.push({
         id: RESULTS.length + 1,
         command,
+        usage,
         isAliasMatch: command.aliases.includes(parameter),
         flags: {},
         arguments: args,

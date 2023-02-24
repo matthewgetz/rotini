@@ -94,7 +94,7 @@ export type T_ParseGlobalFlagsReturn = {
   results: { [key: string]: T_ParseValue },
 }
 
-export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], isGlobal: boolean): T_ParseGlobalFlagsReturn => {
+export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: string, isGlobal: boolean): T_ParseGlobalFlagsReturn => {
   const ORIGINAL_PARSED_FLAGS: readonly T_ParseResult[] = Object.freeze([ ...parsedFlags, ]);
   const MATCHED_PARSED_FLAGS: T_ParseResult[] = [];
   let UNMATCHED_PARSED_FLAGS: T_ParseResult[] = parsedFlags;
@@ -105,14 +105,18 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], isGlobal
     UNMATCHED_PARSED_FLAGS.forEach(({ id, key, value, prefix, }) => {
       if ((short_key === key && prefix === '-') || (long_key === key && prefix === '--')) {
         if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
-          throw new ParseError(`${FLAG_TYPE} "${name}" is of type "${type}" but flag "${prefix}${key}" has value "${value}".`);
+          throw new ParseError(`${FLAG_TYPE} "${name}" is of type "${type}" but flag "${prefix}${key}" has value "${value}".`, help);
         }
 
         if (values.length > 0 && !values.includes(value as string)) {
-          throw new ParseError(`${FLAG_TYPE} "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`);
+          throw new ParseError(`${FLAG_TYPE} "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, help);
         }
 
-        isValid(value);
+        try {
+          isValid(value as never);
+        } catch (e) {
+          throw new ParseError((e as Error).message, help);
+        }
 
         if (!RESULTS[name]) {
           RESULTS[name] = value;
@@ -127,7 +131,7 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], isGlobal
     }
 
     if (required && RESULTS[name] === undefined) {
-      throw new ParseError(`${FLAG_TYPE} "${name}" is required, but was not found.`);
+      throw new ParseError(`${FLAG_TYPE} "${name}" is required, but was not found.`, help);
     }
   });
 

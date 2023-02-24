@@ -1,4 +1,4 @@
-import { Program, ProgramConfiguration, Configuration, createCliHelp, T_GetConfiguration, T_SetConfiguration, } from '../build';
+import { Program, ProgramConfiguration, Configuration, createCliHelp, createCommandHelp, } from '../build';
 import { parseCommands, } from './command-parser';
 import { matchFlags, parseFlags, } from './flag-parser';
 import Utils, { ParseError, } from '../utils';
@@ -21,10 +21,14 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     throw new ParseError(`Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.parameter))}.`, createCliHelp({ program, }));
   }
 
+  const lastCommand = COMMANDS.results[COMMANDS.results.length - 1];
+  const { command: COMMAND, } = lastCommand;
+  const usage = lastCommand.usage;
+
   let unmatched_flags = FLAGS.results;
 
   const commands = COMMANDS.results.map(result => {
-    const matchedResults = matchFlags(result.command.flags, unmatched_flags, false);
+    const matchedResults = matchFlags(result.command.flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), false);
 
     const formatted_command = {
       name: result.command.name,
@@ -37,19 +41,20 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     return formatted_command;
   });
 
-  const { command: COMMAND, isAliasMatch, } = COMMANDS.results[COMMANDS.results.length - 1];
   const command = commands[commands.length - 1];
 
-  if (program_configuration.show_deprecation_warnings && !isAliasMatch && COMMAND.deprecated) {
-    const aliasesInfo = COMMAND.aliases.length > 0 ? ` Command aliases ${JSON.stringify(COMMAND.aliases)} can be used as a guard against future breaking changes.` : '';
-    console.warn(`Warning: Command "${COMMAND.name}" is deprecated and will be removed in a future release.${aliasesInfo}\n`);
-  }
+  COMMANDS.results.forEach(({ command, isAliasMatch, }) => {
+    if (program_configuration.show_deprecation_warnings && !isAliasMatch && command.deprecated) {
+      const aliasesInfo = command.aliases.length > 0 ? `Command aliases ${JSON.stringify(command.aliases)} can be used as a guard against future breaking changes.` : '';
+      console.warn(`Warning: Command "${command.name}" is deprecated and will be removed in a future release. ${aliasesInfo}\n`);
+    }
+  });
 
   const operations = COMMANDS.results.map(command => {
     return command.operation || ((): void => console.info(command.help));
   });
 
-  const matchedGlobalFlags = matchFlags(program.flags, unmatched_flags, true);
+  const matchedGlobalFlags = matchFlags(program.flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), true);
 
   const flags = matchedGlobalFlags.results;
   unmatched_flags = matchedGlobalFlags.unmatched_parsed_flags;
@@ -76,8 +81,8 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     }
   }
 
-  const getConfigurationFile = (): T_GetConfiguration => configuration.getConfigurationFile();
-  const setConfigurationFile = (data: string | object): T_SetConfiguration => configuration.setConfigurationFile(data);
+  const getConfigurationFile = (): { data: object | string | undefined, error: Error | undefined, hasError: boolean } => configuration.getConfigurationFile();
+  const setConfigurationFile = (data: string | object): { error: Error | undefined, hasError: boolean } => configuration.setConfigurationFile(data);
 
   const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfigurationFile, setConfigurationFile, });
 

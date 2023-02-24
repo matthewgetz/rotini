@@ -1,26 +1,21 @@
 import Utils, { ConfigurationError, ParseError, } from '../utils';
 
-type T_ArgumentVariant = 'value' | 'variadic';
-type T_ArgumentType = 'string' | 'number' | 'boolean';
-type T_ArgumentValues = string[] | number[] | boolean[];
-type T_ArgumentIsValid = (value: string | number | boolean) => boolean | void | never
-
 export interface I_Argument {
   name: string
   description: string
-  variant?: T_ArgumentVariant
-  type?: T_ArgumentType
-  values?: T_ArgumentValues
-  isValid?: T_ArgumentIsValid
+  variant?: 'value' | 'variadic'
+  type?: 'string' | 'number' | 'boolean'
+  values?: string[] | number[] | boolean[]
+  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
 }
 
 export default class Argument implements I_Argument {
   name!: string;
   description!: string;
-  variant!: T_ArgumentVariant;
-  type!: T_ArgumentType;
-  values!: T_ArgumentValues;
-  isValid!: T_ArgumentIsValid;
+  variant!: 'value' | 'variadic';
+  type!: 'string' | 'number' | 'boolean';
+  values!: string[] | number[] | boolean[];
+  isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
 
   constructor (argument: I_Argument) {
     this
@@ -52,7 +47,7 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setVariant = (variant: T_ArgumentVariant = 'value'): Argument | never => {
+  #setVariant = (variant: 'value' | 'variadic' = 'value'): Argument | never => {
     if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze(['value', 'variadic',]))) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
@@ -62,7 +57,7 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setType = (type: T_ArgumentType = 'string'): Argument | never => {
+  #setType = (type: 'string' | 'number' | 'boolean' = 'string'): Argument | never => {
     if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze(['string', 'number', 'boolean',]))) {
       throw new ConfigurationError(`Argument property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for argument "${this.name}".`);
     }
@@ -72,7 +67,7 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setValues = (values: T_ArgumentValues = []): Argument | never => {
+  #setValues = (values: string[] | number[] | boolean[] = []): Argument | never => {
     const isNotArrayOfType = Object.freeze({ string: Utils.isNotArrayOfStrings, number: Utils.isNotArrayOfNumbers, boolean: Utils.isNotArrayOfBooleans, })[this.type];
 
     if (Utils.isNotArray(values) || isNotArrayOfType(values)) {
@@ -84,14 +79,14 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setIsValid = (isValid: T_ArgumentIsValid = ((): boolean => true)): Argument | never => {
+  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): Argument | never => {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Argument property "isValid" must be of type "function" for argument "${this.name}".`);
     }
 
     this.isValid = (data: string | number | boolean): boolean | never => {
       try {
-        if (isValid(data) === false) {
+        if (isValid(data as never) === false) {
           throw new ParseError(`Argument value "${data}" is invalid for argument "${this.name}".`);
         }
         return true;
