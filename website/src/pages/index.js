@@ -162,6 +162,13 @@ const Features = () => {
       <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
+            Icon={AutoHelpIcon}
+            title='Auto-Generated Help Output'
+            info='Program and Command help output is built from the definition you provide to rotini. When a help flag is passed or when a command syntax is incorrect, rotini will output the corresponding help.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
             Icon={GenerateIcon}
             title='Generate CLI'
             info='Generate a rotini CLI program for JavaScript or TypeScript and start building immediately. A single command - npx rotini generate my-cli - will get you started.'
@@ -174,27 +181,20 @@ const Features = () => {
             info='Once published, rotini can check to see when new versions of your CLI are published and will prompt users to update to the latest version.'
           />
         </Grid>
-        <Grid item xs={12} sm={12} md={4} lg={4}>
-          <Feature
-            Icon={NoDependenciesIcon}
-            title='Dependency Free'
-            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
-          />
-        </Grid>
       </Grid>
       <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
-        <Grid item xs={12} sm={12} md={4} lg={4}>
-          <Feature
-            Icon={AutoHelpIcon}
-            title='Auto-Generated Help Output'
-            info='Program and Command help output is built from the definition you provide to rotini. When a help flag is passed or when a command syntax is incorrect, rotini will output the corresponding help.'
-          />
-        </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
             Icon={ConfigurationIcon}
             title='Configuration File Support'
             info='rotini returns helper functions for writing and reading a configuration file (json/txt) for your program when a configuration directory and file defined in the program definition.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={NoDependenciesIcon}
+            title='Dependency Free'
+            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
