@@ -145,7 +145,7 @@ const generate: I_Command = {
   examples: [
     'rotini generate my-cli',
     'rotini generate my-cli -f ts -t esm',
-    'rotini generate my-cli --type=cjs -f=js',
+    'rotini generate my-cli --type=cjs -f=js -q',
   ],
   operation: ({ commands, }): void => {
     const [ generate, ] = commands;
@@ -160,30 +160,6 @@ const generate: I_Command = {
     if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile(pjson_type));
     console.info(`\ncd ${directory}\nnpm install${project_format === 'ts' ? '\ntsc\n' : '\n'}chmod +x index.js\nnpm link\n${directory} hello-world\n`);
   },
-  commands: [
-    {
-      name: 'yo',
-      aliases: [ 'what', ],
-      deprecated: true,
-      description: 'generate a hello-world rotini cli program',
-      arguments: [
-        {
-          name: 'directory',
-          description: 'the name of the directory to be used for the generated program',
-          type: 'string',
-          variant: 'value',
-          isValid: (data: string): void => {
-            const allowedCharacters = /^[0-9A-Za-z_.-]+$/;
-            const containsDisallowedCharacter = !allowedCharacters.test(data);
-            if (containsDisallowedCharacter) {
-              throw new Error(`Directory name "${data}" must only contain letters, numbers, hyphens, underscores, and periods.`);
-            }
-          },
-        },
-      ],
-      operation: (): void => console.log('yoy'),
-    },
-  ],
 };
 
 export default generate;
