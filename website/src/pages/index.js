@@ -81,7 +81,9 @@ const Blurb = () => {
           <span style={{ color: '#e3e3e3', fontSize: 50, maxWidth: 600, textAlign: 'left', lineHeight: 1, fontWeight: 'bold' }}>
             Write your CLI as <b className="text text--primary">config</b> not as <b className="text text--secondary">code</b>.
           </span>
-          <CliIcon size={130} />
+          <div style={{ width: 120, height: 120 }}>
+            <CliIcon size={120} />
+          </div>
         </div>
       </div>
       <div style={{ maxWidth: 770, margin: 'auto', paddingTop: 20, paddingLeft: 20 }}>
