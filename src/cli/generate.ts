@@ -4,22 +4,13 @@ import { I_Command, } from '../build';
 // import { version, } from '../../package.publish.json';
 
 const version = '1.0.2';
+console.log('TODO: change hardcode version');
 
-const createTsconfigFile = (type: string): string => JSON.stringify({ compilerOptions: { target: 'es2016', module: type, forceConsistentCasingInFileNames: true, skipLibCheck: true, }, }, null, 2);
+const createTsconfigFile = (): string => JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ES2022', forceConsistentCasingInFileNames: true, skipLibCheck: true, }, }, null, 2);
 
 const createPackageFile = (name: string, format: string, type: string): string => {
   const devDependencies: { typescript?: string } = {};
-  const data = {
-    name,
-    type,
-    bin: {
-      [name]: './index.js',
-    },
-    devDependencies,
-    dependencies: {
-      rotini: `^${version}`,
-    },
-  };
+  const data = { name, type, bin: { [name]: './index.js', }, scripts: { setup: `npm install &&${format === 'ts' ? ' tsc &&' : ''} chmod +x index.js && npm link`, }, devDependencies, dependencies: { rotini: `^${version}`, }, };
 
   if (format === 'ts') {
     data.devDependencies.typescript = '^4.9';
@@ -32,11 +23,11 @@ const createJavascriptFile = (name: string, format: string, type: string): strin
 
 ${(format === 'ts')
     ? (type === 'module')
-      ? `import rotini, { I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';`
-      : `import rotini, { I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';`
+      ? `import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from '../build';`
+      : `import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from '../build';`
     : (type === 'module')
-      ? `import rotini from 'rotini';`
-      : `const rotini = require('rotini');`}
+      ? `import { rotini } from '../build';`
+      : `const { rotini } = require('../build');`}
 
 const definition${format === 'ts' ? ': I_ProgramDefinition' : ''} = {
   name: '${name}',
@@ -71,6 +62,8 @@ const definition${format === 'ts' ? ': I_ProgramDefinition' : ''} = {
       description: 'specify the output format for command operation results',
       short_key: 'o',
       long_key: 'output',
+      variant: 'value',
+      type: 'string',
       values: ['json', 'text'],
       default: 'text'
     }
@@ -92,8 +85,6 @@ ${format === 'ts' ? 'void ' : ''}(async ()${format === 'ts' ? ': Promise<void>' 
 
 const generate: I_Command = {
   name: 'generate',
-  aliases: [ 'init', ],
-  deprecated: true,
   description: 'generate a hello-world rotini cli program',
   arguments: [
     {
@@ -145,7 +136,7 @@ const generate: I_Command = {
   examples: [
     'rotini generate my-cli',
     'rotini generate my-cli -f ts -t esm',
-    'rotini generate my-cli --type=cjs -f=js -q',
+    'rotini generate my-cli --type=cjs --format=js -q',
   ],
   operation: ({ commands, }): void => {
     const [ generate, ] = commands;
@@ -157,8 +148,8 @@ const generate: I_Command = {
     mkdirSync(directory, { recursive: true, });
     writeFileSync(`./${directory}/package.json`, createPackageFile(directory, project_format, pjson_type));
     writeFileSync(`./${directory}/index.${project_format}`, createJavascriptFile(directory, project_format, pjson_type));
-    if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile(pjson_type));
-    console.info(`\ncd ${directory}\nnpm install${project_format === 'ts' ? '\ntsc\n' : '\n'}chmod +x index.js\nnpm link\n${directory} hello-world\n`);
+    if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile());
+    console.info(`\ncd ${directory}\nnpm run setup\n${directory} hello-world\n`);
   },
 };
 

@@ -8,7 +8,7 @@ export type T_ParseResult = {
   isAliasMatch: boolean
   flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
   arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
-  operation: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => unknown) | ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => Promise<unknown>) | void | undefined
+  operation: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => object | undefined, setConfigurationFile: (data: object) => void }) => unknown) | void | undefined
   help: string
 }
 

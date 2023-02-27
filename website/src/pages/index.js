@@ -4,6 +4,8 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useColorMode } from '@docusaurus/theme-common';
 import { Grid } from '@mui/material';
+import { SiNodedotjs as NodejsIcon, SiTypescript as TypescriptIcon } from 'react-icons/si'
+import { DiNpm as NpmIcon } from 'react-icons/di'
 import {
   FcCommandLine as CliIcon,
   FcNews as DefinitionIcon,
@@ -209,6 +211,34 @@ const Features = () => {
   );
 };
 
+const Footer = () => (
+  <footer
+    style={{
+      backgroundColor: '#f3df43',
+      paddingLeft: 20,
+      paddingRight: 20,
+    }}
+  >
+    <div style={{ width: '100%', maxWidth: 1600, margin: 'auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+        <Link to='/' style={{ fontFamily: 'Poppins', fontSize: 14, fontWeight: 'bold', color: 'black', textDecoration: 'none' }}>rotini</Link>
+        <div style={{ flexGrow: 1 }} />
+        <p style={{ fontFamily: 'Poppins', fontSize: 12, color: 'black', marginTop: 20, paddingTop: 2 }}>Built with Docusaurus</p>
+        <div style={{ flexGrow: 1 }} />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+          <NodejsIcon size={20} style={{ color: '#539e43', marginRight: 10, }} />
+          <TypescriptIcon size={20} style={{ color: '#2d79c7', background: 'white' }} />
+          <div style={{ background: 'white', height: 20, width: 42, marginLeft: 10, borderRadius: 4, }}>
+            <a href='https://www.npmjs.com/package/rotini' target='_blank' referrerpolicy='no-referrer'>
+              <NpmIcon size={40} style={{ color: '#c51010', marginTop: -10, paddingLeft: 3, paddingRight: 1 }} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+)
+
 const Home = () => {
   const { siteConfig: { tagline }, } = useDocusaurusContext();
 
@@ -219,6 +249,7 @@ const Home = () => {
         <Blurb />
         <Features />
       </main>
+      <Footer/>
     </Layout>
   );
 };

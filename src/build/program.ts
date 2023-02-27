@@ -3,7 +3,7 @@ import Configuration, { I_Configuration, } from './configuration';
 import Flag, { HelpFlag, I_Flag, } from './flag';
 import Utils, { ConfigurationError, } from '../utils';
 
-export interface I_Program {
+export interface I_ProgramDefinition {
   name: string
   description: string
   version: string
@@ -13,7 +13,7 @@ export interface I_Program {
   examples?: string[]
 }
 
-export default class Program implements I_Program {
+export default class Program implements I_ProgramDefinition {
   name!: string;
   description!: string;
   version!: string;
@@ -22,7 +22,7 @@ export default class Program implements I_Program {
   flags: (Flag | HelpFlag)[] = [];
   examples!: string[];
 
-  constructor (program: I_Program) {
+  constructor (program: I_ProgramDefinition) {
     this
       .#setName(program?.name)
       .#setDescription(program.description)

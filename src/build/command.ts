@@ -12,7 +12,7 @@ export interface I_Command {
   flags?: I_Flag[]
   commands?: I_Command[]
   examples?: string[]
-  operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => unknown) | ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => Promise<unknown>) | void | undefined
+  operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => object | undefined, setConfigurationFile: (data: object) => void }) => unknown) | void | undefined
 }
 
 export default class Command implements I_Command {
@@ -24,7 +24,7 @@ export default class Command implements I_Command {
   flags!: (Flag | ForceFlag | HelpFlag)[];
   commands!: Command[];
   examples!: string[];
-  operation: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => unknown) | ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => Promise<unknown>) | void | undefined;
+  operation: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => object | undefined, setConfigurationFile: (data: object) => void }) => unknown) | void | undefined;
   isForceCommand!: boolean;
 
   constructor (command: I_Command) {
@@ -209,7 +209,7 @@ export default class Command implements I_Command {
     return this;
   };
 
-  #setOperation = (operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => unknown) | ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => string | object | undefined, setConfigurationFile: (data: string) => void }) => Promise<unknown>) | void | undefined): Command | never => {
+  #setOperation = (operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: () => object | undefined, setConfigurationFile: (data: object) => void }) => unknown) | void | undefined): Command | never => {
     if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "function" for command "${this.name}".`);
     }

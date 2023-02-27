@@ -1,8 +1,8 @@
-import { Argument, Command, Configuration, Flag, Program, ProgramConfiguration, I_ProgramConfiguration, I_Program as I_ProgramDefinition, } from './build';
+import { Configuration, Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
 import { parse, } from './parse';
-import { ConfigurationError, OperationError, ParseError, } from './utils';
+import { OperationError, ParseError, } from './utils';
 
-const program = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
+const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   const PROGRAM = new Program(program?.definition);
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
   const CONFIGURATION = new Configuration(program.definition.configuration!);
@@ -30,20 +30,7 @@ const program = (program: { definition: I_ProgramDefinition, configuration?: I_P
     process.exit(1);
   };
 
-  return {
-    run,
-    error,
-  };
+  return { run, error, };
 };
 
-program.Argument = Argument;
-program.Command = Command;
-program.Configuration = Configuration;
-program.Flag = Flag;
-program.Program = Program;
-program.ProgramConfiguration = ProgramConfiguration;
-program.ConfigurationError = ConfigurationError;
-program.OperationError = OperationError;
-program.ParseError = ParseError;
-
-export default program;
+export default rotini;

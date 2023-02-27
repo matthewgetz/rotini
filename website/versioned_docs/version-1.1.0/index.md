@@ -34,6 +34,41 @@ In this example we are using kubectl to get (verb) pods (noun) with all-namespac
 kubectl get pods --all-namespaces
 ```
 
+## Quick Start
+
+Generate a "hello-world" rotini cli to get started!
+
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```bash
+npx rotini generate my-cli --format javascript --type commonjs
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```bash
+npx rotini generate my-cli --format typescript --type module
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+After generating a hello-world rotini cli, to get started run the following commands:
+
+```bash
+cd my-cli
+npm run setup
+my-cli hello-world
+```
+
 ## Installation
 
 ```mdx-code-block
@@ -52,37 +87,6 @@ npm install rotini
 
 ```bash
 yarn add rotini
-```
-
-```mdx-code-block
-</TabItem>
-</Tabs>
-```
-
-## Quick Start
-
-Generate a "hello-world" rotini cli to get started!
-
-```mdx-code-block
-<Tabs>
-<TabItem value="JavaScript">
-```
-
-```bash
-npx rotini generate js
-npm i rotini
-node index.js
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="TypeScript">
-```
-
-```bash
-npx rotini generate ts
-npm i rotini
-ts-node index.ts
 ```
 
 ```mdx-code-block

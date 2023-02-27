@@ -17,8 +17,39 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     process.exit(0);
   }
 
+  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory) && COMMANDS.original_parameters[0] && (COMMANDS.original_parameters[0].parameter === '--update' || COMMANDS.original_parameters[0].parameter === '-u')) {
+    await Utils.updatePackage({ package_name: program.name, });
+    const { data, } = configuration.getConfigurationFile() as { data: { _rotini_update_check_ts: string } };
+    configuration.setConfigurationFile({ ...data, _rotini_update_check_ts: new Date().getTime(), });
+    process.exit(0);
+  }
+
   if (COMMANDS.results.length === 0) {
     throw new ParseError(`Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.parameter))}.`, createCliHelp({ program, }));
+  }
+
+  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory)) {
+    const { data, } = configuration.getConfigurationFile() as { data: { _rotini_update_check_ts: string } };
+    const last_update_check_ms = new Date(data?._rotini_update_check_ts).getTime();
+    const last_update_not_set = Utils.isNotDefined(last_update_check_ms) || isNaN(last_update_check_ms);
+    const now_ms = new Date().getTime();
+    const seven_days_in_milliseconds = 604800000;
+    if (last_update_not_set || now_ms > (last_update_check_ms + seven_days_in_milliseconds)) {
+      let packageHasUpdate = false;
+      try {
+        packageHasUpdate = await Utils.packageHasUpdate({ package_name: program.name, current_version: program.version, });
+      } catch (e) {
+        configuration.setConfigurationFile({ ...data, _rotini_update_check_ts: now_ms, });
+      }
+      if (packageHasUpdate) {
+        const shouldUpdate = await Utils.promptForYesOrNo(`${program.name} has an updated version available; would you like to update to the latest version?`);
+        configuration.setConfigurationFile({ ...data, _rotini_update_check_ts: now_ms, });
+        if (shouldUpdate) {
+          await Utils.updatePackage({ package_name: program.name, });
+          process.exit(0);
+        }
+      }
+    }
   }
 
   const lastCommand = COMMANDS.results[COMMANDS.results.length - 1];
@@ -81,8 +112,8 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     }
   }
 
-  const getConfigurationFile = (): { data: object | string | undefined, error: Error | undefined, hasError: boolean } => configuration.getConfigurationFile();
-  const setConfigurationFile = (data: string | object): { error: Error | undefined, hasError: boolean } => configuration.setConfigurationFile(data);
+  const getConfigurationFile = (): { data: object | undefined, error: Error | undefined, hasError: boolean } => configuration.getConfigurationFile();
+  const setConfigurationFile = (data: object): { error: Error | undefined, hasError: boolean } => configuration.setConfigurationFile(data);
 
   const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfigurationFile, setConfigurationFile, });
 

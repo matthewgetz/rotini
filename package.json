@@ -1,7 +1,7 @@
 {
   "name": "rotini",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "bin": {
     "rotini": "./build/index.global.js"
@@ -13,7 +13,7 @@
     "compile:watch": "npm run compile -- --watch",
     "deps": "npm run deps:dev",
     "deps:dev": "ncu --dep dev -e 2",
-    "lint": "eslint src --no-inline-config",
+    "lint": "eslint src --no-inline-config --max-warnings 0",
     "release": "sh ./scripts/publish.sh",
     "test": "vitest --config ./vitest.config.ts",
     "test:coverage": "npm run test -- --coverage",

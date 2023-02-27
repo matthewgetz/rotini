@@ -12,7 +12,7 @@ export default defineConfig({
   minifyWhitespace: true,
   outDir: './build',
   platform: 'node',
-  target: 'node16',
+  target: 'node18',
   tsconfig: './tsconfig.json',
   sourcemap: false,
 });

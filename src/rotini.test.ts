@@ -1,5 +1,5 @@
 import rotini from './rotini';
-import { I_Program as I_ProgramDefinition, I_ProgramConfiguration, } from './build';
+import { I_ProgramDefinition, I_ProgramConfiguration, } from './build';
 
 describe('rotini', () => {
   describe('run', () => {
