@@ -20,11 +20,11 @@ const createJavascriptFile = (name: string, format: string, type: string): strin
 
 ${(format === 'ts')
     ? (type === 'module')
-      ? `import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from '../build';`
-      : `import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from '../build';`
+      ? `import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';`
+      : `import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';`
     : (type === 'module')
-      ? `import { rotini } from '../build';`
-      : `const { rotini } = require('../build');`}
+      ? `import { rotini } from 'rotini';`
+      : `const { rotini } = require('rotini');`}
 
 const definition${format === 'ts' ? ': I_ProgramDefinition' : ''} = {
   name: '${name}',
