@@ -17,10 +17,25 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     process.exit(0);
   }
 
-  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory) && COMMANDS.original_parameters[0] && (COMMANDS.original_parameters[0].parameter === '--update' || COMMANDS.original_parameters[0].parameter === '-u')) {
-    await Utils.updatePackage({ package_name: program.name, });
-    const { data, } = configuration.getConfigurationFile() as { data: { _rotini_update_check_ts: string } };
-    configuration.setConfigurationFile({ ...data, _rotini_update_check_ts: new Date().getTime(), });
+  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory) && Utils.isDefined(configuration.file) && COMMANDS.original_parameters[0] && (COMMANDS.original_parameters[0].parameter === '--update' || COMMANDS.original_parameters[0].parameter === '-u') && Utils.isNotTrueString(process.env.CI!)) {
+    const { data, } = configuration.getConfigurationFile() as { data: { rotini_last_update_time: string } };
+
+    let packageHasUpdate = false;
+    let latestVersion = '';
+    try {
+      const result = await Utils.packageHasUpdate({ package_name: program.name, current_version: program.version, });
+      packageHasUpdate = result.hasUpdate;
+      latestVersion = result.latestVersion;
+    } catch (e) {
+      configuration.setConfigurationFile({ ...data, rotini_last_update_time: new Date().getTime(), });
+    }
+
+    if (packageHasUpdate) {
+      configuration.setConfigurationFile({ ...data, rotini_last_update_time: new Date().getTime(), });
+      await Utils.updatePackage({ package_name: program.name, version: latestVersion, });
+    } else {
+      console.info(`Latest version of ${program.name} is installed.`);
+    }
     process.exit(0);
   }
 
@@ -28,24 +43,27 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     throw new ParseError(`Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.parameter))}.`, createCliHelp({ program, }));
   }
 
-  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory)) {
-    const { data, } = configuration.getConfigurationFile() as { data: { _rotini_update_check_ts: string } };
-    const last_update_check_ms = new Date(data?._rotini_update_check_ts).getTime();
+  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory) && Utils.isDefined(configuration.file) && Utils.isNotTrueString(process.env.CI!)) {
+    const { data, } = configuration.getConfigurationFile() as { data: { rotini_last_update_time: string } };
+    const last_update_check_ms = new Date(data?.rotini_last_update_time).getTime();
     const last_update_not_set = Utils.isNotDefined(last_update_check_ms) || isNaN(last_update_check_ms);
     const now_ms = new Date().getTime();
     const seven_days_in_milliseconds = 604800000;
     if (last_update_not_set || now_ms > (last_update_check_ms + seven_days_in_milliseconds)) {
       let packageHasUpdate = false;
+      let latestVersion = '';
       try {
-        packageHasUpdate = await Utils.packageHasUpdate({ package_name: program.name, current_version: program.version, });
+        const result = await Utils.packageHasUpdate({ package_name: program.name, current_version: program.version, });
+        packageHasUpdate = result.hasUpdate;
+        latestVersion = result.latestVersion;
       } catch (e) {
-        configuration.setConfigurationFile({ ...data, _rotini_update_check_ts: now_ms, });
+        configuration.setConfigurationFile({ ...data, rotini_last_update_time: now_ms, });
       }
       if (packageHasUpdate) {
         const shouldUpdate = await Utils.promptForYesOrNo(`${program.name} has an updated version available; would you like to update to the latest version?`);
-        configuration.setConfigurationFile({ ...data, _rotini_update_check_ts: now_ms, });
+        configuration.setConfigurationFile({ ...data, rotini_last_update_time: now_ms, });
         if (shouldUpdate) {
-          await Utils.updatePackage({ package_name: program.name, });
+          await Utils.updatePackage({ package_name: program.name, version: latestVersion, });
           process.exit(0);
         }
       }

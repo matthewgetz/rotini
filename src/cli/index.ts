@@ -1,5 +1,5 @@
 import rotini from '../rotini';
-// import { version, } from '../../package.publish.json';
+import { version, } from '../../package.publish.json';
 import { I_ProgramConfiguration, I_ProgramDefinition, } from '../build';
 import generate from './generate';
 
@@ -10,7 +10,7 @@ const definition: I_ProgramDefinition = {
     directory: '.rotini',
     file: 'config.json',
   },
-  version: '1.0.0',
+  version,
   commands: [ generate, ],
 };
 
@@ -24,7 +24,7 @@ const configuration: I_ProgramConfiguration = {
 export default async (): Promise<void> => {
   const isCommonJs = typeof module !== 'undefined';
 
-  if ((isCommonJs && require.main === module) || !isCommonJs && import.meta && import.meta.url === `file://${process.argv[1]}`) {
+  if ((isCommonJs && require.main === module) || (!isCommonJs && import.meta && import.meta.url === `file://${process.argv[1]}`)) {
     const program = rotini({ definition, configuration, });
     const result = await program.run().catch(program.error);
     result && console.info(result);

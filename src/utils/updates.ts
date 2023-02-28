@@ -16,7 +16,7 @@ const execute = (command: string): Promise<void> => {
   });
 };
 
-export const packageHasUpdate = async ({ package_name, current_version, }: { package_name: string, current_version: string }): Promise<boolean> => {
+export const packageHasUpdate = async ({ package_name, current_version, }: { package_name: string, current_version: string }): Promise<{ hasUpdate: boolean, latestVersion: string }> => {
   const result = await fetch(`https://registry.npmjs.org/${package_name}`);
 
   if (!result.ok) {
@@ -40,11 +40,11 @@ export const packageHasUpdate = async ({ package_name, current_version, }: { pac
     hasUpdate = true;
   }
 
-  return hasUpdate;
+  return { hasUpdate, latestVersion, };
 };
 
-export const updatePackage = async ({ package_name, }: { package_name: string }): Promise<void> => {
-  console.info(`Installing the latest version of ${package_name}...`);
-  await execute(`npm install -g ${package_name}@latest`);
+export const updatePackage = async ({ package_name, version, }: { package_name: string, version: string }): Promise<void> => {
+  console.info(`Installing version ${version} for ${package_name}...`);
+  await execute(`npm install -g ${package_name}@${version}`);
   console.info('Done.');
 };

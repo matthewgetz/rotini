@@ -1,6 +1,8 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useColorMode } from '@docusaurus/theme-common';
 import { Grid } from '@mui/material';
@@ -150,7 +152,7 @@ const Features = () => {
           <Feature
             Icon={CommandForceIcon}
             title='Command Force Prompting'
-            info='rotini will prompt users to confirm (Y/n) commands that have a "force" flag defined in their definition, which can be helpful as a guard against destructive actions. The prompt can be bypassed if the user passes the override flag, which may also be needed in CI environments.'
+            info='rotini will prompt users to confirm (Y/n) commands that have a "force" flag defined in their definition, which can be helpful as a guard against destructive actions. The prompt can be bypassed if the user passes the override flag, which may also be needed in CI/CD environments.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>

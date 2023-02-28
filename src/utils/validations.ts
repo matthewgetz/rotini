@@ -79,6 +79,8 @@ export const isNotString = (value: unknown): boolean => !isString(value);
 
 export const isTrueString = (parameter: string): boolean => /^(true)$/i.test(parameter);
 
+export const isNotTrueString = (parameter: string): boolean => !isTrueString(parameter);
+
 export const stringContainsSpaces = (value: string): boolean => (value.indexOf(' ') >= 0);
 
 export const stringDoesNotContainSpaces = (value: string): boolean => !stringContainsSpaces(value);

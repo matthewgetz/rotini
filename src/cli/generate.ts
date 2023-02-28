@@ -1,10 +1,7 @@
 import { mkdirSync, writeFileSync, } from 'fs';
 
 import { I_Command, } from '../build';
-// import { version, } from '../../package.publish.json';
-
-const version = '1.0.2';
-console.log('TODO: change hardcode version');
+import { version, } from '../../package.publish.json';
 
 const createTsconfigFile = (): string => JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ES2022', forceConsistentCasingInFileNames: true, skipLibCheck: true, }, }, null, 2);
 
@@ -141,7 +138,7 @@ const generate: I_Command = {
   operation: ({ commands, }): void => {
     const [ generate, ] = commands;
     const directory = generate.arguments.directory as string;
-    const { format, type, } = generate.flags;
+    const { format, type, quiet, } = generate.flags;
     const pjson_type = (type === 'esm' || type === 'module') ? 'module' : 'commonjs';
     const project_format = (format === 'ts' || format === 'typescript') ? 'ts' : 'js';
 
@@ -149,7 +146,7 @@ const generate: I_Command = {
     writeFileSync(`./${directory}/package.json`, createPackageFile(directory, project_format, pjson_type));
     writeFileSync(`./${directory}/index.${project_format}`, createJavascriptFile(directory, project_format, pjson_type));
     if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile());
-    console.info(`\ncd ${directory}\nnpm run setup\n${directory} hello-world\n`);
+    if (!quiet) console.info(`\ncd ${directory}\nnpm run setup\n${directory} hello-world\n`);
   },
 };
 
