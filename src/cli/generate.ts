@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync, } from 'fs';
 import { I_Command, } from '../build';
 import { version, } from '../../package.publish.json';
 
-const createTsconfigFile = (): string => JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ES2022', forceConsistentCasingInFileNames: true, skipLibCheck: true, }, }, null, 2);
+const createTsconfigFile = (type: string): string => JSON.stringify({ compilerOptions: { target: 'ES2022', module: (type === 'module') ? 'ES2022' : 'CommonJS', moduleResolution: 'node', forceConsistentCasingInFileNames: true, skipLibCheck: true, }, }, null, 2);
 
 const createPackageFile = (name: string, format: string, type: string): string => {
   const devDependencies: { typescript?: string } = {};
@@ -145,7 +145,7 @@ const generate: I_Command = {
     mkdirSync(directory, { recursive: true, });
     writeFileSync(`./${directory}/package.json`, createPackageFile(directory, project_format, pjson_type));
     writeFileSync(`./${directory}/index.${project_format}`, createJavascriptFile(directory, project_format, pjson_type));
-    if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile());
+    if (project_format === 'ts') writeFileSync(`./${directory}/tsconfig.json`, createTsconfigFile(pjson_type));
     if (!quiet) console.info(`\ncd ${directory}\nnpm run setup\n${directory} hello-world\n`);
   },
 };
