@@ -10,7 +10,7 @@
   "bugs": "https://github.com/matthewgetz/rotini/issues",
   "homepage": "https://matthewgetz.github.io/rotini/",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "bin": {
     "rotini": "./build/index.global.js"
