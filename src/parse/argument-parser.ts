@@ -1,7 +1,5 @@
-import Command from './command';
-import Program from './program';
-import { createCommandHelp, } from './help';
-import Utils, { ParseError, } from './utils';
+import { Command, Program, createCommandHelp, } from '../build';
+import Utils, { ParseError, } from '../utils';
 
 type T_Result = {
   id: number

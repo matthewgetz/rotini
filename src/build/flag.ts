@@ -1,33 +1,29 @@
-import Utils, { ConfigurationError, ParseError, } from './utils';
-
-type T_Type = 'string' | 'number' | 'boolean'
-type T_Variant = 'value' | 'boolean'
-type T_ValidateFunction = (value: string | number | boolean) => boolean
+import Utils, { ConfigurationError, ParseError, } from '../utils';
 
 export interface I_Flag {
   name: string
   description: string
-  variant?: T_Variant
-  type?: T_Type
+  variant?: 'value' | 'boolean'
+  type?: 'string' | 'number' | 'boolean'
   short_key?: string
   long_key?: string
   values?: string[]
-  default?: string
+  default?: string | number | boolean
   required?: boolean
-  isValid?: T_ValidateFunction
+  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
 }
 
 export default class Flag implements I_Flag {
   name!: string;
   description!: string;
-  variant!: T_Variant;
-  type!: T_Type;
+  variant!: 'value' | 'boolean';
+  type!: 'string' | 'number' | 'boolean';
   short_key?: string;
   long_key?: string;
   values: string[] = [];
-  default: string | undefined;
+  default: string | number | boolean | undefined;
   required!: boolean;
-  isValid!: T_ValidateFunction;
+  isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
 
   constructor (flag: I_Flag) {
     this
@@ -62,8 +58,8 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setVariant = (variant: T_Variant = 'value'): Flag | never => {
-    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'value', 'boolean', ]))) {
+  #setVariant = (variant: 'value' | 'boolean' = 'boolean'): Flag | never => {
+    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze(['value', 'boolean',]))) {
       throw new ConfigurationError(`Flag property "variant" must be defined, of type "string", and set as "boolean" or "value" for flag "${this.name}".`);
     }
 
@@ -72,12 +68,12 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setType = (type: T_Type = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
-    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', ]))) {
+  #setType = (type: 'string' | 'number' | 'boolean' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
+    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze(['string', 'number', 'boolean',]))) {
       throw new ConfigurationError(`Flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for flag "${this.name}".`);
     }
 
-    if (this.variant === 'boolean' && Utils.isNotAllowedStringValue(type, Object.freeze([ 'boolean', ]))) {
+    if (this.variant === 'boolean' && Utils.isNotAllowedStringValue(type, Object.freeze(['boolean',]))) {
       throw new ConfigurationError(`Flag property "type" must be set as "boolean" when flag property "variant" is set as "boolean" for flag "${this.name}".`);
     }
 
@@ -129,7 +125,7 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setDefault = (default_value?: string): Flag | never => {
+  #setDefault = (default_value?: string | number | boolean): Flag | never => {
     if ((Utils.isDefined(default_value) && (Utils.isNotString(default_value) && Utils.isNotNumber(default_value) && Utils.isNotBoolean(default_value))) || Utils.isEmptyString(default_value!)) {
       throw new ConfigurationError(`Flag property "default" must be of type "string", "number", or "boolean" for flag "${this.name}".`);
     }
@@ -157,14 +153,15 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setIsValid = (isValid: T_ValidateFunction = ((): boolean => true)): Flag | never => {
+  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): Flag | never => {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Flag property "isValid" must be of type "function" for flag "${this.name}".`);
     }
 
+
     this.isValid = (data: string | number | boolean): boolean | never => {
       try {
-        if (isValid(data) === false) {
+        if (isValid(data as never) === false) {
           const flags = [];
           if (Utils.isDefined(this.short_key)) flags.push(`-${this.short_key}`);
           if (Utils.isDefined(this.long_key)) flags.push(`--${this.long_key}`);

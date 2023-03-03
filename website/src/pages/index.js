@@ -1,9 +1,13 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useColorMode } from '@docusaurus/theme-common';
 import { Grid } from '@mui/material';
+import { SiNodedotjs as NodejsIcon, SiTypescript as TypescriptIcon } from 'react-icons/si'
+import { DiNpm as NpmIcon } from 'react-icons/di'
 import {
   FcCommandLine as CliIcon,
   FcNews as DefinitionIcon,
@@ -11,10 +15,13 @@ import {
   FcGenealogy as SubcommandIcon,
   FcReading as AutoHelpIcon,
   FcSettings as ConfigurationIcon,
-  FcFlashOn as ParserIcon,
+  FcIdea as ParserIcon,
   FcLink as CommandAliasIcon,
   FcDeployment as ShipIcon,
-  FcBinoculars as CheckTypesIcon
+  FcBinoculars as CheckTypesIcon,
+  FcFactory as GenerateIcon,
+  FcAdvertising as AutoUpdateIcon,
+  FcFlashOn as NoDependenciesIcon
 } from 'react-icons/fc';
 
 import versions from '../../versions.json'
@@ -40,8 +47,12 @@ const Header = () => (
           src='https://i.imgur.com/on3MlUa.png'
           alt='rotini'
           style={{
-            width: 500,
-            height: 500,
+            width: '100%',
+            height: '100%',
+            minHeight: 300,
+            minWidth: 300,
+            maxHeight: 500,
+            maxWidth: 500,
             borderRadius: 10,
           }}
         />
@@ -54,6 +65,8 @@ const Header = () => (
           fontSize: 26,
           marginTop: -50,
           marginBottom: 70,
+          paddingLeft: 10,
+          paddingRight: 10,
         }}
       >
         a framework for building node.js cli programs
@@ -72,7 +85,9 @@ const Blurb = () => {
           <span style={{ color: '#e3e3e3', fontSize: 50, maxWidth: 600, textAlign: 'left', lineHeight: 1, fontWeight: 'bold' }}>
             Write your CLI as <b className="text text--primary">config</b> not as <b className="text text--secondary">code</b>.
           </span>
-          <CliIcon size={130} min={130} />
+          <div style={{ width: 120, height: 120 }}>
+            <CliIcon size={120} />
+          </div>
         </div>
       </div>
       <div style={{ maxWidth: 770, margin: 'auto', paddingTop: 20, paddingLeft: 20 }}>
@@ -137,7 +152,7 @@ const Features = () => {
           <Feature
             Icon={CommandForceIcon}
             title='Command Force Prompting'
-            info='rotini will prompt users to confirm (Y/n) commands that have a "force" flag defined in their definition, which can be helpful as a guard against destructive actions. The prompt can be bypassed if the user passes the override flag, which may also be needed in CI environments.'
+            info='rotini will prompt users to confirm (Y/n) commands that have a "force" flag defined in their definition, which can be helpful as a guard against destructive actions. The prompt can be bypassed if the user passes the override flag, which may also be needed in CI/CD environments.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
@@ -158,22 +173,73 @@ const Features = () => {
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={ShipIcon}
-            title='Ship Faster'
-            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed. Add new commands quickly, deploy new functionality faster.'
+            Icon={GenerateIcon}
+            title='Generate CLI'
+            info='Generate a rotini CLI program for JavaScript or TypeScript and start building immediately. A single command - npx rotini generate my-cli - will get you started.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
+            Icon={AutoUpdateIcon}
+            title='Auto-Update Support'
+            info='Once published, rotini can check to see when new versions of your CLI are published and will prompt users to update to the latest version.'
+          />
+        </Grid>
+      </Grid>
+      <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
             Icon={ConfigurationIcon}
             title='Configuration File Support'
-            info='rotini returns helper functions for writing and reading a configuration file (JSON/txt) for your program when a configuration directory and file defined in the program definition.'
+            info='rotini returns helper functions for writing and reading a configuration file (json/txt) for your program when a configuration directory and file defined in the program definition.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={NoDependenciesIcon}
+            title='Dependency Free'
+            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={ShipIcon}
+            title='Ship Faster'
+            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed. Add new commands quickly, deploy new functionality faster.'
           />
         </Grid>
       </Grid>
     </section>
   );
 };
+
+const Footer = () => (
+  <footer
+    style={{
+      backgroundColor: '#f3df43',
+      paddingLeft: 20,
+      paddingRight: 20,
+    }}
+  >
+    <div style={{ width: '100%', maxWidth: 1600, margin: 'auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+        <Link to='/' style={{ fontFamily: 'Poppins', fontSize: 14, fontWeight: 'bold', color: 'black', textDecoration: 'none' }}>rotini</Link>
+        <div style={{ flexGrow: 1 }} />
+        <p style={{ fontFamily: 'Poppins', fontSize: 12, color: 'black', marginTop: 20, paddingTop: 2 }}>Built with Docusaurus</p>
+        <div style={{ flexGrow: 1 }} />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+          <NodejsIcon size={20} style={{ color: '#539e43', marginRight: 10, }} />
+          <TypescriptIcon size={20} style={{ color: '#2d79c7', background: 'white' }} />
+          <div style={{ background: 'white', height: 20, width: 42, marginLeft: 10, borderRadius: 4, }}>
+            <a href='https://www.npmjs.com/package/rotini' target='_blank' referrerpolicy='no-referrer'>
+              <NpmIcon size={40} style={{ color: '#c51010', marginTop: -10, paddingLeft: 3, paddingRight: 1 }} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+)
 
 const Home = () => {
   const { siteConfig: { tagline }, } = useDocusaurusContext();
@@ -185,6 +251,7 @@ const Home = () => {
         <Blurb />
         <Features />
       </main>
+      <Footer/>
     </Layout>
   );
 };

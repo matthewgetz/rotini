@@ -1,24 +1,8 @@
-import Argument from './argument';
-import Command from './command';
-import Configuration from './configuration';
-import Flag from './flag';
-import Program, { I_Program as I_ProgramDefinition, } from './program';
-import ProgramConfiguration, { I_ProgramConfiguration, } from './program-configuration';
-import { ConfigurationError, OperationError, ParseError, } from './utils';
-import { parse, } from './parser';
+import { Configuration, Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
+import { parse, } from './parse';
+import { OperationError, ParseError, } from './utils';
 
-interface I_Program {
-  definition: I_ProgramDefinition
-  configuration?: I_ProgramConfiguration
-  parameters?: string[]
-}
-
-type T_Program = {
-  run: () => Promise<unknown> | never
-  error: (error: Error) => void
-}
-
-const program = (program: I_Program): T_Program => {
+const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   const PROGRAM = new Program(program?.definition);
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
   const CONFIGURATION = new Configuration(program.definition.configuration!);
@@ -46,20 +30,7 @@ const program = (program: I_Program): T_Program => {
     process.exit(1);
   };
 
-  return {
-    run,
-    error,
-  };
+  return { run, error, };
 };
 
-program.Argument = Argument;
-program.Command = Command;
-program.Configuration = Configuration;
-program.Flag = Flag;
-program.Program = Program;
-program.ProgramConfiguration = ProgramConfiguration;
-program.ConfigurationError = ConfigurationError;
-program.OperationError = OperationError;
-program.ParseError = ParseError;
-
-export default program;
+export default rotini;

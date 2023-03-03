@@ -7,8 +7,9 @@
     "checkJs": false,
     "declaration": true,
     "esModuleInterop": true,
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "forceConsistentCasingInFileNames": true,
+    "module": "ES2022",
+    "moduleResolution": "nodenext",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -16,21 +17,22 @@
     "noUnusedParameters": true,
     "outDir": "dev-build",
     "removeComments": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2020",
+    "target": "ES2022",
     "types": [
       "vitest/globals"
     ]
   },
   "exclude": [
     "build",
+    "coverage",
     "dev-build",
     "node_modules"
   ],
   "include": [
-    "src/**/*",
-    "tsup.config.ts",
-    "vitest.config.ts"
+    "src/**/*"
   ]
 }

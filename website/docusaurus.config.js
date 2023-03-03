@@ -43,7 +43,7 @@ module.exports = {
           }
         },
         blog: {
-          showReadingTime: false,
+          showReadingTime: true,
           editUrl: 'https://github.com/matthewgetz/rotini/website/blog',
         },
         theme: {
@@ -80,6 +80,12 @@ module.exports = {
           position: 'left',
         },
         {
+          label: 'CLI',
+          docId: 'cli/index',
+          type: 'doc',
+          position: 'left',
+        },
+        {
           label: 'Blog',
           to: '/blog',
           position: 'left',
@@ -95,6 +101,12 @@ module.exports = {
     prism: {
       theme: lightCodeTheme,
       darkTheme: darkCodeTheme,
+    },
+    algolia: {
+      indexName: 'rotini',
+      appId: 'TZ4ZY4V8S4',
+      apiKey: '1b1c71a3851d3ae179fa0405815ca460',
+      contextualSearch: true,
     },
   },
 };

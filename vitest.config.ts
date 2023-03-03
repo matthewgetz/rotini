@@ -18,19 +18,6 @@ export default defineConfig({
     globals: true,
     mockReset: true,
     restoreMocks: true,
-    typecheck: {
-      checker: 'tsc',
-      exclude: [
-        'build',
-        'dev-build',
-        'node_modules',
-        'website',
-      ],
-      include: [
-        'src',
-      ],
-      tsconfig: './tsconfig.json',
-    },
     watch: false,
   },
 });

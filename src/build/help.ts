@@ -2,7 +2,7 @@ import { I_Argument, } from './argument';
 import Command, { I_Command, } from './command';
 import { I_Flag, } from './flag';
 import Program from './program';
-import Utils from './utils';
+import Utils from '../utils';
 
 const makeUsageSection = (usageString: string, command?: Command): string => {
   if (command?.arguments && command.arguments.length > 0) {
@@ -33,6 +33,15 @@ const makeDescriptionSection = (description?: string): string => {
       `  ${description}`,
     ].join('')
     : [].join('');
+};
+
+const makeAliasesSection = (aliases: string[]): string => {
+  return aliases.length > 0 ? [
+    '\n\n',
+    'ALIASES:',
+    '\n',
+    ...aliases.map(example => `\n  ${example}`).join(''),
+  ].join('') : '';
 };
 
 const makeCommandsSection = (commands: I_Command[] = []): string => {
@@ -87,6 +96,11 @@ const makeArgumentsSection = (args: I_Argument[] = []): string => {
 
 const makeFlagsSection = (flags: I_Flag[] = [], isGlobal: boolean): string => {
   const flagInfo = flags.map(flag => {
+    let description = flag.description;
+    if (Utils.isDefined(flag.default)) {
+      description += ` (default=${flag.default})`;
+    }
+
     const short_key = flag.short_key;
     const long_key = flag.long_key;
     const variant = flag.variant;
@@ -100,7 +114,7 @@ const makeFlagsSection = (flags: I_Flag[] = [], isGlobal: boolean): string => {
 
     return {
       flag: `  ${flags}`,
-      description: flag.description,
+      description,
     };
   });
 
@@ -154,6 +168,7 @@ export const createCommandHelp = (help: I_CommandHelp): string => {
     makeUsageSection(usageString, command),
     makeDescriptionSection(command.description),
     makeExamplesSection(command.examples),
+    makeAliasesSection(command.aliases),
     makeCommandsSection(command.commands),
     makeArgumentsSection(command.arguments),
     makeFlagsSection(command.flags, false),

@@ -1,22 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 import { homedir, } from 'os';
 
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 export interface I_Configuration {
   directory: string
   file: string
-}
-
-export type T_SetConfiguration = {
-  error: Error | undefined
-  hasError: boolean
-}
-
-export type T_GetConfiguration = {
-  data: object | string | undefined
-  error: Error | undefined
-  hasError: boolean
 }
 
 export default class Configuration implements I_Configuration {
@@ -51,7 +40,7 @@ export default class Configuration implements I_Configuration {
     return this;
   };
 
-  getConfigurationFile = (): T_GetConfiguration => {
+  getConfigurationFile = (): { data: object | undefined, error: Error | undefined, hasError: boolean } => {
     if (Utils.isNotDefined(this.directory) || Utils.isNotDefined(this.file)) {
       throw new ConfigurationError('Configuration properties "directory" and "file" must be defined and of type "string" to interact with the program configuration file.');
     }
@@ -64,9 +53,8 @@ export default class Configuration implements I_Configuration {
     let hasError;
 
     try {
-      const isJsonFile = file.endsWith('.json');
       const content = readFileSync(`${directory}/${file}`, 'utf8');
-      data = (isJsonFile && Utils.isJson(content)) ? JSON.parse(content) as object : content;
+      data = JSON.parse(content) as object;
       hasError = false;
     } catch (e) {
       error = e as Error;
@@ -76,15 +64,18 @@ export default class Configuration implements I_Configuration {
     return { data, error, hasError, };
   };
 
-  setConfigurationFile = (data: string | object): T_SetConfiguration => {
+  setConfigurationFile = (data: object): { error: Error | undefined, hasError: boolean } => {
     if (Utils.isNotDefined(this.directory) || Utils.isNotDefined(this.file)) {
       throw new ConfigurationError('Configuration properties "directory" and "file" must be defined and of type "string" to interact with the program configuration file.');
     }
 
     const directory = this.directory;
     const file = this.file;
-    const isJsonFile = file.endsWith('.json');
     const isJsonData = Utils.isJson(data);
+
+    if (!isJsonData) {
+      throw new Error('Configuration file data is not JSON data.');
+    }
 
     let error;
     let hasError;
@@ -94,10 +85,6 @@ export default class Configuration implements I_Configuration {
 
       if (Utils.isNotDefined(home)) {
         throw new Error('$HOME is unset; unable to use program configuration file.');
-      }
-
-      if (isJsonFile && !isJsonData) {
-        throw new ConfigurationError(`JSON file "${directory}/${file}" does not have JSON data.`);
       }
 
       if (!existsSync(directory)) {

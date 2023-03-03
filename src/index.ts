@@ -1,12 +1,9 @@
-import rotini from './rotini';
+#!/usr/bin/env node
 
-export { default as Argument, I_Argument, } from './argument';
-export { default as Command, I_Command, } from './command';
-export { default as Configuration, I_Configuration, } from './configuration';
-export { default as Flag, I_Flag, } from './flag';
-export { default as ProgramConfiguration, I_ProgramConfiguration, } from './program-configuration';
-export { default as Program, I_Program as I_ProgramDefinition, } from './program';
+import entrypoint from './cli';
+
+export { default as rotini, } from './rotini';
+export { I_Argument, I_Command, I_Configuration, I_Flag, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
 export { ConfigurationError, OperationError, ParseError, } from './utils';
 
-module.exports = rotini;
-export default rotini;
+void (async (): Promise<void> => entrypoint())();
