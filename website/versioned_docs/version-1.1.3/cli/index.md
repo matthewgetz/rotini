@@ -45,20 +45,6 @@ rotini generate my-cli --format typescript --type module
 </Tabs>
 ```
 
-### arguments
-| Name | Description | Variant | Type | Allowed Values |
-| ---- | ----------- | ------- | ---- | -------------- |
-| directory | the name of the directory to be used for the generated program | value | string| N/A |
-
-### flags
-| Name | Description | Variant | Type | Allowed Values | Default |
-| ---- | ----------- | ------- | ---- | -------------- | ------- |
-| format | the project format to use for the generated program | value | string | js, javascript, ts, typescript | js |
-| type | the type of module to use for the generated program | value | string | cjs, commonjs, esm, module | cjs |
-| quiet | only output errors for the command | boolean | boolean | N/A | false |
-| help | output help for the command | boolean | boolean | N/A | false |
-
-### help
 ```bash
 USAGE:
 
@@ -87,3 +73,16 @@ FLAGS:
   -q,--quiet=boolean                                    only output errors for the command (default=false)
   -h,--help=boolean                                     output help for the command
 ```
+
+### arguments
+| Name | Description | Variant | Type | Allowed Values |
+| ---- | ----------- | ------- | ---- | -------------- |
+| directory | the name of the directory to be used for the generated program | value | string| N/A |
+
+### flags
+| Name | Description | Variant | Type | Allowed Values | Default |
+| ---- | ----------- | ------- | ---- | -------------- | ------- |
+| format | the project format to use for the generated program | value | string | js, javascript, ts, typescript | js |
+| type | the type of module to use for the generated program | value | string | cjs, commonjs, esm, module | cjs |
+| quiet | only output errors for the command | boolean | boolean | N/A | false |
+| help | output help for the command | boolean | boolean | N/A | N/A |

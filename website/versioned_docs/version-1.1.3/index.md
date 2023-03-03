@@ -159,7 +159,7 @@ The program version is printed to the console when a `-v` or `--version` flag is
 my-cli --version
 ```
 
-Once your program is published to a registry, you can setup your program to check for updates. When this is configured, rotini will check intermittently for new versions of your CLI program. If a new version is found in the registry, users will be prompted to install (y/N) the new version. When the user chooses to install the new version, it will be installed and the original command will need to be re-run. When the user chooses to skip the new version installation, the passed command will be executed. In every case, rotini will set a timestamp that it will use to know when to check for updates again.
+Once your program is published to a registry, you can setup your program to check for updates. When this is configured, rotini will check intermittently for new versions of your CLI program. If a new version is found in the registry, users will be prompted to install (y/N) the new version. When the user chooses to install the new version, the original command will need to be re-run. When the user chooses to skip the new version installation, the passed command will be executed. In every case, rotini will set a timestamp that it will use to know when to check for updates again.
 
 Passing a `-u` or `--update` flag to a rotini program will run the update process. If an update is available it will be installed.
 
