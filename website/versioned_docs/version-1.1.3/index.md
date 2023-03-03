@@ -267,7 +267,7 @@ Command property "commands" must of type "array". Additionally, the same command
 Command property "examples" must be of type "array" and can only contain indexes of type "string".
 
 #### command.operation
-Command property "operation" must be of type "function". All command operations are passed the object defined in the [T_CommandOperationProperties](#t_commandoperationproperties) type definition.
+Command property "operation" must be of type "function".
 
 ```js
 const command: I_Command = {
