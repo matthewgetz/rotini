@@ -191,7 +191,7 @@ const Features = () => {
           <Feature
             Icon={ConfigurationIcon}
             title='Configuration File Support'
-            info='rotini returns helper functions for writing and reading a configuration file (json/txt) for your program when a configuration directory and file defined in the program definition.'
+            info='rotini returns helper functions for writing and reading a configuration file for your program when a configuration directory and file are defined in the program definition.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>

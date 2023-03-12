@@ -21,6 +21,7 @@ module.exports = {
   titleDelimiter: '·',
   url: 'https://matthewgetz.github.io',
   baseUrl: '/rotini/',
+  trailingSlash: true,
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',

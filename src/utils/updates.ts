@@ -1,5 +1,7 @@
 import { exec, } from 'child_process';
 
+const registry = process.env.NPM_CONFIG_REGISTRY || 'https://registry.npmjs.org';
+
 const execute = (command: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     exec(command, (error, _, stderr) => {
@@ -17,11 +19,7 @@ const execute = (command: string): Promise<void> => {
 };
 
 export const packageHasUpdate = async ({ package_name, current_version, }: { package_name: string, current_version: string }): Promise<{ hasUpdate: boolean, latestVersion: string }> => {
-  const result = await fetch(`https://registry.npmjs.org/${package_name}`);
-
-  if (!result.ok) {
-    throw new Error(`Unable to fetch npm package "${package_name}".`);
-  }
+  const result = await fetch(`${registry}/${package_name}`);
 
   const data = await result.json() as { versions: string[] };
   const packageVersions = Object.keys(data.versions);
@@ -45,6 +43,6 @@ export const packageHasUpdate = async ({ package_name, current_version, }: { pac
 
 export const updatePackage = async ({ package_name, version, }: { package_name: string, version: string }): Promise<void> => {
   console.info(`Installing version ${version} for ${package_name}...`);
-  await execute(`npm install -g ${package_name}@${version}`);
+  await execute(`npm install -g ${package_name}@${version} --registry=${registry}`);
   console.info('Done.');
 };

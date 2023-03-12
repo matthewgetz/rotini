@@ -5,7 +5,7 @@ import { OperationError, ParseError, } from './utils';
 const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   const PROGRAM = new Program(program?.definition);
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
-  const CONFIGURATION = new Configuration(program.definition.configuration!);
+  const CONFIGURATION = new Configuration({ directory: program?.definition?.configuration?.directory!, file: '.rotini.config.json', });
   const PARAMETERS: { id: number, parameter: string, }[] = program?.parameters
     ? program.parameters.map((parameter, id) => ({ id, parameter, }))
     : process.argv.splice(2).map((parameter, id) => ({ id, parameter, }));
