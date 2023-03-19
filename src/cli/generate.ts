@@ -69,8 +69,7 @@ const definition${format === 'ts' ? ': I_ProgramDefinition' : ''} = {
 
 const configuration${format === 'ts' ? ': I_ProgramConfiguration' : ''} = {
   strict_commands: true,
-  strict_flags: true,
-  show_deprecation_warnings: true
+  strict_flags: true
 };
 
 ${format === 'ts' ? 'void ' : ''}(async ()${format === 'ts' ? ': Promise<void>' : ''} => {

@@ -17,7 +17,6 @@ const definition: I_ProgramDefinition = {
 const configuration: I_ProgramConfiguration = {
   strict_commands: true,
   strict_flags: true,
-  show_deprecation_warnings: true,
   check_for_new_npm_version: true,
 };
 

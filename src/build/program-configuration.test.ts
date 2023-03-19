@@ -48,28 +48,4 @@ describe('ProgramConfiguration', () => {
       }).not.toThrow();
     });
   });
-
-  describe('show_deprecation_warnings', () => {
-    const expectedErrorMessage = 'Program configuration property "show_deprecation_warnings" must be of type "boolean".';
-
-    it('throws error when "show_deprecation_warnings" is string', () => {
-      expect(() => {
-        // @ts-expect-error program configuration property "show_deprecation_warnings" is string
-        new ProgramConfiguration({ show_deprecation_warnings: 'no', });
-      }).toThrowError(expectedErrorMessage);
-    });
-
-    it('throws error when "show_deprecation_warnings" is number', () => {
-      expect(() => {
-        // @ts-expect-error program configuration property "show_deprecation_warnings" is number
-        new ProgramConfiguration({ show_deprecation_warnings: 324, });
-      }).toThrowError(expectedErrorMessage);
-    });
-
-    it('does not throw when "show_deprecation_warnings" is boolean', () => {
-      expect(() => {
-        new ProgramConfiguration({ show_deprecation_warnings: false, });
-      }).not.toThrow();
-    });
-  });
 });

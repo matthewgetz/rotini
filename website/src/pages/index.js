@@ -86,7 +86,7 @@ const Blurb = () => {
             Write your CLI as <b className="text text--primary">config</b> not as <b className="text text--secondary">code</b>.
           </span>
           <div style={{ width: 120, height: 120 }}>
-            <CliIcon size={120} />
+            <ShipIcon size={120} />
           </div>
         </div>
       </div>
@@ -196,16 +196,16 @@ const Features = () => {
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={NoDependenciesIcon}
-            title='Dependency Free'
-            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
+            Icon={CliIcon}
+            title='Shell Autocomplete'
+            info='Shell autocomplete (bash/zsh) is generated for every program created with rotini.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={ShipIcon}
-            title='Ship Faster'
-            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed. Add new commands quickly, deploy new functionality faster.'
+            Icon={NoDependenciesIcon}
+            title='Dependency Free'
+            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
           />
         </Grid>
       </Grid>

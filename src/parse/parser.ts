@@ -93,7 +93,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
   const command = commands[commands.length - 1];
 
   COMMANDS.results.forEach(({ command, isAliasMatch, }) => {
-    if (program_configuration.show_deprecation_warnings && !isAliasMatch && command.deprecated) {
+    if (!isAliasMatch && command.deprecated) {
       const aliasesInfo = command.aliases.length > 0 ? `Command aliases ${JSON.stringify(command.aliases)} can be used as a guard against future breaking changes.` : '';
       console.warn(`Warning: Command "${command.name}" is deprecated and will be removed in a future release. ${aliasesInfo}\n`);
     }

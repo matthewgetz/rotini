@@ -3,21 +3,18 @@ import Utils, { ConfigurationError, } from '../utils';
 export interface I_ProgramConfiguration {
   strict_commands?: boolean
   strict_flags?: boolean
-  show_deprecation_warnings?: boolean
   check_for_new_npm_version?: boolean
 }
 
 export default class ProgramConfiguration {
   strict_commands!: boolean;
   strict_flags!: boolean;
-  show_deprecation_warnings!: boolean;
   check_for_new_npm_version!: boolean;
 
   constructor (configuration: I_ProgramConfiguration = {}) {
     this
       .#setStrictCommands(configuration.strict_commands)
       .#setStrictFlags(configuration.strict_flags)
-      .#setShowDeprecationWarnings(configuration.show_deprecation_warnings)
       .#setCheckForNpmUpdate(configuration.check_for_new_npm_version);
   }
 
@@ -37,16 +34,6 @@ export default class ProgramConfiguration {
     }
 
     this.strict_flags = strict_flags;
-
-    return this;
-  };
-
-  #setShowDeprecationWarnings = (show_deprecation_warnings = true): ProgramConfiguration | never => {
-    if (Utils.isNotBoolean(show_deprecation_warnings)) {
-      throw new ConfigurationError('Program configuration property "show_deprecation_warnings" must be of type "boolean".');
-    }
-
-    this.show_deprecation_warnings = show_deprecation_warnings;
 
     return this;
   };
