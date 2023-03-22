@@ -40,7 +40,7 @@ export default class Configuration implements I_Configuration {
     return this;
   };
 
-  getConfigurationFile = (): { data: object | undefined, error: Error | undefined, hasError: boolean } => {
+  getConfigurationFile = <T = object>(): { data: T | undefined, error: Error | undefined, hasError: boolean } => {
     if (Utils.isNotDefined(this.directory) || Utils.isNotDefined(this.file)) {
       throw new ConfigurationError('Configuration properties "directory" and "file" must be defined and of type "string" to interact with the program configuration file.');
     }
@@ -54,7 +54,7 @@ export default class Configuration implements I_Configuration {
 
     try {
       const content = readFileSync(`${directory}/${file}`, 'utf8');
-      data = JSON.parse(content) as object;
+      data = JSON.parse(content) as T;
       hasError = false;
     } catch (e) {
       error = e as Error;
