@@ -1,5 +1,5 @@
 import Command, { I_Command, } from './command';
-import Configuration, { I_Configuration, } from './configuration';
+import Configurations, { Configuration, I_Configuration, } from './configurations';
 import Flag, { HelpFlag, I_Flag, } from './flag';
 import Utils, { ConfigurationError, } from '../utils';
 
@@ -7,7 +7,7 @@ export interface I_ProgramDefinition {
   name: string
   description: string
   version: string
-  configuration?: I_Configuration
+  configurations?: I_Configuration[]
   commands?: I_Command[]
   flags?: I_Flag[]
   examples?: string[]
@@ -17,10 +17,12 @@ export default class Program implements I_ProgramDefinition {
   name!: string;
   description!: string;
   version!: string;
-  configuration!: Configuration;
+  configurations!: I_Configuration[];
   commands: Command[] = [];
   flags: (Flag | HelpFlag)[] = [];
   examples!: string[];
+
+  #configurations!: Configurations;
 
   constructor (program: I_ProgramDefinition) {
     this
@@ -30,7 +32,7 @@ export default class Program implements I_ProgramDefinition {
       .#setFlags(program.flags)
       .#setCommands(program.commands)
       .#setExamples(program.examples)
-      .#setConfiguration(program.configuration!);
+      .#setConfigurations(program.configurations);
   }
 
   #setName = (name: string): Program | never => {
@@ -128,13 +130,15 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setConfiguration = (configuration: I_Configuration): Program | never => {
-    if (Utils.isDefined(configuration) && Utils.isNotObject(configuration)) {
-      throw new ConfigurationError('Program property "configuration" must be of type "object".');
+  #setConfigurations = (configurations?: I_Configuration[]): Program | never => {
+    if (Utils.isDefined(configurations) && Utils.isNotArray(configurations)) {
+      throw new ConfigurationError('Program property "configurations" must be of type "array".');
     }
 
-    this.configuration = new Configuration(configuration);
+    this.configurations = new Configurations(configurations!).configurations;
 
     return this;
   };
+
+  getConfiguration = (id: string): Configuration => this.#configurations.getConfiguration(id);
 }

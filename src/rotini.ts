@@ -1,11 +1,19 @@
+import { homedir, } from 'os';
+
 import { Configuration, Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
 import { parse, } from './parse';
-import { OperationError, ParseError, } from './utils';
+import { ConfigurationError, OperationError, ParseError, } from './utils';
 
 const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
-  const PROGRAM = new Program(program?.definition);
+  let PROGRAM: Program;
+  try {
+    PROGRAM = new Program(program?.definition);
+  } catch (e) {
+    const error = e as ConfigurationError;
+    console.error(`${error.name}: ${error.message}`);
+  }
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
-  const CONFIGURATION = new Configuration({ directory: program?.definition?.configuration?.directory!, file: '.rotini.config.json', });
+  const CONFIGURATION = new Configuration({ id: 'rotini', directory: `${homedir()}/.rotini`, file: '.rotini.config.json', });
   const PARAMETERS: { id: number, parameter: string, }[] = program?.parameters
     ? program.parameters.map((parameter, id) => ({ id, parameter, }))
     : process.argv.splice(2).map((parameter, id) => ({ id, parameter, }));

@@ -88,11 +88,11 @@ const generate: I_Command = {
       description: 'the name of the directory to be used for the generated program',
       type: 'string',
       variant: 'value',
-      isValid: (data: string): void => {
+      isValid: (value: string): void => {
         const allowedCharacters = /^[0-9A-Za-z_.-]+$/;
-        const containsDisallowedCharacter = !allowedCharacters.test(data);
+        const containsDisallowedCharacter = !allowedCharacters.test(value);
         if (containsDisallowedCharacter) {
-          throw new Error(`Directory name "${data}" must only contain letters, numbers, hyphens, underscores, and periods.`);
+          throw new Error(`Directory name "${value}" must only contain letters, numbers, hyphens, underscores, and periods.`);
         }
       },
     },

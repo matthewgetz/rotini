@@ -126,39 +126,39 @@ describe('Program', () => {
   });
 
   describe('configuration', () => {
-    const expectedErrorMessage = 'Program property "configuration" must be of type "object".';
+    const expectedErrorMessage = 'Program property "configurations" must be of type "array".';
 
     it('throws error when program property "configuration" is string', () => {
       expect(() => {
         // @ts-expect-error program property "configuration" is number
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration: 'configuration', });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: 'configuration', });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when program property "configuration" is number', () => {
       expect(() => {
         // @ts-expect-error program property "configuration" is number
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration: 23, });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: 23, });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when program property "configuration" is boolean', () => {
       expect(() => {
         // @ts-expect-error program property "configuration" is boolean
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration: true, });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: true, });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when program property "configuration" is array', () => {
       expect(() => {
-        // @ts-expect-error program property "configuration" is array
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration: [ 'something', ], });
+        // @ts-expect-error program property "configuration" is object
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: { some: 'property', }, });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('does not throw error when program property "configuration" is object with "file" and "directory" properties', () => {
       expect(() => {
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration: { directory: '.rotini', file: 'config.json', }, });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: [ { id: 'rotini', directory: '.rotini', file: 'config.json', }, ], });
       }).not.toThrow();
     });
   });
