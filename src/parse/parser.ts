@@ -17,8 +17,8 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     process.exit(0);
   }
 
-  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory) && Utils.isDefined(configuration.file) && COMMANDS.original_parameters[0] && (COMMANDS.original_parameters[0].parameter === '--update' || COMMANDS.original_parameters[0].parameter === '-u') && Utils.isNotTrueString(process.env.CI!)) {
-    const { data, } = configuration.getConfigurationFile() as { data: { last_update_time: string } };
+  if (program_configuration.check_for_new_npm_version && COMMANDS.original_parameters[0] && (COMMANDS.original_parameters[0].parameter === '--update' || COMMANDS.original_parameters[0].parameter === '-u') && Utils.isNotTrueString(process.env.CI!)) {
+    const { data, } = configuration.getConfigurationFile() as { data: { [key: string]: { last_update_time: number } } };
 
     let packageHasUpdate = false;
     let latestVersion = '';
@@ -27,11 +27,25 @@ export const parse = async (program: Program, program_configuration: ProgramConf
       packageHasUpdate = result.hasUpdate;
       latestVersion = result.latestVersion;
     } catch (e) {
-      configuration.setConfigurationFile({ ...data, last_update_time: new Date().getTime(), });
+      const programData = data?.[program.name] || {};
+      configuration.setConfigurationFile({
+        ...data,
+        [program.name]: {
+          ...programData,
+          last_update_time: new Date().getTime(),
+        },
+      });
     }
 
     if (packageHasUpdate) {
-      configuration.setConfigurationFile({ ...data, last_update_time: new Date().getTime(), });
+      const programData = data?.[program.name] || {};
+      configuration.setConfigurationFile({
+        ...data,
+        [program.name]: {
+          ...programData,
+          last_update_time: new Date().getTime(),
+        },
+      });
       await Utils.updatePackage({ package_name: program.name, version: latestVersion, });
     } else {
       console.info(`Latest version of ${program.name} is installed.`);
@@ -43,9 +57,9 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     throw new ParseError(`Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.parameter))}.`, createCliHelp({ program, }));
   }
 
-  if (program_configuration.check_for_new_npm_version && Utils.isDefined(configuration.directory) && Utils.isDefined(configuration.file) && Utils.isNotTrueString(process.env.CI!)) {
-    const { data, } = configuration.getConfigurationFile() as { data: { last_update_time: string } };
-    const last_update_check_ms = new Date(data?.last_update_time).getTime();
+  if (program_configuration.check_for_new_npm_version && Utils.isNotTrueString(process.env.CI!)) {
+    const { data, } = configuration.getConfigurationFile() as { data: { [key: string]: { last_update_time: number } } };
+    const last_update_check_ms = new Date(data?.[program.name]?.last_update_time).getTime();
     const last_update_not_set = Utils.isNotDefined(last_update_check_ms) || isNaN(last_update_check_ms);
     const now_ms = new Date().getTime();
     const seven_days_in_milliseconds = 604800000;
@@ -57,11 +71,25 @@ export const parse = async (program: Program, program_configuration: ProgramConf
         packageHasUpdate = result.hasUpdate;
         latestVersion = result.latestVersion;
       } catch (e) {
-        configuration.setConfigurationFile({ ...data, last_update_time: now_ms, });
+        const programData = data?.[program.name] || {};
+        configuration.setConfigurationFile({
+          ...data,
+          [program.name]: {
+            ...programData,
+            last_update_time: now_ms,
+          },
+        });
       }
       if (packageHasUpdate) {
         const shouldUpdate = await Utils.promptForYesOrNo(`${program.name} has an updated version available; would you like to update to the latest version?`);
-        configuration.setConfigurationFile({ ...data, last_update_time: now_ms, });
+        const programData = data?.[program.name] || {};
+        configuration.setConfigurationFile({
+          ...data,
+          [program.name]: {
+            ...programData,
+            last_update_time: now_ms,
+          },
+        });
         if (shouldUpdate) {
           await Utils.updatePackage({ package_name: program.name, version: latestVersion, });
           process.exit(0);
@@ -93,7 +121,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
   const command = commands[commands.length - 1];
 
   COMMANDS.results.forEach(({ command, isAliasMatch, }) => {
-    if (program_configuration.show_deprecation_warnings && !isAliasMatch && command.deprecated) {
+    if (!isAliasMatch && command.deprecated) {
       const aliasesInfo = command.aliases.length > 0 ? `Command aliases ${JSON.stringify(command.aliases)} can be used as a guard against future breaking changes.` : '';
       console.warn(`Warning: Command "${command.name}" is deprecated and will be removed in a future release. ${aliasesInfo}\n`);
     }
@@ -130,10 +158,9 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     }
   }
 
-  const getConfigurationFile = (): { data: object | undefined, error: Error | undefined, hasError: boolean } => program.configuration.getConfigurationFile();
-  const setConfigurationFile = (data: object): { error: Error | undefined, hasError: boolean } => program.configuration.setConfigurationFile(data);
+  const getConfiguration = program.getConfiguration;
 
-  const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfigurationFile, setConfigurationFile, });
+  const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfiguration, });
 
   return operation;
 };

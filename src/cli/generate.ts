@@ -69,8 +69,7 @@ const definition${format === 'ts' ? ': I_ProgramDefinition' : ''} = {
 
 const configuration${format === 'ts' ? ': I_ProgramConfiguration' : ''} = {
   strict_commands: true,
-  strict_flags: true,
-  show_deprecation_warnings: true
+  strict_flags: true
 };
 
 ${format === 'ts' ? 'void ' : ''}(async ()${format === 'ts' ? ': Promise<void>' : ''} => {
@@ -89,11 +88,11 @@ const generate: I_Command = {
       description: 'the name of the directory to be used for the generated program',
       type: 'string',
       variant: 'value',
-      isValid: (data: string): void => {
+      isValid: (value: string): void => {
         const allowedCharacters = /^[0-9A-Za-z_.-]+$/;
-        const containsDisallowedCharacter = !allowedCharacters.test(data);
+        const containsDisallowedCharacter = !allowedCharacters.test(value);
         if (containsDisallowedCharacter) {
-          throw new Error(`Directory name "${data}" must only contain letters, numbers, hyphens, underscores, and periods.`);
+          throw new Error(`Directory name "${value}" must only contain letters, numbers, hyphens, underscores, and periods.`);
         }
       },
     },

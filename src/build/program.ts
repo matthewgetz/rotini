@@ -1,5 +1,5 @@
 import Command, { I_Command, } from './command';
-import Configuration, { I_Configuration, } from './configuration';
+import Configurations, { Configuration, I_Configuration, } from './configurations';
 import Flag, { HelpFlag, I_Flag, } from './flag';
 import Utils, { ConfigurationError, } from '../utils';
 
@@ -7,7 +7,7 @@ export interface I_ProgramDefinition {
   name: string
   description: string
   version: string
-  configuration?: I_Configuration
+  configurations?: I_Configuration[]
   commands?: I_Command[]
   flags?: I_Flag[]
   examples?: string[]
@@ -17,10 +17,12 @@ export default class Program implements I_ProgramDefinition {
   name!: string;
   description!: string;
   version!: string;
-  configuration!: Configuration;
+  configurations!: I_Configuration[];
   commands: Command[] = [];
   flags: (Flag | HelpFlag)[] = [];
   examples!: string[];
+
+  #configurations!: Configurations;
 
   constructor (program: I_ProgramDefinition) {
     this
@@ -30,12 +32,12 @@ export default class Program implements I_ProgramDefinition {
       .#setFlags(program.flags)
       .#setCommands(program.commands)
       .#setExamples(program.examples)
-      .#setConfiguration(program.configuration!);
+      .#setConfigurations(program.configurations);
   }
 
   #setName = (name: string): Program | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
-      throw new ConfigurationError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
+      throw new ConfigurationError('Program definition property "name" must be defined, of type "string", and cannot contain spaces.');
     }
 
     this.name = name;
@@ -45,7 +47,7 @@ export default class Program implements I_ProgramDefinition {
 
   #setDescription = (description: string): Program | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
-      throw new ConfigurationError('Program property "description" must be defined and of type "string".');
+      throw new ConfigurationError('Program definition property "description" must be defined and of type "string".');
     }
 
     this.description = description;
@@ -55,7 +57,7 @@ export default class Program implements I_ProgramDefinition {
 
   #setVersion = (version: string): Program | never => {
     if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
-      throw new ConfigurationError('Program property "version" must be defined and of type "string".');
+      throw new ConfigurationError('Program definition property "version" must be defined and of type "string".');
     }
 
     this.version = version;
@@ -65,7 +67,7 @@ export default class Program implements I_ProgramDefinition {
 
   #setCommands = (commands: I_Command[] = []): Program | never => {
     if (Utils.isNotArray(commands)) {
-      throw new ConfigurationError('Program property "commands" must be of type "array".');
+      throw new ConfigurationError('Program definition property "commands" must be of type "array".');
     }
 
     this.commands = commands.map(command => new Command(command));
@@ -89,7 +91,7 @@ export default class Program implements I_ProgramDefinition {
 
   #setFlags = (flags: I_Flag[] = []): Program | never => {
     if (Utils.isNotArray(flags)) {
-      throw new ConfigurationError('Program property "flags" must be of type "array".');
+      throw new ConfigurationError('Program definition property "flags" must be of type "array".');
     }
 
     const SpecialFlags: { [key: string]: typeof HelpFlag } = {
@@ -120,7 +122,7 @@ export default class Program implements I_ProgramDefinition {
 
   #setExamples = (examples: string[] = []): Program | never => {
     if (!Utils.isArray(examples) || !Utils.isArrayOfStrings(examples)) {
-      throw new ConfigurationError(`Program property "examples" must be of type "array" and can only contain indexes of type "string".`);
+      throw new ConfigurationError(`Program definition property "examples" must be of type "array" and can only contain indexes of type "string".`);
     }
 
     this.examples = examples;
@@ -128,13 +130,15 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setConfiguration = (configuration: I_Configuration): Program | never => {
-    if (Utils.isDefined(configuration) && Utils.isNotObject(configuration)) {
-      throw new ConfigurationError('Program property "configuration" must be of type "object".');
+  #setConfigurations = (configurations?: I_Configuration[]): Program | never => {
+    if (Utils.isDefined(configurations) && Utils.isNotArray(configurations)) {
+      throw new ConfigurationError('Program definition property "configurations" must be of type "array".');
     }
 
-    this.configuration = new Configuration(configuration);
-
+    this.#configurations = new Configurations(configurations);
+    this.configurations = this.#configurations.configurations;
     return this;
   };
+
+  getConfiguration = (id: string): Configuration => this.#configurations.getConfiguration(id);
 }

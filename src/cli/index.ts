@@ -6,10 +6,13 @@ import generate from './generate';
 const definition: I_ProgramDefinition = {
   name: 'rotini',
   description: 'a framework for building node.js cli programs',
-  configuration: {
-    directory: '.rotini',
-    file: 'config.json',
-  },
+  configurations: [
+    {
+      id: 'rotini',
+      directory: '.rotini',
+      file: 'config.json',
+    },
+  ],
   version,
   commands: [ generate, ],
 };
@@ -17,7 +20,6 @@ const definition: I_ProgramDefinition = {
 const configuration: I_ProgramConfiguration = {
   strict_commands: true,
   strict_flags: true,
-  show_deprecation_warnings: true,
   check_for_new_npm_version: true,
 };
 
