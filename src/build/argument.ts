@@ -48,7 +48,7 @@ export default class Argument implements I_Argument {
   };
 
   #setVariant = (variant: 'value' | 'variadic' = 'value'): Argument | never => {
-    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze(['value', 'variadic',]))) {
+    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'value', 'variadic', ]))) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
 
@@ -58,7 +58,7 @@ export default class Argument implements I_Argument {
   };
 
   #setType = (type: 'string' | 'number' | 'boolean' = 'string'): Argument | never => {
-    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze(['string', 'number', 'boolean',]))) {
+    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', ]))) {
       throw new ConfigurationError(`Argument property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for argument "${this.name}".`);
     }
 

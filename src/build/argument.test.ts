@@ -49,7 +49,7 @@ describe('Argument', () => {
     it('throws error when argument property "name" is array', () => {
       expect(() => {
         // @ts-expect-error argument property "name" is array
-        new Argument({ name: ['something',], });
+        new Argument({ name: [ 'something', ], });
       }).toThrowError(expectedErrorMessage);
     });
   });
@@ -88,7 +88,7 @@ describe('Argument', () => {
     it('throws error when argument property "description" is array', () => {
       expect(() => {
         // @ts-expect-error argument property "description" is array
-        new Argument({ name: 'id', description: ['something',], });
+        new Argument({ name: 'id', description: [ 'something', ], });
       }).toThrowError(expectedErrorMessage);
     });
   });
@@ -129,7 +129,7 @@ describe('Argument', () => {
     it('throws error when argument property "variant" is array', () => {
       expect(() => {
         // @ts-expect-error argument property variant is array
-        new Argument({ name: 'id', description: 'id description', variant: ['something',], });
+        new Argument({ name: 'id', description: 'id description', variant: [ 'something', ], });
       }).toThrowError(expectedErrorMessage);
     });
 
@@ -186,7 +186,7 @@ describe('Argument', () => {
     it('throws error when argument property "type" is array', () => {
       expect(() => {
         // @ts-expect-error argument property "type" is array
-        new Argument({ name: 'id', description: 'id description', type: ['something',], });
+        new Argument({ name: 'id', description: 'id description', type: [ 'something', ], });
       }).toThrowError(expectedErrorMessage);
     });
 
@@ -227,7 +227,7 @@ describe('Argument', () => {
 
     it('does not throw error when property values is array of strings', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', values: ['some', 'value',], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [ 'some', 'value', ], });
       }).not.toThrow();
     });
 
@@ -261,20 +261,20 @@ describe('Argument', () => {
 
     it('throws error when argument property values is array of numbers', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [1, 2, 3, 4,], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [ 1, 2, 3, 4, ], });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when argument property values is array of booleans', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [true, false,], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [ true, false, ], });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when argument property values is array of strings and numbers', () => {
       expect(() => {
         // @ts-expect-error argument property values is array of strings and numbers
-        new Argument({ name: 'id', description: 'id description', variant: 'value', values: ['string', 23,], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [ 'string', 23, ], });
       }).toThrowError(expectedErrorMessage);
     });
   });
@@ -319,28 +319,28 @@ describe('Argument', () => {
     it('does not throw error when property "isValid" is array of strings', () => {
       expect(() => {
         // @ts-expect-error argument property "isValid" is array of strings
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: ['some', 'value',], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: [ 'some', 'value', ], });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when argument property "isValid" is array of numbers', () => {
       expect(() => {
         // @ts-expect-error argument property "isValid" is array of numbers
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: [1, 2, 3, 4,], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: [ 1, 2, 3, 4, ], });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when argument property "isValid" is array of booleans', () => {
       expect(() => {
         // @ts-expect-error argument property "isValid" is array of booleans
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: [true, false,], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: [ true, false, ], });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when argument property "isValid" is array of strings, numbers, and booleans', () => {
       expect(() => {
         // @ts-expect-error argument property "isValid" is array of strings and numbers
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: ['string', 23, true,], });
+        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: [ 'string', 23, true, ], });
       }).toThrowError(expectedErrorMessage);
     });
   });
@@ -360,7 +360,6 @@ describe('Argument', () => {
         values: [],
       });
 
-
       expect(arg.isValid('' as never)).toBe(true);
     });
 
@@ -370,7 +369,7 @@ describe('Argument', () => {
         description: 'name description',
         variant: 'variadic',
         type: 'number',
-        values: [1, 2, 3, 7,],
+        values: [ 1, 2, 3, 7, ],
         isValid: (data: number): boolean => {
           if (data > 3) {
             return false;
@@ -384,7 +383,7 @@ describe('Argument', () => {
         description: 'name description',
         variant: 'variadic',
         type: 'number',
-        values: [1, 2, 3, 7,],
+        values: [ 1, 2, 3, 7, ],
       });
 
       expect(arg.isValid(3 as never)).toBe(true);

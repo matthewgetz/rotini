@@ -59,7 +59,7 @@ export default class Flag implements I_Flag {
   };
 
   #setVariant = (variant: 'value' | 'boolean' = 'boolean'): Flag | never => {
-    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze(['value', 'boolean',]))) {
+    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'value', 'boolean', ]))) {
       throw new ConfigurationError(`Flag property "variant" must be defined, of type "string", and set as "boolean" or "value" for flag "${this.name}".`);
     }
 
@@ -69,11 +69,11 @@ export default class Flag implements I_Flag {
   };
 
   #setType = (type: 'string' | 'number' | 'boolean' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
-    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze(['string', 'number', 'boolean',]))) {
+    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', ]))) {
       throw new ConfigurationError(`Flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for flag "${this.name}".`);
     }
 
-    if (this.variant === 'boolean' && Utils.isNotAllowedStringValue(type, Object.freeze(['boolean',]))) {
+    if (this.variant === 'boolean' && Utils.isNotAllowedStringValue(type, Object.freeze([ 'boolean', ]))) {
       throw new ConfigurationError(`Flag property "type" must be set as "boolean" when flag property "variant" is set as "boolean" for flag "${this.name}".`);
     }
 
@@ -157,7 +157,6 @@ export default class Flag implements I_Flag {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Flag property "isValid" must be of type "function" for flag "${this.name}".`);
     }
-
 
     this.isValid = (data: string | number | boolean): boolean | never => {
       try {
