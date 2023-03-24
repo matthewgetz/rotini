@@ -4,15 +4,21 @@ import { I_ProgramDefinition, I_ProgramConfiguration, } from './build';
 describe('rotini', () => {
   describe('run', () => {
     it('throws error when no program definition is passed', () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
       };
 
-      expect(() => {
-        // @ts-expect-error no program definition
-        rotini({ configuration, parameters: [ 'hello-world', ], });
-      }).toThrowError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
+      // @ts-expect-error no program definition
+      rotini({ configuration, parameters: [ 'hello-world', ], });
+
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(error).toHaveBeenCalledWith('ConfigurationError: Program definition property "name" must be defined, of type "string", and cannot contain spaces.');
+      expect(exit).toHaveBeenCalledTimes(1);
+      expect(exit).toHaveBeenCalledWith(1);
     });
 
     it('calls operation when program configuration is passed', async () => {

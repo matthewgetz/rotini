@@ -11,6 +11,7 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
   } catch (e) {
     const error = e as ConfigurationError;
     console.error(`${error.name}: ${error.message}`);
+    process.exit(1);
   }
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
   const CONFIGURATION = new Configuration({ id: 'rotini', directory: `${homedir()}/.rotini`, file: '.rotini.config.json', });
