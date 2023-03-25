@@ -198,7 +198,7 @@ const Features = () => {
           <Feature
             Icon={CliIcon}
             title='Shell Autocomplete'
-            info='Shell autocomplete (bash/zsh) is generated for every program created with rotini.'
+            info='Shell autocomplete (bash/zsh) is generated for every program created with rotini. (coming soon)'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
