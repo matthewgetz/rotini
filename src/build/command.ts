@@ -155,7 +155,7 @@ export default class Command implements I_Command {
     if (!helpFlag) {
       this.flags.push(new HelpFlag({
         name: 'help',
-        description: 'output help for the command',
+        description: 'output the command help',
         short_key: 'h',
         long_key: 'help',
         type: 'boolean',

@@ -1,6 +1,6 @@
 import { I_Argument, } from './argument';
 import Command, { I_Command, } from './command';
-import { I_Flag, } from './flag';
+import Flag, { I_Flag, } from './flag';
 import Program from './program';
 import Utils from '../utils';
 
@@ -185,12 +185,40 @@ export const createCliHelp = (help: I_CliHelp): string => {
   const { program, } = help;
   const usage = `${program.name} [command] [arguments] [flags]`;
 
+  const updateFlag = new Flag({
+    name: 'update',
+    description: 'install the latest version of the cli',
+    short_key: 'u',
+    long_key: 'update',
+    type: 'boolean',
+    variant: 'boolean',
+  });
+
+  const versionFlag = new Flag({
+    name: 'version',
+    description: 'output the cli version',
+    short_key: 'v',
+    long_key: 'version',
+    type: 'boolean',
+    variant: 'boolean',
+  });
+
+  const helpFlag = new Flag({
+    name: 'help',
+    description: 'output the cli help',
+    short_key: 'h',
+    long_key: 'help',
+    type: 'boolean',
+    variant: 'boolean',
+  });
+
   return [
     `${program.name} ${program.version}\n\n`,
     makeUsageSection(usage),
     makeDescriptionSection(program.description),
     makeExamplesSection(program.examples),
     makeCommandsSection(program.commands),
+    makeFlagsSection([ updateFlag, versionFlag, helpFlag, ], false),
     program && program.flags.length > 0 ? makeFlagsSection(program.flags, true) : '',
     makeInfoSection(program.name, false, false, true),
   ].join('');
