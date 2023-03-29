@@ -246,7 +246,7 @@ const arg: I_Argument = {
   variant: 'value',
   type: 'string',
   values: [ 'project', 'group', 'user', ],
-  isValid = (value) => {
+  isValid: (value) => {
     if (value === 'user') {
       throw new Error('Fetching users is temporarily disabled.')
     }
