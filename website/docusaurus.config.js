@@ -106,7 +106,7 @@ module.exports = {
     algolia: {
       indexName: 'rotini',
       appId: 'TZ4ZY4V8S4',
-      apiKey: '1b1c71a3851d3ae179fa0405815ca460',
+      apiKey: '7635a43eb0a39e5da98ace6145d9bb90',
     },
   },
 };
