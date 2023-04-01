@@ -31,6 +31,14 @@ module.exports = {
     defaultLocale: 'en',
     locales: ['en'],
   },
+  themes: [
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      { 
+        hashed: true,
+      }
+    ]
+  ],
   presets: [
     [
       'classic',
@@ -102,11 +110,6 @@ module.exports = {
     prism: {
       theme: lightCodeTheme,
       darkTheme: darkCodeTheme,
-    },
-    algolia: {
-      indexName: 'rotini',
-      appId: 'TZ4ZY4V8S4',
-      apiKey: '7635a43eb0a39e5da98ace6145d9bb90',
     },
   },
 };
