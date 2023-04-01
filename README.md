@@ -4,4 +4,4 @@
   </a>
 </p>
 
-See the [rotini](https://matthewgetz.github.io/rotini/) documentation.
+See the [rotini](https://rotini.dev) documentation.

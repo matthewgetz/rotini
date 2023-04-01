@@ -3,12 +3,12 @@
   "description": "a framework for building node.js cli programs",
   "version": "1.2.3",
   "license": "MIT",
-  "author": "Matt Getz",
+  "author": "Matt Getz <matthewcgetz@gmail.com>",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "repository": "https://github.com/matthewgetz/rotini.git",
   "bugs": "https://github.com/matthewgetz/rotini/issues",
-  "homepage": "https://matthewgetz.github.io/rotini/",
+  "homepage": "https://rotini.dev",
   "engines": {
     "node": ">=18"
   },
