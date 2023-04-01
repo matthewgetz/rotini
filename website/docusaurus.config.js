@@ -45,7 +45,7 @@ module.exports = {
       {
         docs: {
           sidebarPath: path.resolve(__dirname, './sidebars.json'),
-          editUrl: 'https://github.com/matthewgetz/rotini/website/docs',
+          editUrl: 'https://github.com/matthewgetz/rotini/website',
           includeCurrentVersion: false,
           versions: {
             ...makeVersions()
@@ -53,7 +53,7 @@ module.exports = {
         },
         blog: {
           showReadingTime: true,
-          editUrl: 'https://github.com/matthewgetz/rotini/website/blog',
+          editUrl: 'https://github.com/matthewgetz/rotini/website',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
