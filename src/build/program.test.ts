@@ -158,7 +158,7 @@ describe('Program', () => {
 
     it('does not throw error when program definition property "configuration" is object with "file" and "directory" properties', () => {
       expect(() => {
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: [ { id: 'rotini', directory: '.rotini', file: 'config.json', }, ], });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration_files: [ { id: 'rotini', directory: '.rotini', file: 'config.json', }, ], });
       }).not.toThrow();
     });
   });

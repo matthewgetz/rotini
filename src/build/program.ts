@@ -1,5 +1,6 @@
 import Command, { I_Command, } from './command';
-import Configurations, { Configuration, I_Configuration, } from './configurations';
+import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
+import ConfigurationFiles from './configuration-files';
 import Flag, { HelpFlag, I_Flag, } from './flag';
 import Utils, { ConfigurationError, } from '../utils';
 
@@ -7,7 +8,7 @@ export interface I_ProgramDefinition {
   name: string
   description: string
   version: string
-  configurations?: I_Configuration[]
+  configuration_files?: I_ConfigurationFile[]
   commands?: I_Command[]
   flags?: I_Flag[]
   examples?: string[]
@@ -17,12 +18,11 @@ export default class Program implements I_ProgramDefinition {
   name!: string;
   description!: string;
   version!: string;
-  configurations!: I_Configuration[];
+  configuration_files!: I_ConfigurationFile[];
   commands: Command[] = [];
   flags: (Flag | HelpFlag)[] = [];
   examples!: string[];
-
-  #configurations!: Configurations;
+  getConfigurationFile!: (id: string) => ConfigurationFile;
 
   constructor (program: I_ProgramDefinition) {
     this
@@ -32,7 +32,7 @@ export default class Program implements I_ProgramDefinition {
       .#setFlags(program.flags)
       .#setCommands(program.commands)
       .#setExamples(program.examples)
-      .#setConfigurations(program.configurations);
+      .#setConfigurationFiles(program.configuration_files);
   }
 
   #setName = (name: string): Program | never => {
@@ -130,15 +130,16 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setConfigurations = (configurations?: I_Configuration[]): Program | never => {
-    if (Utils.isDefined(configurations) && Utils.isNotArray(configurations)) {
-      throw new ConfigurationError('Program definition property "configurations" must be of type "array".');
+  #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): Program | never => {
+    if (Utils.isDefined(configuration_files) && Utils.isNotArray(configuration_files)) {
+      throw new ConfigurationError('Program definition property "configuration_files" must be of type "array".');
     }
 
-    this.#configurations = new Configurations(configurations);
-    this.configurations = this.#configurations.configurations;
+    const files = new ConfigurationFiles(configuration_files);
+
+    this.configuration_files = files.get();
+    this.getConfigurationFile = files.getConfigurationFile;
+
     return this;
   };
-
-  getConfiguration = (id: string): Configuration => this.#configurations.getConfiguration(id);
 }

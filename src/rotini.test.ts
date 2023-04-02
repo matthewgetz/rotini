@@ -73,7 +73,7 @@ describe('rotini', () => {
         name: 'rotini',
         description: 'rotini cli example',
         version: '1.0.0',
-        configurations: [
+        configuration_files: [
           {
             id: 'rotini',
             directory: '.rotini',

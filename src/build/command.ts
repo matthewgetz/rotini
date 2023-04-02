@@ -1,5 +1,5 @@
 import Argument, { I_Argument, } from './argument';
-import { Configuration, } from './configurations';
+import ConfigurationFile from './configuration-file';
 import Flag, { ForceFlag, HelpFlag, I_Flag, } from './flag';
 import Utils, { ConfigurationError, } from '../utils';
 
@@ -15,7 +15,7 @@ export interface I_Command {
   operation?: ((props: {
     commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>,
     flags: { [key: string]: string | number | boolean | (string | number | boolean)[] },
-    getConfiguration: (id: string) => Configuration,
+    getConfigurationFile: (id: string) => ConfigurationFile,
    }) => unknown) | void | undefined
 }
 
@@ -31,7 +31,7 @@ export default class Command implements I_Command {
   operation: ((props: {
     commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>,
     flags: { [key: string]: string | number | boolean | (string | number | boolean)[] },
-    getConfiguration: (id: string) => Configuration,
+    getConfigurationFile: (id: string) => ConfigurationFile,
    }) => unknown) | void | undefined;
   isForceCommand!: boolean;
 
@@ -217,7 +217,7 @@ export default class Command implements I_Command {
     return this;
   };
 
-  #setOperation = (operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfiguration: (id: string) => Configuration }) => unknown) | void | undefined): Command | never => {
+  #setOperation = (operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: (id: string) => ConfigurationFile }) => unknown) | void | undefined): Command | never => {
     if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "function" for command "${this.name}".`);
     }

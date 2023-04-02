@@ -1,9 +1,9 @@
-import { Program, ProgramConfiguration, Configuration, createCliHelp, createCommandHelp, } from '../build';
+import { Program, ProgramConfiguration, ConfigurationFile, createCliHelp, createCommandHelp, } from '../build';
 import { parseCommands, } from './command-parser';
 import { matchFlags, parseFlags, } from './flag-parser';
 import Utils, { ParseError, } from '../utils';
 
-export const parse = async (program: Program, program_configuration: ProgramConfiguration, configuration: Configuration, parameters: { id: number, parameter: string, }[]): Promise<Function> => {
+export const parse = async (program: Program, program_configuration: ProgramConfiguration, configuration_file: ConfigurationFile, parameters: { id: number, parameter: string, }[]): Promise<Function> => {
   const COMMANDS = parseCommands(program, parameters);
   const FLAGS = parseFlags(COMMANDS.unparsed_parameters);
 
@@ -18,7 +18,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
   }
 
   if (program_configuration.check_for_new_npm_version && COMMANDS.original_parameters[0] && (COMMANDS.original_parameters[0].parameter === '--update' || COMMANDS.original_parameters[0].parameter === '-u') && Utils.isNotTrueString(process.env.CI!)) {
-    const { data, } = configuration.getConfigurationFile() as { data: { [key: string]: { last_update_time: number } } };
+    const { data, } = configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
 
     let packageHasUpdate = false;
     let latestVersion = '';
@@ -28,7 +28,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
       latestVersion = result.latestVersion;
     } catch (e) {
       const programData = data?.[program.name] || {};
-      configuration.setConfigurationFile({
+      configuration_file.setContent({
         ...data,
         [program.name]: {
           ...programData,
@@ -39,7 +39,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
 
     if (packageHasUpdate) {
       const programData = data?.[program.name] || {};
-      configuration.setConfigurationFile({
+      configuration_file.setContent({
         ...data,
         [program.name]: {
           ...programData,
@@ -58,7 +58,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
   }
 
   if (program_configuration.check_for_new_npm_version && Utils.isNotTrueString(process.env.CI!)) {
-    const { data, } = configuration.getConfigurationFile() as { data: { [key: string]: { last_update_time: number } } };
+    const { data, } = configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
     const last_update_check_ms = new Date(data?.[program.name]?.last_update_time).getTime();
     const last_update_not_set = Utils.isNotDefined(last_update_check_ms) || isNaN(last_update_check_ms);
     const now_ms = new Date().getTime();
@@ -72,7 +72,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
         latestVersion = result.latestVersion;
       } catch (e) {
         const programData = data?.[program.name] || {};
-        configuration.setConfigurationFile({
+        configuration_file.setContent({
           ...data,
           [program.name]: {
             ...programData,
@@ -83,7 +83,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
       if (packageHasUpdate) {
         const shouldUpdate = await Utils.promptForYesOrNo(`${program.name} has an updated version available; would you like to update to the latest version?`);
         const programData = data?.[program.name] || {};
-        configuration.setConfigurationFile({
+        configuration_file.setContent({
           ...data,
           [program.name]: {
             ...programData,
@@ -158,9 +158,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     }
   }
 
-  const getConfiguration = program.getConfiguration;
-
-  const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfiguration, });
+  const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfigurationFile: program.getConfigurationFile, });
 
   return operation;
 };

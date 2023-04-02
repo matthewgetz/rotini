@@ -34,7 +34,7 @@ module.exports = {
   themes: [
     [
       require.resolve('@easyops-cn/docusaurus-search-local'),
-      { 
+      {
         hashed: true,
       }
     ]
@@ -45,7 +45,7 @@ module.exports = {
       {
         docs: {
           sidebarPath: path.resolve(__dirname, './sidebars.json'),
-          editUrl: 'https://github.com/matthewgetz/rotini/website',
+          editUrl: 'https://github.com/matthewgetz/rotini/blob/main/website',
           includeCurrentVersion: false,
           versions: {
             ...makeVersions()
@@ -53,7 +53,7 @@ module.exports = {
         },
         blog: {
           showReadingTime: true,
-          editUrl: 'https://github.com/matthewgetz/rotini/website',
+          editUrl: 'https://github.com/matthewgetz/rotini/blob/main/website',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
