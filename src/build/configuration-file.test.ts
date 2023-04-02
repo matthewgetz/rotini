@@ -12,14 +12,14 @@ describe('Configuration', () => {
     it('throws when configuration property "directory" is unset', () => {
       expect(() => {
         // @ts-expect-error configuration properties "directory" and "file" are undefined
-        new Configuration({ id: 'test', }).getContent();
+        new ConfigurationFile({ id: 'test', }).getContent();
       }).toThrowError('Configuration property "directory" must be defined and of type "string".');
     });
 
     it('throws when configuration property "file" is unset', () => {
       expect(() => {
         // @ts-expect-error configuration properties "directory" and "file" are undefined
-        new Configuration({ id: 'test', directory: '.rotini', }).getContent();
+        new ConfigurationFile({ id: 'test', directory: '.rotini', }).getContent();
       }).toThrowError('Configuration property "file" must be defined and of type "string".');
     });
   });
