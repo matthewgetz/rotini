@@ -217,7 +217,15 @@ export default class Command implements I_Command {
     return this;
   };
 
-  #setOperation = (operation?: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfigurationFile: (id: string) => ConfigurationFile }) => unknown) | void | undefined): Command | never => {
+  #setOperation = (operation?: ((props: {
+    commands: Array<{
+      name: string,
+      arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] },
+      flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+    }>,
+    flags: { [key: string]: string | number | boolean | (string | number | boolean)[] },
+    getConfigurationFile: (id: string) => ConfigurationFile
+  }) => unknown) | void | undefined): Command | never => {
     if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "function" for command "${this.name}".`);
     }

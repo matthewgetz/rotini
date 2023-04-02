@@ -1,4 +1,5 @@
 import Command, { I_Command, } from './command';
+import Commands from './commands';
 import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
 import ConfigurationFiles from './configuration-files';
 import Flag, { HelpFlag, I_Flag, } from './flag';
@@ -19,8 +20,8 @@ export default class Program implements I_ProgramDefinition {
   description!: string;
   version!: string;
   configuration_files!: I_ConfigurationFile[];
-  commands: Command[] = [];
-  flags: (Flag | HelpFlag)[] = [];
+  commands!: Command[];
+  flags!: (Flag | HelpFlag)[];
   examples!: string[];
   getConfigurationFile!: (id: string) => ConfigurationFile;
 
@@ -66,25 +67,7 @@ export default class Program implements I_ProgramDefinition {
   };
 
   #setCommands = (commands: I_Command[] = []): Program | never => {
-    if (Utils.isNotArray(commands)) {
-      throw new ConfigurationError('Program definition property "commands" must be of type "array".');
-    }
-
-    this.commands = commands.map(command => new Command(command));
-
-    const ensureNoDuplicateCommandPropertyValues = (property: string): void | never => {
-      const commandProperties = this.commands.map(command => command[property as keyof Command]).filter(value => Utils.isDefined(value));
-      const properties = (property === 'aliases') ? commandProperties.flat() : commandProperties;
-
-      const { duplicates, hasDuplicates, } = Utils.getDuplicateStrings(properties as string[]);
-
-      if (hasDuplicates) {
-        throw new ConfigurationError(`Duplicate command "${property}" found: ${JSON.stringify(duplicates)}.`);
-      }
-    };
-
-    ensureNoDuplicateCommandPropertyValues('name');
-    ensureNoDuplicateCommandPropertyValues('aliases');
+    this.commands = new Commands(commands).get();
 
     return this;
   };
