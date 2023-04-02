@@ -222,7 +222,7 @@ export const createCliHelp = (help: I_CliHelp): string => {
     makeExamplesSection(program.examples),
     makeCommandsSection(program.commands),
     makeFlagsSection([ updateFlag, versionFlag, helpFlag, ], false),
-    program && program.flags.length > 0 ? makeFlagsSection(program.flags, true) : '',
+    program && program.flags.length > 0 ? makeFlagsSection(program.flags.filter(flag => flag.name !== 'help'), true) : '',
     makeInfoSection(program.name, false, false, true),
   ].join('');
 };
