@@ -1,6 +1,6 @@
 import Utils, { ConfigurationError, ParseError, } from '../utils';
 
-export interface I_Flag {
+interface I_GenericFlag {
   name: string
   description: string
   variant?: 'value' | 'boolean'
@@ -13,11 +13,22 @@ export interface I_Flag {
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
 }
 
+export interface I_GlobalFlag extends I_GenericFlag {}
+
+export interface I_LocalFlag extends I_GenericFlag {}
+
+export interface I_PositionalFlag extends I_GenericFlag {}
+
+export interface I_Flag extends I_GenericFlag {
+  style: 'positional' | 'global' | 'local'
+}
+
 export default class Flag implements I_Flag {
   name!: string;
   description!: string;
   variant!: 'value' | 'boolean';
   type!: 'string' | 'number' | 'boolean';
+  style!: 'positional' | 'global' | 'local';
   short_key?: string;
   long_key?: string;
   values: string[] = [];
@@ -31,6 +42,7 @@ export default class Flag implements I_Flag {
       .#setDescription(flag.description)
       .#setVariant(flag.variant)
       .#setType(flag.type)
+      .#setStyle(flag.style)
       .#setFlags(flag.short_key, flag.long_key)
       .#setValues(flag.values)
       .#setDefault(flag.default)
@@ -78,6 +90,16 @@ export default class Flag implements I_Flag {
     }
 
     this.type = type;
+
+    return this;
+  };
+
+  #setStyle = (style: 'positional' | 'global' | 'local'): Flag | never => {
+    if (Utils.isNotDefined(style) || Utils.isNotString(style) || Utils.isNotAllowedStringValue(style, Object.freeze([ 'positional', 'global', 'local', ]))) {
+      throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for flag "${this.name}"`);
+    }
+
+    this.style = style;
 
     return this;
   };
@@ -176,12 +198,31 @@ export default class Flag implements I_Flag {
   };
 }
 
+export class GlobalFlag extends Flag {
+  constructor (flag: I_GenericFlag) {
+    super({ ...flag, style: 'global', });
+  }
+}
+
+export class PositionalFlag extends Flag {
+  constructor (flag: I_GenericFlag) {
+    super({ ...flag, style: 'positional', });
+  }
+}
+
+export class LocalFlag extends Flag {
+  constructor (flag: I_GenericFlag) {
+    super({ ...flag, style: 'local', });
+  }
+}
+
 export class HelpFlag extends Flag {
-  constructor (flag: I_Flag) {
+  constructor (flag: I_GenericFlag) {
     super({
       ...flag,
       type: 'boolean',
       variant: 'boolean',
+      style: 'local',
       values: [],
       isValid: (): boolean => true,
     });
@@ -189,11 +230,12 @@ export class HelpFlag extends Flag {
 }
 
 export class ForceFlag extends Flag {
-  constructor (flag: I_Flag) {
+  constructor (flag: I_GenericFlag) {
     super({
       ...flag,
       type: 'boolean',
       variant: 'boolean',
+      style: 'local',
       values: [],
       isValid: (): boolean => true,
     });

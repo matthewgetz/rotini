@@ -2,8 +2,9 @@ import Command, { I_Command, } from './command';
 import Commands from './commands';
 import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
 import ConfigurationFiles from './configuration-files';
-import Flag, { HelpFlag, I_Flag, } from './flag';
-import Utils, { ConfigurationError, } from '../utils';
+import Flag, { HelpFlag, I_GlobalFlag, } from './flag';
+import Flags from './flags';
+import Utils, { ConfigurationError, } from '../utils/index';
 
 export interface I_ProgramDefinition {
   name: string
@@ -11,11 +12,11 @@ export interface I_ProgramDefinition {
   version: string
   configuration_files?: I_ConfigurationFile[]
   commands?: I_Command[]
-  flags?: I_Flag[]
+  global_flags?: I_GlobalFlag[]
   examples?: string[]
 }
 
-export default class Program implements I_ProgramDefinition {
+export default class ProgramDefinition implements I_ProgramDefinition {
   name!: string;
   description!: string;
   version!: string;
@@ -30,13 +31,13 @@ export default class Program implements I_ProgramDefinition {
       .#setName(program?.name)
       .#setDescription(program.description)
       .#setVersion(program.version)
-      .#setFlags(program.flags)
+      .#setFlags(program.global_flags)
       .#setCommands(program.commands)
       .#setExamples(program.examples)
       .#setConfigurationFiles(program.configuration_files);
   }
 
-  #setName = (name: string): Program | never => {
+  #setName = (name: string): ProgramDefinition | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Program definition property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -46,7 +47,7 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setDescription = (description: string): Program | never => {
+  #setDescription = (description: string): ProgramDefinition | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
       throw new ConfigurationError('Program definition property "description" must be defined and of type "string".');
     }
@@ -56,7 +57,7 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setVersion = (version: string): Program | never => {
+  #setVersion = (version: string): ProgramDefinition | never => {
     if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
       throw new ConfigurationError('Program definition property "version" must be defined and of type "string".');
     }
@@ -66,44 +67,26 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setCommands = (commands: I_Command[] = []): Program | never => {
+  #setCommands = (commands: I_Command[] = []): ProgramDefinition | never => {
     this.commands = new Commands(commands).get();
 
     return this;
   };
 
-  #setFlags = (flags: I_Flag[] = []): Program | never => {
-    if (Utils.isNotArray(flags)) {
-      throw new ConfigurationError('Program definition property "flags" must be of type "array".');
-    }
-
-    const SpecialFlags: { [key: string]: typeof HelpFlag } = {
-      help: HelpFlag,
-    };
-
-    this.flags = flags.map(flag => {
-      const CommandFlag = SpecialFlags[flag.name] || Flag;
-      return new CommandFlag(flag);
-    });
-
-    const ensureNoDuplicateFlagPropertyValues = (property: string): void | never => {
-      const properties = this.flags.map((flag) => flag[property as keyof Flag]).filter(value => Utils.isDefined(value));
-
-      const { duplicates, hasDuplicates, } = Utils.getDuplicateStrings(properties as string[]);
-
-      if (hasDuplicates) {
-        throw new ConfigurationError(`Duplicate global flag "${property}" found: ${JSON.stringify(duplicates)}.`);
-      }
-    };
-
-    ensureNoDuplicateFlagPropertyValues('name');
-    ensureNoDuplicateFlagPropertyValues('short_key');
-    ensureNoDuplicateFlagPropertyValues('long_key');
+  #setFlags = (global_flags: I_GlobalFlag[] = []): ProgramDefinition | never => {
+    this.flags = new Flags({
+      entity: {
+        type: 'Program',
+        key: 'global_flags',
+        name: this.name,
+      },
+      flags: global_flags,
+    }).get();
 
     return this;
   };
 
-  #setExamples = (examples: string[] = []): Program | never => {
+  #setExamples = (examples: string[] = []): ProgramDefinition | never => {
     if (!Utils.isArray(examples) || !Utils.isArrayOfStrings(examples)) {
       throw new ConfigurationError(`Program definition property "examples" must be of type "array" and can only contain indexes of type "string".`);
     }
@@ -113,7 +96,7 @@ export default class Program implements I_ProgramDefinition {
     return this;
   };
 
-  #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): Program | never => {
+  #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): ProgramDefinition | never => {
     if (Utils.isDefined(configuration_files) && Utils.isNotArray(configuration_files)) {
       throw new ConfigurationError('Program definition property "configuration_files" must be of type "array".');
     }

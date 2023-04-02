@@ -1,6 +1,8 @@
 import Argument, { I_Argument, } from './argument';
+import Arguments from './arguments';
 import ConfigurationFile from './configuration-file';
-import Flag, { ForceFlag, HelpFlag, I_Flag, } from './flag';
+import Flag, { ForceFlag, HelpFlag, I_LocalFlag, } from './flag';
+import Flags from './flags';
 import Utils, { ConfigurationError, } from '../utils';
 
 export interface I_Command {
@@ -9,7 +11,7 @@ export interface I_Command {
   aliases?: string[]
   deprecated?: boolean
   arguments?: I_Argument[]
-  flags?: I_Flag[]
+  flags?: I_LocalFlag[]
   commands?: I_Command[]
   examples?: string[]
   operation?: ((props: {
@@ -29,7 +31,10 @@ export default class Command implements I_Command {
   commands!: Command[];
   examples!: string[];
   operation: ((props: {
-    commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>,
+    commands: Array<{
+      name: string,
+      arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] },
+      flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>,
     flags: { [key: string]: string | number | boolean | (string | number | boolean)[] },
     getConfigurationFile: (id: string) => ConfigurationFile,
    }) => unknown) | void | undefined;
@@ -90,94 +95,26 @@ export default class Command implements I_Command {
   };
 
   #setArguments = (args: I_Argument[] = []): Command | never => {
-    if (Utils.isNotArray(args)) {
-      throw new ConfigurationError(`Command property "arguments" must of type "array" for command "${this.name}".`);
-    }
-
-    this.arguments = args.map(arg => new Argument(arg));
-
-    const argumentNames = this.arguments?.map(arg => arg.name);
-
-    const { duplicates, hasDuplicates, } = Utils.getDuplicateStrings(argumentNames);
-
-    if (hasDuplicates) {
-      throw new ConfigurationError(`Duplicate argument names found: ${JSON.stringify(duplicates)} for command "${this.name}".`);
-    }
-
-    const variadicArguments = this.arguments.filter(arg => arg.variant === 'variadic');
-
-    if (variadicArguments.length > 1) {
-      throw new ConfigurationError(`Multiple variadic command arguments found for command "${this.name}"; only one "variadic" type argument is allowed per command.`);
-    }
-
-    let variadicArgSeen = false;
-    this.arguments.forEach(arg => {
-      if (variadicArgSeen === true && arg.variant === 'value') {
-        throw new ConfigurationError(`Argument of type "value" found after argument of type "variadic" for command "${this.name}". Commands can only have one "variadic" type argument, and the "variadic" type argument must come after all "value" type arguments.`);
-      }
-      if (arg.variant === 'variadic') {
-        variadicArgSeen = true;
-      }
-    });
+    this.arguments = new Arguments({
+      entity: {
+        type: 'Command',
+        name: this.name,
+      },
+      arguments: args,
+    }).get();
 
     return this;
   };
 
-  #setFlags = (flags: I_Flag[] = []): Command | never => {
-    if (Utils.isNotArray(flags)) {
-      throw new ConfigurationError(`Command property "flags" must of type "array" for command "${this.name}".`);
-    }
-
-    const SpecialFlags: { [key: string]: typeof HelpFlag } = {
-      force: ForceFlag,
-      help: HelpFlag,
-    };
-
-    this.flags = flags.map(flag => {
-      const CommandFlag = SpecialFlags[flag.name] || Flag;
-      return new CommandFlag(flag);
-    });
-
-    const flagNames: string[] = [];
-    const flagShortNames: string[] = [];
-    const flagLongNames: string[] = [];
-
-    this.flags.forEach(flag => {
-      flagNames.push(flag.name);
-      const short_key = flag.short_key;
-      const long_key = flag.long_key;
-      if (short_key) flagShortNames.push(short_key);
-      if (long_key) flagLongNames.push(long_key);
-    });
-
-    const helpFlag = this.flags.find(flag => flag.name === 'help');
-
-    if (!helpFlag) {
-      this.flags.push(new HelpFlag({
-        name: 'help',
-        description: 'output the command help',
-        short_key: 'h',
-        long_key: 'help',
-        type: 'boolean',
-        variant: 'boolean',
-      }));
-    }
-
-    const { duplicates: nameDuplicates, hasDuplicates: hasNameDuplicates, } = Utils.getDuplicateStrings(flagNames);
-    const { duplicates: shortNameDuplicates, hasDuplicates: hasShortNameDuplicates, } = Utils.getDuplicateStrings(flagShortNames);
-    const { duplicates: longNameDuplicates, hasDuplicates: hasLongNameDuplicates, } = Utils.getDuplicateStrings(flagLongNames);
-
-    if (hasNameDuplicates) {
-      throw new ConfigurationError(`Duplicate flag names found: ${JSON.stringify(nameDuplicates)} for command "${this.name}".`);
-    }
-
-    if (hasShortNameDuplicates) {
-      throw new ConfigurationError(`Duplicate flag short_keys found: ${JSON.stringify(shortNameDuplicates)} for command "${this.name}".`);
-    }
-
-    if (hasLongNameDuplicates) {
-      throw new ConfigurationError(`Duplicate flag long_keys found: ${JSON.stringify(longNameDuplicates)} for command "${this.name}".`);
-    }
+  #setFlags = (flags: I_LocalFlag[] = []): Command | never => {
+    this.flags = new Flags({
+      entity: {
+        type: 'Command',
+        key: 'flags',
+        name: this.name,
+      },
+      flags,
+    }).get();
 
     return this;
   };

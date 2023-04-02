@@ -1,7 +1,7 @@
 import { I_Argument, } from './argument';
 import Command, { I_Command, } from './command';
 import Flag, { I_Flag, } from './flag';
-import Program from './program';
+import Program from './program-definition';
 import Utils from '../utils';
 
 const makeUsageSection = (usageString: string, command?: Command): string => {
@@ -192,6 +192,7 @@ export const createCliHelp = (help: I_CliHelp): string => {
     long_key: 'update',
     type: 'boolean',
     variant: 'boolean',
+    style: 'positional',
   });
 
   const versionFlag = new Flag({
@@ -201,6 +202,7 @@ export const createCliHelp = (help: I_CliHelp): string => {
     long_key: 'version',
     type: 'boolean',
     variant: 'boolean',
+    style: 'positional',
   });
 
   const helpFlag = new Flag({
@@ -210,6 +212,7 @@ export const createCliHelp = (help: I_CliHelp): string => {
     long_key: 'help',
     type: 'boolean',
     variant: 'boolean',
+    style: 'positional',
   });
 
   return [

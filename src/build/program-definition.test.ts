@@ -1,4 +1,4 @@
-import Program from './program';
+import Program from './program-definition';
 
 describe('Program', () => {
   describe('name', () => {
@@ -292,7 +292,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -316,7 +316,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -352,7 +352,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -376,7 +376,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -412,7 +412,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -436,7 +436,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',

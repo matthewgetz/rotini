@@ -4,5 +4,5 @@ export { default as ConfigurationFile, I_ConfigurationFile, } from './configurat
 export { default as ConfigurationFiles, } from './configuration-files';
 export { default as Flag, ForceFlag, HelpFlag, I_Flag, } from './flag';
 export { default as ProgramConfiguration, I_ProgramConfiguration, } from './program-configuration';
-export { default as Program, I_ProgramDefinition, } from './program';
+export { default as Program, I_ProgramDefinition, } from './program-definition';
 export { createCliHelp, createCommandHelp, I_CliHelp, I_CommandHelp, } from './help';
