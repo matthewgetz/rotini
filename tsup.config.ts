@@ -5,7 +5,7 @@ export default defineConfig({
   clean: true,
   dts: true,
   entry: [ 'src/index.ts', ],
-  format: [ 'cjs', 'esm', 'iife', ],
+  format: [ 'cjs', 'esm', ],
   minify: true,
   minifyIdentifiers: true,
   minifySyntax: true,
