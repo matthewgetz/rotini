@@ -277,12 +277,12 @@ describe('Program', () => {
   });
 
   describe('flags', () => {
-    const expectedErrorMessage = 'Program definition property "flags" must be of type "array"';
+    const expectedErrorMessage = 'Program property "global_flags" must of type "array" for program "rotini".';
 
     it('throws error when program definition property flags is not array', () => {
       expect(() => {
         // @ts-expect-error program definition property flags is object
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', flags: {}, });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', global_flags: {}, });
       }).toThrowError(expectedErrorMessage);
     });
 
@@ -307,7 +307,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate global flag "name" found: ["flag1"]');
+      }).toThrowError('Duplicate names found: ["flag1"] for program "rotini" global_flags flag.');
     });
 
     it('throws error when program definition property flags has multiple duplicate flag names', () => {
@@ -343,7 +343,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate global flag "name" found: ["flag1","flag2"]');
+      }).toThrowError('Duplicate names found: ["flag1","flag2"] for program "rotini" global_flags flag.');
     });
 
     it('throws error when program definition property flags has a duplicate flag short_key', () => {
@@ -367,7 +367,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate global flag "short_key" found: ["f1"]');
+      }).toThrowError('Duplicate short_keys found: ["f1"] for program "rotini" global_flags flag.');
     });
 
     it('throws error when program definition property flags has multiple duplicate flag short_key', () => {
@@ -403,7 +403,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate global flag "short_key" found: ["f1","f2"]');
+      }).toThrowError('Duplicate short_keys found: ["f1","f2"] for program "rotini" global_flags flag.');
     });
 
     it('throws error when program definition property flags has a duplicate flag long_key', () => {
@@ -427,7 +427,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate global flag "long_key" found: ["flag1"]');
+      }).toThrowError('Duplicate long_keys found: ["flag1"] for program "rotini" global_flags flag.');
     });
 
     it('throws error when program definition property flags has multiple duplicate flag long_key', () => {
@@ -463,7 +463,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate global flag "long_key" found: ["flag1","flag2"]');
+      }).toThrowError('Duplicate long_keys found: ["flag1","flag2"] for program "rotini" global_flags flag.');
     });
   });
 
