@@ -8,33 +8,6 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 ```
 
-## Quick Start
-
-Generate a "hello-world" rotini cli to get started! Once you understand the "hello-world" example and the syntax of rotini, you should be able to get up and running quickly. Configuration errors will be reported when your program is built, so you'll know immediately when you change something in your program definition that rotini doesn't expect. Happy hacking!
-
-```mdx-code-block
-<Tabs>
-<TabItem value="JavaScript">
-```
-
-```bash
-npx rotini generate my-cli --format javascript --type commonjs
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="TypeScript">
-```
-
-```bash
-npx rotini generate my-cli --format typescript --type module
-```
-
-```mdx-code-block
-</TabItem>
-</Tabs>
-```
-
 ## Concepts
 
 rotini is an opinionated CLI framework that aims to remove the code overhead required to create a Node.JS CLI program. Instead of building your own program, commands, arguments, and flags, rotini has a declarative definition object structure that defines your program—the only code that you write is for your command operations. When your program is executed, rotini matches the argv parameters passed to your program against your program definition and maps commands, arguments, and flags accordingly. The resulting parsed commands, arguments, and flags are handed to the last matched command operation, allowing you to expect argument and flag values and to perform your program actions.
@@ -388,10 +361,13 @@ const definition = {
   name: 'rotini',
   description: 'an example rotini program',
   version: '1.0.0',
-  configuration: {
-    directory: '.rotini',
-    file: 'config.json',
-  },
+  configuration_files: [
+    {
+      id: 'rotini',
+      directory: '.rotini',
+      file: 'config.json',
+    }
+  ],
   commands: [
     {
       name: 'hello-world',
@@ -401,7 +377,7 @@ const definition = {
       }
     }
   ],
-  flags: [
+  global_flags: [
     {
       name: 'output',
       description: 'specify the output format of command operation results',
@@ -431,10 +407,13 @@ const definition: I_ProgramDefinition = {
   name: 'rotini',
   description: 'an example rotini program',
   version: '1.0.0',
-  configuration: {
-    directory: '.rotini',
-    file: 'config.json',
-  },
+  configuration_files: [
+    {
+      id: 'rotini',
+      directory: '.rotini',
+      file: 'config.json',
+    }
+  ],
   commands: [
     {
       name: 'hello-world',
@@ -444,7 +423,7 @@ const definition: I_ProgramDefinition = {
       }
     }
   ],
-  flags: [
+  global_flags: [
     {
       name: 'output',
       description: 'specify the output format of command operation results',

@@ -1,4 +1,4 @@
-import { Command, Configuration, Program, createCommandHelp, } from '../build';
+import { Command, Program, ParseObject, createCommandHelp, } from '../build';
 import { parseArguments, } from './argument-parser';
 
 export type T_ParseResult = {
@@ -8,7 +8,7 @@ export type T_ParseResult = {
   isAliasMatch: boolean
   flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
   arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
-  operation: ((props: { commands: Array<{ name: string, arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] } }>, flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }, getConfiguration: (id: string) => Configuration, }) => unknown) | void | undefined
+  operation: ((props: ParseObject) => Promise<unknown> | unknown) | undefined
   help: string
 }
 

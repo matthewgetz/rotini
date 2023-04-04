@@ -8,33 +8,6 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 ```
 
-## Quick Start
-
-Generate a "hello-world" rotini cli to get started! Once you understand the "hello-world" example and the syntax of rotini, you should be able to get up and running quickly. Configuration errors will be reported when your program is built, so you'll know immediately when you change something in your program definition that rotini doesn't expect. Happy hacking!
-
-```mdx-code-block
-<Tabs>
-<TabItem value="JavaScript">
-```
-
-```bash
-npx rotini generate my-cli --format javascript --type commonjs
-```
-
-```mdx-code-block
-</TabItem>
-<TabItem value="TypeScript">
-```
-
-```bash
-npx rotini generate my-cli --format typescript --type module
-```
-
-```mdx-code-block
-</TabItem>
-</Tabs>
-```
-
 ## Concepts
 
 rotini is an opinionated CLI framework that aims to remove the code overhead required to create a Node.JS CLI program. Instead of building your own program, commands, arguments, and flags, rotini has a declarative definition object structure that defines your program—the only code that you write is for your command operations. When your program is executed, rotini matches the argv parameters passed to your program against your program definition and maps commands, arguments, and flags accordingly. The resulting parsed commands, arguments, and flags are handed to the last matched command operation, allowing you to expect argument and flag values and to perform your program actions.
@@ -176,7 +149,7 @@ Defines a rotini program. See the [I_ProgramDefinition](./api#i_programdefinitio
 | name | string | true |
 | description | string | true |
 | version | string | true |
-| configuration | [I_Configuration](./api#i_configuration) | false |
+| configurations | [I_Configuration[]](./api#i_configuration) | false |
 | commands | [I_Command[]](./api#i_command) | false |
 | flags | [I_Flag[]](./api#i_flag) | false |
 | examples | string[] | false |
@@ -191,14 +164,17 @@ Program definition property "description" must be defined and of type "string".
 ### Version
 Program definition property "version" must be defined and of type "string".
 
-### Configuration
-The optional object used to setup a program configuration file. See the [I_Configuration](./api#i_configuration) interface for more information. When defined it must be of type "object" and contain properties "directory" and "file".
+### Configurations
+Program definition property "configurations" is the optional array of configuration objects used to setup a program configuration files. See the [I_Configuration](./api#i_configuration) interface for more information. When defined it must be an array objects that contain "id", "directory", and "file" properties.
+
+#### configuration.id
+Program definition property "id" must be defined, of type "string", and cannot contain spaces.
 
 #### configuration.directory
-Program definition property "configuration.directory" is optional. When defined it must be of type "string".
+Program definition property "directory" must be defined and of type "string".
 
 #### configuration.file
-Program definition property "configuration.file" is optional. When defined it must be of type "string".
+Program definition property "file" must be defined and of type "string".
 
 ### Commands
 Program definition property "commands" must be of type "array". Additionally, the same command "name" cannot exist at the same level in the definition. For example, if a "get" command has been registered in an array of commands, then a second "get" command cannot exist within that command array. However, a "get" command could be registered in the commands array of the first "get" command as a subcommand. See the [I_Command](./api#i_command) interface for more information.
@@ -385,10 +361,13 @@ const definition = {
   name: 'rotini',
   description: 'an example rotini program',
   version: '1.0.0',
-  configuration: {
-    directory: '.rotini',
-    file: 'config.json',
-  },
+  configuration_files: [
+    {
+      id: 'rotini',
+      directory: '.rotini',
+      file: 'config.json',
+    }
+  ],
   commands: [
     {
       name: 'hello-world',
@@ -428,10 +407,13 @@ const definition: I_ProgramDefinition = {
   name: 'rotini',
   description: 'an example rotini program',
   version: '1.0.0',
-  configuration: {
-    directory: '.rotini',
-    file: 'config.json',
-  },
+  configuration_files: [
+    {
+      id: 'rotini',
+      directory: '.rotini',
+      file: 'config.json',
+    }
+  ],
   commands: [
     {
       name: 'hello-world',
@@ -441,7 +423,7 @@ const definition: I_ProgramDefinition = {
       }
     }
   ],
-  flags: [
+  global_flags: [
     {
       name: 'output',
       description: 'specify the output format of command operation results',
@@ -473,7 +455,6 @@ The optional configuration object used to control the rotini framework behavior.
 | --- | --- | --- |
 | strict_commands | boolean | true |
 | strict_flags | boolean | true |
-| show_deprecation_warnings | boolean | true |
 | check_for_new_npm_version | boolean | false |
 
 #### configuration.strict_commands
@@ -481,9 +462,6 @@ Program configuration property "strict_commands" must be of type "boolean". This
 
 #### configuration.strict_flags
 Program configuration property "strict_flags" must be of type "boolean". This property controls whether or not rotini will ignore parameters that it parses as flags when they cannot be mapped according to the provided program definition. Defaults to `true`.
-
-#### configuration.show_deprecation_warnings
-Program configuration property "show_deprecation_warnings" must be of type "boolean". This property controls whether or not rotini will emit a warning for executed commands marked as "deprecated" in the program definition. Defaults to `true`.
 
 #### configuration.check_for_new_npm_version
 Program configuration property "check_for_new_npm_version" must be of type "boolean". This property controls whether or not rotini will intermittently check a registry for package updates. Defaults to `false`. A configuration with a "directory" and "file" name must be set additionally before rotini will attempt to intermittently update a CLI program.
@@ -497,7 +475,6 @@ Program configuration property "check_for_new_npm_version" must be of type "bool
 const configuration = {
   strict_commands: true,
   strict_flags: true,
-  show_deprecation_warnings: true,
   check_for_new_npm_version: false
 };
 ```
@@ -511,7 +488,6 @@ const configuration = {
 const configuration: I_ProgramConfiguration = {
   strict_commands: true,
   strict_flags: true,
-  show_deprecation_warnings: true,
   check_for_new_npm_version: false
 };
 ```

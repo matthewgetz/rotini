@@ -1,4 +1,4 @@
-import Program from './program';
+import Program from './program-definition';
 
 describe('Program', () => {
   describe('name', () => {
@@ -125,40 +125,40 @@ describe('Program', () => {
     });
   });
 
-  describe('configuration', () => {
-    const expectedErrorMessage = 'Program definition property "configurations" must be of type "array".';
+  describe('configuration_files', () => {
+    const expectedErrorMessage = 'Program definition property "configuration_files" must be of type "array".';
 
-    it('throws error when program definition property "configuration" is string', () => {
+    it('throws error when program definition property "configuration_files" is string', () => {
       expect(() => {
-        // @ts-expect-error program definition property "configuration" is number
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: 'configuration', });
+        // @ts-expect-error program definition property "configuration_files" is string
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration_files: 'configuration file', });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when program definition property "configuration" is number', () => {
+    it('throws error when program definition property "configuration_files" is number', () => {
       expect(() => {
-        // @ts-expect-error program definition property "configuration" is number
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: 23, });
+        // @ts-expect-error program definition property "configuration_files" is number
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration_files: 23, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when program definition property "configuration" is boolean', () => {
+    it('throws error when program definition property "configuration_files" is boolean', () => {
       expect(() => {
-        // @ts-expect-error program definition property "configuration" is boolean
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: true, });
+        // @ts-expect-error program definition property "configuration_files" is boolean
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration_files: true, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when program definition property "configuration" is array', () => {
+    it('throws error when program definition property "configuration_files" is array', () => {
       expect(() => {
-        // @ts-expect-error program definition property "configuration" is object
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: { some: 'property', }, });
+        // @ts-expect-error program definition property "configuration_files" is object
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration_files: { some: 'property', }, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('does not throw error when program definition property "configuration" is object with "file" and "directory" properties', () => {
+    it('does not throw error when program definition property "configuration_files" is object with "file" and "directory" properties', () => {
       expect(() => {
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configurations: [ { id: 'rotini', directory: '.rotini', file: 'config.json', }, ], });
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', configuration_files: [ { id: 'rotini', directory: '.rotini', file: 'config.json', }, ], });
       }).not.toThrow();
     });
   });
@@ -292,7 +292,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -316,7 +316,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -352,7 +352,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -376,7 +376,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -412,7 +412,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',
@@ -436,7 +436,7 @@ describe('Program', () => {
           name: 'rotini',
           description: 'program description',
           version: '1.0.0',
-          flags: [
+          global_flags: [
             {
               name: 'flag1',
               description: 'flag1 description',

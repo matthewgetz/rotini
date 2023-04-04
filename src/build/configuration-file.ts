@@ -1,26 +1,26 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 
-import Utils, { ConfigurationError, } from '../utils/index';
+import Utils, { ConfigurationError, } from '../utils';
 
-export interface I_Configuration {
+export interface I_ConfigurationFile {
   id: string
   directory: string
   file: string
 }
 
-export class Configuration implements I_Configuration {
+export default class ConfigurationFile implements I_ConfigurationFile {
   id!: string;
   directory!: string;
   file!: string;
 
-  constructor (configuration: I_Configuration) {
+  constructor (configuration: I_ConfigurationFile) {
     this
       .#setId(configuration.id)
       .#setDirectory(configuration.directory)
       .#setFile(configuration.file);
   }
 
-  #setId = (id: string): Configuration | never => {
+  #setId = (id: string): ConfigurationFile | never => {
     if (Utils.isNotDefined(id) || Utils.isNotString(id) || Utils.stringContainsSpaces(id)) {
       throw new ConfigurationError('Configuration property "id" must be defined, of type string, and cannot contain spaces.');
     }
@@ -30,7 +30,7 @@ export class Configuration implements I_Configuration {
     return this;
   };
 
-  #setDirectory = (directory: string): Configuration | never => {
+  #setDirectory = (directory: string): ConfigurationFile | never => {
     if (Utils.isNotDefined(directory) || Utils.isNotString(directory)) {
       throw new ConfigurationError('Configuration property "directory" must be defined and of type "string".');
     }
@@ -40,7 +40,7 @@ export class Configuration implements I_Configuration {
     return this;
   };
 
-  #setFile = (file: string): Configuration | never => {
+  #setFile = (file: string): ConfigurationFile | never => {
     if (Utils.isNotDefined(file) || Utils.isNotString(file)) {
       throw new ConfigurationError('Configuration property "file" must be defined and of type "string".');
     }
@@ -50,7 +50,7 @@ export class Configuration implements I_Configuration {
     return this;
   };
 
-  getConfigurationFile = <T = object>(): { data: T | undefined, error: Error | undefined, hasError: boolean } => {
+  getContent = <T = object>(): { data: T | undefined, error: Error | undefined, hasError: boolean } => {
     const directory = this.directory;
     const file = this.file;
 
@@ -70,7 +70,7 @@ export class Configuration implements I_Configuration {
     return { data, error, hasError, };
   };
 
-  setConfigurationFile = (data: object): { error: Error | undefined, hasError: boolean } => {
+  setContent = (data: object): { error: Error | undefined, hasError: boolean } => {
     const directory = this.directory;
     const file = this.file;
     const isJsonData = Utils.isJson(data);
@@ -95,33 +95,5 @@ export class Configuration implements I_Configuration {
     }
 
     return { error, hasError, };
-  };
-}
-
-export default class Configurations {
-  configurations: Configuration[];
-
-  constructor (configurations: I_Configuration[] = []) {
-    this.configurations = configurations.map((configuration: I_Configuration) => new Configuration(configuration));
-    this.#ensureNoDuplicateIds();
-  }
-
-  #ensureNoDuplicateIds = (): void | never => {
-    const ids = this.configurations.map(configuration => configuration.id);
-    const { hasDuplicates, duplicates, } = Utils.getDuplicateStrings(ids);
-
-    if (hasDuplicates) {
-      throw new ConfigurationError(`Duplicate configuration file ids found: ${JSON.stringify(duplicates)}.`);
-    }
-  };
-
-  getConfiguration = (id: string): Configuration | never => {
-    const configuration = this.configurations.find(configuration => configuration.id === id);
-
-    if (!configuration) {
-      throw new ConfigurationError(`Unknown configuration file id "${id}".`);
-    }
-
-    return configuration;
   };
 }

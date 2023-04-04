@@ -97,7 +97,7 @@ interface I_ProgramDefinition {
   name: string;
   description: string;
   version: string;
-  configuration?: I_Configuration;
+  configurations?: I_Configuration[];
   commands?: I_Command[];
   flags?: I_Flag[];
   examples?: string[];
@@ -110,7 +110,6 @@ interface I_ProgramDefinition {
 interface I_ProgramConfiguration {
   strict_commands?: boolean;
   strict_flags?: boolean;
-  show_deprecation_warnings?: boolean;
   check_for_new_npm_version?: boolean;
 }
 ```
@@ -119,6 +118,7 @@ interface I_ProgramConfiguration {
 
 ```js
 interface I_Configuration {
+  id: string;
   directory: string;
   file: string;
 }
@@ -149,8 +149,7 @@ interface I_Command {
     flags: {
       [key: string]: string | number | boolean | (string | number | boolean)[];
     };
-    getConfigurationFile: () => object | undefined;
-    setConfigurationFile: (data: object) => void;
+    getConfiguration: (id: string) => Configuration;
   }) => unknown) | void | undefined;
 }
 ```

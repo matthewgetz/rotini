@@ -17,9 +17,9 @@ import {
   FcSettings as ConfigurationIcon,
   FcIdea as ParserIcon,
   FcLink as CommandAliasIcon,
-  FcDeployment as ShipIcon,
+  FcDeployment as DeployIcon,
+  FcInTransit as ShipIcon,
   FcBinoculars as CheckTypesIcon,
-  FcFactory as GenerateIcon,
   FcAdvertising as AutoUpdateIcon,
   FcFlashOn as NoDependenciesIcon
 } from 'react-icons/fc';
@@ -86,7 +86,7 @@ const Blurb = () => {
             Write your CLI as <b className="text text--primary">config</b> not as <b className="text text--secondary">code</b>.
           </span>
           <div style={{ width: 120, height: 120 }}>
-            <ShipIcon size={120} />
+            <DeployIcon size={120} />
           </div>
         </div>
       </div>
@@ -173,9 +173,9 @@ const Features = () => {
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={GenerateIcon}
-            title='Generate CLI'
-            info='Generate a rotini CLI program for JavaScript or TypeScript and start building immediately. A single command - npx rotini generate my-cli - will get you started.'
+            Icon={ConfigurationIcon}
+            title='Configuration File Support'
+            info='rotini returns helper functions for writing and reading a configuration file for your program when a configuration directory and file are defined in the program definition.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
@@ -189,13 +189,6 @@ const Features = () => {
       <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={ConfigurationIcon}
-            title='Configuration File Support'
-            info='rotini returns helper functions for writing and reading a configuration file for your program when a configuration directory and file are defined in the program definition.'
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} md={4} lg={4}>
-          <Feature
             Icon={CliIcon}
             title='Shell Autocomplete'
             info='Shell autocomplete (bash/zsh) is generated for every program created with rotini. (coming soon)'
@@ -206,6 +199,13 @@ const Features = () => {
             Icon={NoDependenciesIcon}
             title='Dependency Free'
             info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={ShipIcon}
+            title='Ship Faster'
+            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed.'
           />
         </Grid>
       </Grid>

@@ -16,7 +16,6 @@
   --ifm-color-secondary-light: #f5e35b;
   --ifm-color-secondary-lighter: #f6e773;
   --ifm-color-secondary-lightest: #f8eb8b;
-  --ifm-navbar-search-input-icon: none;
   --ifm-navbar-search-input-placeholder-color: #202020;
   --ifm-navbar-search-input-color: #202020;
   --ifm-color-content-secondary: #ca0101;
@@ -42,7 +41,6 @@
   --ifm-color-secondary-light: #e30101;
   --ifm-color-secondary-lighter: #fd0101;
   --ifm-color-secondary-lightest: #fe1a1a;
-  --ifm-navbar-search-input-icon: none;
   --ifm-navbar-search-input-placeholder-color: #eeeeee;
   --ifm-navbar-search-input-color: #eeeeee;
   --ifm-color-content-secondary: #f3df43;
@@ -86,8 +84,9 @@ footer {
 
 .navbar__search-input {
   height: 36px;
-  padding: 0 2rem 0 1rem;
+  padding: 0 2rem 0 2.25rem;
   outline: none;
+  min-width: 150px;
 }
 
 .searchQueryInput_CFBF {
@@ -99,13 +98,13 @@ div[class="searchBox_node_modules-@docusaurus-theme-classic-lib-theme-Navbar-Sea
 }
 
 div[class="searchHintContainer_node_modules-@easyops-cn-docusaurus-search-local-dist-client-client-theme-SearchBar-SearchBar-module"] {
-  margin-top: 0px;
+  margin-top: 0.03rem;
 }
 
 
 button[class="searchClearButton_node_modules-@easyops-cn-docusaurus-search-local-dist-client-client-theme-SearchBar-SearchBar-module"] {
-  margin-top: -.03rem;
-  cursor: pointer;
+  margin-top: 0rem;
+  cursor: pointer !important;
   margin-left: 20px;
 }
 
@@ -125,18 +124,18 @@ body {
 }
 
 .scrollbar::-webkit-scrollbar {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   width: 16px;
   height: 16px;
   z-index: 999999;
 }
 
 .scrollbar::-webkit-scrollbar-track {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   border-radius: 16px;
   border: 0px solid #fff;
 }
