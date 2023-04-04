@@ -97,9 +97,9 @@ interface I_ProgramDefinition {
   name: string;
   description: string;
   version: string;
-  configurations?: I_Configuration[];
+  configuration_files?: I_ConfigurationFile[];
   commands?: I_Command[];
-  flags?: I_Flag[];
+  global_flags?: I_GlobalFlag[];
   examples?: string[];
 }
 ```
@@ -114,10 +114,10 @@ interface I_ProgramConfiguration {
 }
 ```
 
-### I_Configuration
+### I_ConfigurationFile
 
 ```js
-interface I_Configuration {
+interface I_ConfigurationFile {
   id: string;
   directory: string;
   file: string;
@@ -133,24 +133,10 @@ interface I_Command {
   aliases?: string[];
   deprecated?: boolean;
   arguments?: I_Argument[];
-  flags?: I_Flag[];
+  flags?: I_LocalFlag[];
   commands?: I_Command[];
   examples?: string[];
-  operation?: ((props: {
-    commands: Array<{
-      name: string;
-      arguments: {
-        [key: string]: string | number | boolean | (string | number | boolean)[];
-      };
-      flags: {
-        [key: string]: string | number | boolean | (string | number | boolean)[];
-      };
-    }>;
-    flags: {
-      [key: string]: string | number | boolean | (string | number | boolean)[];
-    };
-    getConfiguration: (id: string) => Configuration;
-  }) => unknown) | void | undefined;
+  operation?: ((props: ParseObject) => Promise<unknown> | unknown) | undefined;
 }
 ```
 
@@ -167,10 +153,10 @@ interface I_Argument {
 }
 ```
 
-### I_Flag
+### I_GenericFlag
 
 ```js
-interface I_Flag {
+interface I_GenericFlag {
   name: string;
   description: string;
   variant?: 'value' | 'boolean';
@@ -182,4 +168,47 @@ interface I_Flag {
   required?: boolean;
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
 }
+```
+
+### I_GlobalFlag
+
+```js
+interface I_GlobalFlag extends I_GenericFlag {
+}
+```
+
+### I_PositionalFlag
+
+```js
+interface I_PositionalFlag extends I_GenericFlag {
+}
+```
+
+### I_LocalFlag
+
+```js
+interface I_LocalFlag extends I_GenericFlag {
+}
+```
+
+## Types
+
+### ParseObject
+
+```js
+type ParseObject = {
+  commands: Array<{
+    name: string;
+    arguments: {
+      [key: string]: string | number | boolean | (string | number | boolean)[];
+    };
+    flags: {
+      [key: string]: string | number | boolean | (string | number | boolean)[];
+    };
+  }>;
+  global_flags: {
+    [key: string]: string | number | boolean | (string | number | boolean)[];
+  };
+  getConfigurationFile: (id: string) => ConfigurationFile;
+};
 ```
