@@ -377,7 +377,7 @@ const definition = {
       }
     }
   ],
-  flags: [
+  global_flags: [
     {
       name: 'output',
       description: 'specify the output format of command operation results',
