@@ -22,7 +22,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   version!: string;
   configuration_files!: I_ConfigurationFile[];
   commands!: Command[];
-  flags!: (Flag | HelpFlag)[];
+  global_flags!: (Flag | HelpFlag)[];
   examples!: string[];
   getConfigurationFile!: (id: string) => ConfigurationFile;
 
@@ -74,7 +74,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   };
 
   #setFlags = (global_flags: I_GlobalFlag[] = []): ProgramDefinition | never => {
-    this.flags = new Flags({
+    this.global_flags = new Flags({
       entity: {
         type: 'Program',
         key: 'global_flags',

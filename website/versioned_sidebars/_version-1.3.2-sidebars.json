@@ -4,8 +4,5 @@
   ],
   "api": [
     "api/index"
-  ],
-  "cli": [
-    "cli/index"
   ]
 }

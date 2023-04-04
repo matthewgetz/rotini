@@ -172,7 +172,7 @@ export const createCommandHelp = (help: I_CommandHelp): string => {
     makeCommandsSection(command.commands),
     makeArgumentsSection(command.arguments),
     makeFlagsSection(command.flags, false),
-    program && program.flags.length > 0 ? makeFlagsSection(program.flags, true) : '',
+    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags, true) : '',
     makeInfoSection(usageString, command.arguments.length > 0, command.flags.length > 0, command.commands.length > 0),
   ].join('');
 };
@@ -185,19 +185,19 @@ export const createCliHelp = (help: I_CliHelp): string => {
   const { program, } = help;
   const usage = `${program.name} [command] [arguments] [flags]`;
 
-  const updateFlag = new Flag({
-    name: 'update',
-    description: 'install the latest version of the cli',
-    short_key: 'u',
-    long_key: 'update',
-    type: 'boolean',
-    variant: 'boolean',
-    style: 'positional',
-  });
+  // const updateFlag = new Flag({
+  //   name: 'update',
+  //   description: 'install the latest version of the cli',
+  //   short_key: 'u',
+  //   long_key: 'update',
+  //   type: 'boolean',
+  //   variant: 'boolean',
+  //   style: 'positional',
+  // });
 
   const versionFlag = new Flag({
     name: 'version',
-    description: 'output the cli version',
+    description: 'output the program version',
     short_key: 'v',
     long_key: 'version',
     type: 'boolean',
@@ -207,7 +207,7 @@ export const createCliHelp = (help: I_CliHelp): string => {
 
   const helpFlag = new Flag({
     name: 'help',
-    description: 'output the cli help',
+    description: 'output the program help',
     short_key: 'h',
     long_key: 'help',
     type: 'boolean',
@@ -221,8 +221,8 @@ export const createCliHelp = (help: I_CliHelp): string => {
     makeDescriptionSection(program.description),
     makeExamplesSection(program.examples),
     makeCommandsSection(program.commands),
-    makeFlagsSection([ updateFlag, versionFlag, helpFlag, ], false),
-    program && program.flags.length > 0 ? makeFlagsSection(program.flags.filter(flag => flag.name !== 'help'), true) : '',
+    makeFlagsSection([ versionFlag, helpFlag, ], false),
+    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags.filter(flag => flag.name !== 'help'), true) : '',
     makeInfoSection(program.name, false, false, true),
   ].join('');
 };

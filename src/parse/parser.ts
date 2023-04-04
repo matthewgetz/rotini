@@ -131,9 +131,9 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     return command.operation || ((): void => console.info(command.help));
   });
 
-  const matchedGlobalFlags = matchFlags(program.flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), true);
+  const matchedGlobalFlags = matchFlags(program.global_flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), true);
 
-  const flags = matchedGlobalFlags.results;
+  const global_flags = matchedGlobalFlags.results;
   unmatched_flags = matchedGlobalFlags.unmatched_parsed_flags;
 
   if (program_configuration.strict_commands && FLAGS.unparsed_parameters.length > 0) {
@@ -158,7 +158,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     }
   }
 
-  const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, flags, getConfigurationFile: program.getConfigurationFile, });
+  const operation = (): Promise<unknown> | unknown => operations[operations.length - 1]({ commands, global_flags, getConfigurationFile: program.getConfigurationFile, });
 
   return operation;
 };
