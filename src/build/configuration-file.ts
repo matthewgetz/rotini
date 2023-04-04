@@ -2,6 +2,17 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 
 import Utils, { ConfigurationError, } from '../utils';
 
+export type GetContent<T> = {
+  data: T | undefined
+  error: Error | undefined
+  hasError: boolean
+}
+
+export type SetContent = {
+  error: Error | undefined
+  hasError: boolean
+}
+
 export interface I_ConfigurationFile {
   id: string
   directory: string
@@ -50,7 +61,7 @@ export default class ConfigurationFile implements I_ConfigurationFile {
     return this;
   };
 
-  getContent = <T = object>(): { data: T | undefined, error: Error | undefined, hasError: boolean } => {
+  getContent = <T = object>(): GetContent<T> => {
     const directory = this.directory;
     const file = this.file;
 
@@ -70,7 +81,7 @@ export default class ConfigurationFile implements I_ConfigurationFile {
     return { data, error, hasError, };
   };
 
-  setContent = (data: object): { error: Error | undefined, hasError: boolean } => {
+  setContent = (data: object): SetContent => {
     const directory = this.directory;
     const file = this.file;
     const isJsonData = Utils.isJson(data);

@@ -1,7 +1,7 @@
 import Command, { I_Command, } from './command';
 import Commands from './commands';
-import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
-import ConfigurationFiles from './configuration-files';
+import { I_ConfigurationFile, } from './configuration-file';
+import ConfigurationFiles, { File, } from './configuration-files';
 import Flag, { HelpFlag, I_GlobalFlag, } from './flag';
 import Flags from './flags';
 import Utils, { ConfigurationError, } from '../utils/index';
@@ -24,7 +24,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   commands!: Command[];
   global_flags!: (Flag | HelpFlag)[];
   examples!: string[];
-  getConfigurationFile!: (id: string) => ConfigurationFile;
+  getConfigurationFile!: (id: string) => File;
 
   constructor (program: I_ProgramDefinition) {
     this

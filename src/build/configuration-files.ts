@@ -1,5 +1,10 @@
-import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
+import ConfigurationFile, { I_ConfigurationFile, GetContent, SetContent, } from './configuration-file';
 import Utils, { ConfigurationError, } from '../utils';
+
+export type File = {
+  getContent: <T = object>() => GetContent<T>
+  setContent: (data: object) => SetContent
+}
 
 export default class ConfigurationFiles {
   #configuration_files: ConfigurationFile[];
@@ -20,13 +25,18 @@ export default class ConfigurationFiles {
 
   get = (): ConfigurationFile[] => this.#configuration_files;
 
-  getConfigurationFile = (id: string): ConfigurationFile | never => {
+  getConfigurationFile = (id: string): File | never => {
     const configuration_file = this.#configuration_files.find(configuration_file => configuration_file.id === id);
 
     if (!configuration_file) {
       throw new ConfigurationError(`Unknown configuration file id "${id}".`);
     }
 
-    return configuration_file;
+    const { getContent, setContent, } = configuration_file;
+
+    return {
+      getContent,
+      setContent,
+    };
   };
 }

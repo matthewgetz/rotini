@@ -1,6 +1,6 @@
 import Argument, { I_Argument, } from './argument';
 import Arguments from './arguments';
-import ConfigurationFile from './configuration-file';
+import { File, } from './configuration-files';
 import Flag, { ForceFlag, HelpFlag, I_LocalFlag, } from './flag';
 import Flags from './flags';
 import Utils, { ConfigurationError, } from '../utils';
@@ -18,7 +18,7 @@ export type ParseObject = {
   global_flags: {
     [key: string]: string | number | boolean | (string | number | boolean)[]
   }
-  getConfigurationFile: (id: string) => ConfigurationFile
+  getConfigurationFile: (id: string) => File
 }
 
 export interface I_Command {

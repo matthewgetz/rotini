@@ -11,9 +11,13 @@ export {
   I_PositionalFlag,
   I_ProgramConfiguration,
   I_ProgramDefinition,
+  GetContent,
+  SetContent,
   ParseObject,
+  File,
 } from './build';
 export {
   ConfigurationError,
   OperationError,
-  ParseError, } from './utils';
+  ParseError,
+} from './utils';
