@@ -3,9 +3,6 @@
   "engines": {
     "node": ">=18"
   },
-  "bin": {
-    "rotini": "./build/index.global.js"
-  },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "build:watch": "npm run build -- --watch",
