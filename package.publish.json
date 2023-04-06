@@ -33,8 +33,5 @@
     "arguments",
     "flags",
     "argv"
-  ],
-  "publishConfig": {
-    "access": "public"
-  }
+  ]
 }
