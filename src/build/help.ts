@@ -172,7 +172,7 @@ export const createCommandHelp = (help: I_CommandHelp): string => {
     makeCommandsSection(command.commands),
     makeArgumentsSection(command.arguments),
     makeFlagsSection(command.flags, false),
-    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags, true) : '',
+    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags.filter(flag => flag.name !== 'help'), true) : '',
     makeInfoSection(usageString, command.arguments.length > 0, command.flags.length > 0, command.commands.length > 0),
   ].join('');
 };
