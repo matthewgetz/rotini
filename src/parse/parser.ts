@@ -41,7 +41,6 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     const potential_next_commands_and_aliases = [ ...potential_commands, ...potential_aliases, ];
     const nextPossible = potential_next_commands_and_aliases.map(p => ({ value: p, similarity: Utils.stringSimilarity(p, nextParam), }));
     const nextPossibleOrdered = nextPossible.sort((a, b) => b.similarity - a.similarity).filter(p => p.similarity > 0);
-    console.log(nextPossibleOrdered);
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
 
