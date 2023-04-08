@@ -44,7 +44,14 @@ describe('rotini', () => {
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
       const result = await program.run().catch(program.error);
-      expect(result).toEqual('Hello World!');
+      expect(result).toEqual({
+        after_handler_result: undefined,
+        before_handler_result: undefined,
+        handler_failure_result: undefined,
+        handler_result: 'Hello World!',
+        handler_success_result: undefined,
+        handler_timeout_result: undefined,
+      });
     });
 
     it('calls operation when program configuration is not passed', async () => {
@@ -65,7 +72,14 @@ describe('rotini', () => {
 
       const program = rotini({ definition, parameters: [ 'hello-world', ], });
       const result = await program.run().catch(program.error);
-      expect(result).toEqual('Hello World!');
+      expect(result).toEqual({
+        after_handler_result: undefined,
+        before_handler_result: undefined,
+        handler_failure_result: undefined,
+        handler_result: 'Hello World!',
+        handler_success_result: undefined,
+        handler_timeout_result: undefined,
+      });
     });
 
     it('outputs help when no parameters are passed', async () => {
@@ -138,7 +152,7 @@ describe('rotini', () => {
         program.error(error);
       }
       expect(exit).toHaveBeenCalled();
-      expect(result).toBe('Unknown parameters found ["hello"].');
+      expect(result).toBe('Unknown parameters found ["hello"].\n\nDid you mean one of these?\n  hello-world');
       expect(error).toHaveBeenCalledOnce();
     });
 
@@ -181,7 +195,7 @@ describe('rotini', () => {
         program.error(error);
       }
       expect(exit).toHaveBeenCalled();
-      expect(errorName).toBe('OperationError');
+      expect(errorName).toBe('Error');
       expect(errorMessage).toBe('hello-world error');
       expect(error).toHaveBeenCalledOnce();
     });

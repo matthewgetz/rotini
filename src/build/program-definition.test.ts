@@ -307,7 +307,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate names found: ["flag1"] for program "rotini" global_flags flag.');
+      }).toThrowError('Duplicate names found: ["flag1"] for program "rotini" global flag.');
     });
 
     it('throws error when program definition property flags has multiple duplicate flag names', () => {
@@ -343,7 +343,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate names found: ["flag1","flag2"] for program "rotini" global_flags flag.');
+      }).toThrowError('Duplicate names found: ["flag1","flag2"] for program "rotini" global flag.');
     });
 
     it('throws error when program definition property flags has a duplicate flag short_key', () => {
@@ -367,7 +367,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate short_keys found: ["f1"] for program "rotini" global_flags flag.');
+      }).toThrowError('Duplicate short_keys found: ["f1"] for program "rotini" global flag.');
     });
 
     it('throws error when program definition property flags has multiple duplicate flag short_key', () => {
@@ -403,7 +403,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate short_keys found: ["f1","f2"] for program "rotini" global_flags flag.');
+      }).toThrowError('Duplicate short_keys found: ["f1","f2"] for program "rotini" global flag.');
     });
 
     it('throws error when program definition property flags has a duplicate flag long_key', () => {
@@ -427,7 +427,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate long_keys found: ["flag1"] for program "rotini" global_flags flag.');
+      }).toThrowError('Duplicate long_keys found: ["flag1"] for program "rotini" global flag.');
     });
 
     it('throws error when program definition property flags has multiple duplicate flag long_key', () => {
@@ -463,7 +463,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate long_keys found: ["flag1","flag2"] for program "rotini" global_flags flag.');
+      }).toThrowError('Duplicate long_keys found: ["flag1","flag2"] for program "rotini" global flag.');
     });
   });
 
