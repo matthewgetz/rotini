@@ -1,24 +1,24 @@
-import Flag, { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './flag';
+import { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './flag';
 import Utils, { ConfigurationError, } from '../utils';
 
 type Properties = {
   entity: {
     type: 'Program' | 'Command'
-    key: 'flags' | 'global_flags' | 'positional_flags'
+    key: 'local_flags' | 'global_flags' | 'positional_flags'
     name: string
   }
   flags: I_GlobalFlag[] | I_LocalFlag[] | I_PositionalFlag[]
 }
 
 export default class Flags {
-  #flags!: Flag[];
+  #flags!: GlobalFlag[] | LocalFlag[] | PositionalFlag[];
 
   constructor (properties: Properties) {
     this.#setFlags(properties);
     this.#ensureNoDuplicateFlagProperties(properties);
   }
 
-  get = (): Flag[] => this.#flags;
+  get = (): GlobalFlag[] | LocalFlag[] | PositionalFlag[] => this.#flags;
 
   #setFlags = (properties: Properties): Flags | never => {
     const { type, key, name, } = properties.entity;
@@ -34,19 +34,26 @@ export default class Flags {
     };
 
     const Flags = {
-      flags: LocalFlag,
+      local_flags: LocalFlag,
       global_flags: GlobalFlag,
       positional_flags: PositionalFlag,
     };
 
     this.#flags = flags.map((flag) => {
-      const ResolvedFlag = SpecialFlags[flag.name] || Flags[key];
+      let ResolvedFlag;
+
+      if (key === 'local_flags') {
+        ResolvedFlag = SpecialFlags[flag.name] || Flags[key];
+      } else {
+        ResolvedFlag = Flags[key];
+      }
+
       return new ResolvedFlag(flag);
     });
 
     const helpFlag = this.#flags.find(flag => flag.name === 'help');
 
-    if (!helpFlag) {
+    if (!helpFlag && key === 'local_flags') {
       this.#flags.push(new HelpFlag({
         name: 'help',
         description: `output the ${type.toLowerCase()} help`,
@@ -62,6 +69,7 @@ export default class Flags {
 
   #ensureNoDuplicateFlagProperties = (properties: Properties): void | never => {
     const { type, key, name, } = properties.entity;
+    const flag_type = key.split('_')[0];
 
     const flagNames: string[] = [];
     const flagShortNames: string[] = [];
@@ -80,15 +88,15 @@ export default class Flags {
     const { duplicates: longNameDuplicates, hasDuplicates: hasLongNameDuplicates, } = Utils.getDuplicateStrings(flagLongNames);
 
     if (hasNameDuplicates) {
-      throw new ConfigurationError(`Duplicate names found: ${JSON.stringify(nameDuplicates)} for ${type.toLowerCase()} "${name}" ${key} flag.`);
+      throw new ConfigurationError(`Duplicate names found: ${JSON.stringify(nameDuplicates)} for ${type.toLowerCase()} "${name}" ${flag_type} flag.`);
     }
 
     if (hasShortNameDuplicates) {
-      throw new ConfigurationError(`Duplicate short_keys found: ${JSON.stringify(shortNameDuplicates)} for ${type.toLowerCase()} "${name}" ${key} flag.`);
+      throw new ConfigurationError(`Duplicate short_keys found: ${JSON.stringify(shortNameDuplicates)} for ${type.toLowerCase()} "${name}" ${flag_type} flag.`);
     }
 
     if (hasLongNameDuplicates) {
-      throw new ConfigurationError(`Duplicate long_keys found: ${JSON.stringify(longNameDuplicates)} for ${type.toLowerCase()} "${name}" ${key} flag.`);
+      throw new ConfigurationError(`Duplicate long_keys found: ${JSON.stringify(longNameDuplicates)} for ${type.toLowerCase()} "${name}" ${flag_type} flag.`);
     }
   };
 }

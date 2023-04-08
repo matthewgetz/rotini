@@ -1,6 +1,6 @@
 import { I_Argument, } from './argument';
 import Command, { I_Command, } from './command';
-import Flag, { I_Flag, } from './flag';
+import { I_Flag, } from './flag';
 import Program from './program-definition';
 import Utils from '../utils';
 
@@ -94,7 +94,7 @@ const makeArgumentsSection = (args: I_Argument[] = []): string => {
   ].join('') : '';
 };
 
-const makeFlagsSection = (flags: I_Flag[] = [], isGlobal: boolean): string => {
+const makeFlagsSection = (flags: I_Flag[] = [], heading: 'FLAGS' | 'GLOBAL FLAGS' | 'POSITIONAL FLAGS'): string => {
   const flagInfo = flags.map(flag => {
     let description = flag.description;
     if (Utils.isDefined(flag.default)) {
@@ -129,7 +129,7 @@ const makeFlagsSection = (flags: I_Flag[] = [], isGlobal: boolean): string => {
 
   return formattedNames.length > 0 ? [
     '\n\n',
-    isGlobal ? 'GLOBAL FLAGS:' : 'FLAGS:',
+    heading,
     '\n\n',
     formattedNames.join('\n'),
   ].join('') : '';
@@ -171,8 +171,8 @@ export const createCommandHelp = (help: I_CommandHelp): string => {
     makeAliasesSection(command.aliases),
     makeCommandsSection(command.commands),
     makeArgumentsSection(command.arguments),
-    makeFlagsSection(command.flags, false),
-    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags.filter(flag => flag.name !== 'help'), true) : '',
+    makeFlagsSection(command.flags, 'FLAGS'),
+    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags.filter(flag => flag.name !== 'help'), 'GLOBAL FLAGS') : '',
     makeInfoSection(usageString, command.arguments.length > 0, command.flags.length > 0, command.commands.length > 0),
   ].join('');
 };
@@ -185,44 +185,14 @@ export const createCliHelp = (help: I_CliHelp): string => {
   const { program, } = help;
   const usage = `${program.name} [command] [arguments] [flags]`;
 
-  // const updateFlag = new Flag({
-  //   name: 'update',
-  //   description: 'install the latest version of the cli',
-  //   short_key: 'u',
-  //   long_key: 'update',
-  //   type: 'boolean',
-  //   variant: 'boolean',
-  //   style: 'positional',
-  // });
-
-  const versionFlag = new Flag({
-    name: 'version',
-    description: 'output the program version',
-    short_key: 'v',
-    long_key: 'version',
-    type: 'boolean',
-    variant: 'boolean',
-    style: 'positional',
-  });
-
-  const helpFlag = new Flag({
-    name: 'help',
-    description: 'output the program help',
-    short_key: 'h',
-    long_key: 'help',
-    type: 'boolean',
-    variant: 'boolean',
-    style: 'positional',
-  });
-
   return [
     `${program.name} ${program.version}\n\n`,
     makeUsageSection(usage),
     makeDescriptionSection(program.description),
     makeExamplesSection(program.examples),
     makeCommandsSection(program.commands),
-    makeFlagsSection([ versionFlag, helpFlag, ], false),
-    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags.filter(flag => flag.name !== 'help'), true) : '',
+    program && program.positional_flags.length > 0 ? makeFlagsSection(program.positional_flags, 'POSITIONAL FLAGS') : '',
+    program && program.global_flags.length > 0 ? makeFlagsSection(program.global_flags.filter(flag => flag.name !== 'help'), 'GLOBAL FLAGS') : '',
     makeInfoSection(program.name, false, false, true),
   ].join('');
 };

@@ -5,6 +5,7 @@ export type T_ParseResult = {
   id: number
   command: Command
   usage: string
+  potential_next_commands: string[]
   isAliasMatch: boolean
   flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
   arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
@@ -49,10 +50,16 @@ export const parseCommands = (program: Program, parameters: { id: number, parame
       }).join(' ');
       const { results: args, parsed_parameters, unparsed_parameters, } = parseArguments(`${program.name}${usage ? ` ${usage}` : ''}`, program, command, WORKING_PARAMETERS);
       const help = createCommandHelp({ commandString: `${program.name} ${usage}`, command, program, });
+
+      const potential_commands = potential_next_commands.map(command => command.name);
+      const potential_aliases = potential_next_commands.map(command => command.aliases).flat();
+      const potential_next_commands_and_aliases = [ ...potential_commands, ...potential_aliases, ];
+
       RESULTS.push({
         id: RESULTS.length + 1,
         command,
         usage,
+        potential_next_commands: potential_next_commands_and_aliases,
         isAliasMatch: command.aliases.includes(parameter),
         flags: {},
         arguments: args,

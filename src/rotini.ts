@@ -1,6 +1,4 @@
-import { homedir, } from 'os';
-
-import { ConfigurationFile, Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
+import { Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
 import { parse, } from './parse';
 import { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from './utils';
 
@@ -14,13 +12,12 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
     process.exit(1);
   }
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
-  const CONFIGURATION = new ConfigurationFile({ id: 'rotini', directory: `${homedir()}/.rotini`, file: '.rotini.config.json', });
   const PARAMETERS: { id: number, parameter: string, }[] = program?.parameters
     ? program.parameters.map((parameter, id) => ({ id, parameter, }))
     : process.argv.splice(2).map((parameter, id) => ({ id, parameter, }));
 
   const run = async (): Promise<unknown> | never => {
-    const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, CONFIGURATION, PARAMETERS);
+    const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, PARAMETERS);
     const result = await operation() as Function;
     return result;
   };

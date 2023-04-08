@@ -99,7 +99,7 @@ export default class Command implements I_Command {
     this.flags = new Flags({
       entity: {
         type: 'Command',
-        key: 'flags',
+        key: 'local_flags',
         name: this.name,
       },
       flags,
