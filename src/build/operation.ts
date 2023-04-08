@@ -1,8 +1,7 @@
 import { RotiniFile, } from './configuration-files';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, OperationTimeoutError, } from '../utils';
 
 const FIVE_MINS_IN_MS = 300000;
-const THIRTY_MINS_IN_MS = 1800000;
 
 export type ParseObject = {
   commands: Array<{
@@ -52,6 +51,7 @@ export type ParseObject = {
   after_handler_result: unknown
   handler_success_result: unknown
   handler_failure_result: unknown
+  handler_timeout_result: unknown
 }
 
 export type BeforeHandler = ((props: BeforeHandlerProps) => Promise<unknown> | unknown) | undefined
@@ -96,8 +96,8 @@ export default class Operation implements I_Operation {
   }
 
   #setTimeout = (timeout: number = FIVE_MINS_IN_MS): Operation | never => {
-    if (Utils.isDefined(timeout) && (Utils.isNotNumber(timeout) || timeout < 0 || timeout > THIRTY_MINS_IN_MS)) {
-      throw new ConfigurationError(`Operation property "timeout" must be of type "number" and cannot be less than 0ms or greater than ${THIRTY_MINS_IN_MS}ms.`);
+    if (Utils.isDefined(timeout) && (Utils.isNotNumber(timeout) || timeout < 0)) {
+      throw new ConfigurationError(`Operation property "timeout" must be of type "number" and cannot be less than 0ms.`);
     }
 
     this.timeout = timeout;
@@ -169,20 +169,44 @@ export default class Operation implements I_Operation {
     let operation: OperationHandler;
 
     if (this.handler) {
+      const timeoutError = new OperationTimeoutError(`Command handler for command "${this.#command_name}" has timed out after ${this.timeout}ms.`);
+
       operation = async (props: ParseObject): Promise<OperationResults> | never => {
         let before_handler_result: unknown;
         let handler_result: unknown;
         let after_handler_result: unknown;
         let handler_success_result: unknown;
         let handler_failure_result: unknown;
+        let handler_timeout_result: unknown;
+
+        const handleWithTimeout = async (): Promise<void> | never => {
+          let timer: NodeJS.Timeout;
+
+          try {
+            handler_result = await Promise.race([
+              this.handler!({ parsed: props, before_handler_result, }),
+              new Promise((_, reject) => timer = setTimeout(reject, this.timeout, timeoutError)),
+            ]);
+          } catch (error) {
+            if (error instanceof OperationTimeoutError) {
+              handler_timeout_result = await this.onHandlerTimeout?.({ parsed: props, before_handler_result, });
+            }
+            throw error;
+          } finally {
+            clearTimeout(timer!);
+          }
+        };
 
         try {
           before_handler_result = await this.beforeHandler?.({ parsed: props, });
-          handler_result = await this.handler!({ parsed: props, before_handler_result, });
+          await handleWithTimeout();
           after_handler_result = await this.afterHandler?.({ parsed: props, before_handler_result, handler_result, });
           handler_success_result = await this.onHandlerSuccess?.({ parsed: props, before_handler_result, handler_result, after_handler_result, });
-        } catch (e) {
-          handler_failure_result = await this.onHandlerFailure?.({ parsed: props, });
+        } catch (error) {
+          if (!(error instanceof OperationTimeoutError)) {
+            handler_failure_result = await this.onHandlerFailure?.({ parsed: props, });
+          }
+          throw error;
         }
 
         return {
@@ -191,6 +215,7 @@ export default class Operation implements I_Operation {
           after_handler_result,
           handler_success_result,
           handler_failure_result,
+          handler_timeout_result,
         };
       };
     }

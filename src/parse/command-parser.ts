@@ -56,7 +56,7 @@ export const parseCommands = (program: Program, parameters: { id: number, parame
         isAliasMatch: command.aliases.includes(parameter),
         flags: {},
         arguments: args,
-        handler: command.operation.handler || ((): void => console.info(help)),
+        handler: command.operation.operation || ((): void => console.info(help)),
         help,
       });
       PARSED_PARAMETERS.push(parameter as never);

@@ -13,6 +13,14 @@ export class OperationError extends Error {
   }
 }
 
+export class OperationTimeoutError extends Error {
+  constructor (message: string) {
+    super(message);
+    Error.captureStackTrace(this, this.constructor);
+    this.name = 'OperationTimeoutError';
+  }
+}
+
 export class ParseError extends Error {
   help: string;
 
@@ -21,13 +29,5 @@ export class ParseError extends Error {
     Error.captureStackTrace(this, this.constructor);
     this.name = 'ParseError';
     this.help = help ? `\n\n${help}` : '';
-  }
-}
-
-export class TimeoutError extends Error {
-  constructor (message: string) {
-    super(message);
-    Error.captureStackTrace(this, this.constructor);
-    this.name = 'TimeoutError';
   }
 }
