@@ -30,6 +30,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   global_flags!: GlobalFlag[];
   positional_flags!: PositionalFlag[];
   examples!: string[];
+  help!: string;
   getConfigurationFile!: (id: string) => RotiniFile;
 
   constructor (program: I_ProgramDefinition) {
@@ -43,7 +44,8 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       .#setPositionalFlags(program.positional_flags)
       .#setCommands(program.commands)
       .#setExamples(program.examples)
-      .#setConfigurationFiles(program.configuration_files);
+      .#setConfigurationFiles(program.configuration_files)
+      .#setHelp();
   }
 
   #setName = (name: string): ProgramDefinition | never => {
@@ -202,6 +204,12 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     }
 
     this.examples = examples;
+
+    return this;
+  };
+
+  #setHelp = (): ProgramDefinition | never => {
+    this.help = createCliHelp({ program: this, });
 
     return this;
   };

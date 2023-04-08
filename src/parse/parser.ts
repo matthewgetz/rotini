@@ -3,7 +3,7 @@ import { parseCommands, } from './command-parser';
 import { matchFlags, parseFlags, } from './flag-parser';
 import Utils, { ParseError, } from '../utils';
 
-const parsePositionalFlag = async (parameters: { id: number, parameter: string }[], positional_flags: PositionalFlag[]): Promise<void> | never => {
+const parsePositionalFlag = async (parameters: { id: number, parameter: string }[], positional_flags: PositionalFlag[], program_configuration: ProgramConfiguration, help: string): Promise<void> | never => {
   const helpFlag = positional_flags.find(flag => flag.name === 'help');
 
   if (parameters.length === 0) {
@@ -14,32 +14,39 @@ const parsePositionalFlag = async (parameters: { id: number, parameter: string }
   const shortFlagMatch = positional_flags.find(flag => `-${flag.short_key}` === parameters[0].parameter);
   const longFlagMatch = positional_flags.find(flag => `--${flag.long_key}` === parameters[0].parameter);
 
-  if (parameters[0] && (shortFlagMatch || longFlagMatch)) {
-    const matchedFlag = shortFlagMatch || longFlagMatch;
-    const remaining_parameters = parameters.slice(1).map(p => p.parameter);
-    let value = remaining_parameters.length > 1 ? remaining_parameters : remaining_parameters[0];
-    const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: matchedFlag?.type, });
+  if (parameters[0] && parameters[0].parameter.startsWith('-')) {
+    if (shortFlagMatch || longFlagMatch) {
+      const matchedFlag = shortFlagMatch || longFlagMatch;
+      const remaining_parameters = parameters.slice(1).map(p => p.parameter);
+      let value = remaining_parameters.length > 1 ? remaining_parameters : remaining_parameters[0];
+      const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: matchedFlag?.type, });
 
-    matchedFlag?.isValid(value as never);
-    value = matchedFlag?.parse({ original_value: value, type_coerced_value, }) as string;
-    await matchedFlag?.operation(value);
-    process.exit(0);
+      matchedFlag?.isValid(value as never);
+      value = matchedFlag?.parse({ original_value: value, type_coerced_value, }) as string;
+      await matchedFlag?.operation(value);
+      process.exit(0);
+    }
+
+    if (program_configuration.strict_flags) {
+      throw new ParseError(`Unknown positional flag found "${parameters[0].parameter}".`, help);
+    }
   }
 };
 
 export const parse = async (program: Program, program_configuration: ProgramConfiguration, parameters: { id: number, parameter: string, }[]): Promise<Function> => {
-  await parsePositionalFlag(parameters, program.positional_flags);
+  await parsePositionalFlag(parameters, program.positional_flags, program_configuration, program.help);
 
   const COMMANDS = parseCommands(program, parameters);
   const FLAGS = parseFlags(COMMANDS.unparsed_parameters);
 
   if (COMMANDS.results.length === 0) {
     const unknownParameters = `Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.parameter))}.`;
-    const nextParam = FLAGS.unparsed_parameters[0] as unknown as string;
+    const nextParam = COMMANDS.unparsed_parameters[0].parameter as unknown as string;
     const potential_commands = program.commands.map(command => command.name);
     const potential_aliases = program.commands.map(command => command.aliases).flat();
     const potential_next_commands_and_aliases = [ ...potential_commands, ...potential_aliases, ];
     const nextPossible = potential_next_commands_and_aliases.map(p => ({ value: p, similarity: Utils.stringSimilarity(p, nextParam), }));
+
     const nextPossibleOrdered = nextPossible.sort((a, b) => b.similarity - a.similarity).filter(p => p.similarity > 0);
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
