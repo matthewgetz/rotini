@@ -1,4 +1,4 @@
-import { RotiniFile, } from './configuration-files';
+import { ConfigFile, } from './configuration-files';
 import Utils, { ConfigurationError, OperationTimeoutError, } from '../utils';
 
 const FIVE_MINS_IN_MS = 300000;
@@ -16,7 +16,7 @@ export type ParseObject = {
   global_flags: {
     [key: string]: string | number | boolean | (string | number | boolean)[]
   }
-  getConfigurationFile: (id: string) => RotiniFile
+  getConfigurationFile: (id: string) => ConfigFile
 }
 
  type BeforeHandlerProps = {

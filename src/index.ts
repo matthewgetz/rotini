@@ -2,7 +2,6 @@
 
 export { default as rotini, } from './rotini';
 export {
-  ConfigurationFile,
   I_Argument,
   I_Command,
   I_ConfigurationFile,
@@ -14,7 +13,7 @@ export {
   GetContent,
   SetContent,
   ParseObject,
-  RotiniFile,
+  ConfigFile,
 } from './build';
 export {
   ConfigurationError,

@@ -3,7 +3,7 @@ import { homedir, } from 'os';
 import Command, { I_Command, } from './command';
 import Commands from './commands';
 import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
-import ConfigurationFiles, { RotiniFile, } from './configuration-files';
+import ConfigurationFiles, { ConfigFile, } from './configuration-files';
 import { GlobalFlag, I_GlobalFlag, PositionalFlag, I_PositionalFlag, } from './flag';
 import { createCliHelp, } from './help';
 import Flags from './flags';
@@ -31,7 +31,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   positional_flags!: PositionalFlag[];
   examples!: string[];
   help!: string;
-  getConfigurationFile!: (id: string) => RotiniFile;
+  getConfigurationFile!: (id: string) => ConfigFile;
 
   constructor (program: I_ProgramDefinition) {
     this.configuration_file = new ConfigurationFile({ id: 'rotini', directory: `${homedir()}/.rotini`, file: '.rotini.config.json', });
