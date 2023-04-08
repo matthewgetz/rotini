@@ -20,16 +20,54 @@ export type ParseObject = {
   getConfigurationFile: (id: string) => RotiniFile
 }
 
-export type BeforeHandler = ((props: ParseObject) => Promise<unknown> | unknown) | undefined
-export type Handler = ((props: ParseObject) => Promise<unknown> | unknown) | undefined
+ type BeforeHandlerProps = {
+  parsed: ParseObject
+}
+
+ type HandlerProps = {
+  parsed: ParseObject
+  before_handler_result: unknown
+}
+
+ type AfterHandlerProps = {
+  parsed: ParseObject
+  before_handler_result: unknown
+  handler_result: unknown
+}
+
+ type SuccessHandlerProps = {
+  parsed: ParseObject
+  before_handler_result: unknown
+  handler_result: unknown
+  after_handler_result: unknown
+}
+
+ type FailureHandlerProps = {
+  parsed: ParseObject
+}
+
+ type OperationResults = {
+  before_handler_result: unknown
+  handler_result: unknown
+  after_handler_result: unknown
+  handler_success_result: unknown
+  handler_failure_result: unknown
+}
+
+export type BeforeHandler = ((props: BeforeHandlerProps) => Promise<unknown> | unknown) | undefined
+export type Handler = ((props: HandlerProps) => Promise<unknown> | unknown) | undefined
+export type AfterHandler = ((props: AfterHandlerProps) => Promise<unknown> | unknown) | undefined
+export type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> | unknown) | undefined
+export type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined
+ type OperationHandler = ((props: ParseObject) => Promise<OperationResults> | never) | undefined
 
 export interface I_Operation {
   timeout?: number
   handler?: Handler
   beforeHandler?: BeforeHandler
-  afterHandler?: Handler
-  onHandlerSuccess?: Handler
-  onHandlerFailure?: Handler
+  afterHandler?: AfterHandler
+  onHandlerSuccess?: SuccessHandler
+  onHandlerFailure?: FailureHandler
   onHandlerTimeout?: Handler
 }
 
@@ -37,12 +75,12 @@ export default class Operation implements I_Operation {
   #command_name: string;
   timeout!: number;
   handler!: Handler;
-  beforeHandler!: Handler;
-  afterHandler!: Handler;
-  onHandlerSuccess!: Handler;
-  onHandlerFailure!: Handler;
+  beforeHandler!: BeforeHandler;
+  afterHandler!: AfterHandler;
+  onHandlerSuccess!: SuccessHandler;
+  onHandlerFailure!: FailureHandler;
   onHandlerTimeout!: Handler;
-  operation!: Handler;
+  operation!: OperationHandler;
 
   constructor (command_name: string, operation: I_Operation = {}) {
     this.#command_name = command_name;
@@ -53,8 +91,8 @@ export default class Operation implements I_Operation {
       .#setBeforeHandler(operation.beforeHandler)
       .#setAfterHandler(operation.afterHandler)
       .#setOnHandlerSuccess(operation.onHandlerSuccess)
-      .#setOnHandlerFailure(operation.onHandlerFailure);
-    // .#setOperation();
+      .#setOnHandlerFailure(operation.onHandlerFailure)
+      .#setOperation();
   }
 
   #setTimeout = (timeout: number = FIVE_MINS_IN_MS): Operation | never => {
@@ -87,7 +125,7 @@ export default class Operation implements I_Operation {
     return this;
   };
 
-  #setBeforeHandler = (beforeHandler?: Handler): Operation | never => {
+  #setBeforeHandler = (beforeHandler?: BeforeHandler): Operation | never => {
     if (Utils.isDefined(beforeHandler) && (Utils.isNotFunction(beforeHandler) || Utils.isNotDefined(this.handler))) {
       throw new ConfigurationError(`Operation property "beforeHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
     }
@@ -97,7 +135,7 @@ export default class Operation implements I_Operation {
     return this;
   };
 
-  #setAfterHandler = (afterHandler?: Handler): Operation | never => {
+  #setAfterHandler = (afterHandler?: AfterHandler): Operation | never => {
     if (Utils.isDefined(afterHandler) && (Utils.isNotFunction(afterHandler) || Utils.isNotDefined(this.handler))) {
       throw new ConfigurationError(`Operation property "afterHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
     }
@@ -107,7 +145,7 @@ export default class Operation implements I_Operation {
     return this;
   };
 
-  #setOnHandlerSuccess = (onHandlerSuccess?: Handler): Operation | never => {
+  #setOnHandlerSuccess = (onHandlerSuccess?: SuccessHandler): Operation | never => {
     if (Utils.isDefined(onHandlerSuccess) && (Utils.isNotFunction(onHandlerSuccess) || Utils.isNotDefined(this.handler))) {
       throw new ConfigurationError(`Operation property "onHandlerSuccess" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
     }
@@ -117,7 +155,7 @@ export default class Operation implements I_Operation {
     return this;
   };
 
-  #setOnHandlerFailure = (onHandlerFailure?: Handler): Operation | never => {
+  #setOnHandlerFailure = (onHandlerFailure?: FailureHandler): Operation | never => {
     if (Utils.isDefined(onHandlerFailure) && (Utils.isNotFunction(onHandlerFailure) || Utils.isNotDefined(this.handler))) {
       throw new ConfigurationError(`Operation property "onHandlerFailure" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
     }
@@ -127,28 +165,38 @@ export default class Operation implements I_Operation {
     return this;
   };
 
-  // #setOperation = (): Operation => {
-  //   let operation: Handler;
+  #setOperation = (): Operation => {
+    let operation: OperationHandler;
 
-  //   if (this.handler) {
-  //     operation = async (props: ParseObject): Promise<unknown> => {
-  //       let beforeHandlerResult: unknown;
-  //       let handlerResult: unknown;
-  //       let afterHandlerResult: unknown;
+    if (this.handler) {
+      operation = async (props: ParseObject): Promise<OperationResults> | never => {
+        let before_handler_result: unknown;
+        let handler_result: unknown;
+        let after_handler_result: unknown;
+        let handler_success_result: unknown;
+        let handler_failure_result: unknown;
 
-  //       try {
-  //         beforeHandlerResult = await this.beforeHandler?.(props);
-  //         handlerResult = await this.handler!(props, beforeHandlerResult);
-  //         afterHandlerResult = await this.afterHandler?.(props, beforeHandlerResult, handlerResult);
-  //         await this.onHandlerSuccess?.(props, beforeHandlerResult, handlerResult, afterHandlerResult);
-  //       } catch (e) {
-  //         await this.onHandlerFailure?.(props);
-  //       }
-  //     };
-  //   }
+        try {
+          before_handler_result = await this.beforeHandler?.({ parsed: props, });
+          handler_result = await this.handler!({ parsed: props, before_handler_result, });
+          after_handler_result = await this.afterHandler?.({ parsed: props, before_handler_result, handler_result, });
+          handler_success_result = await this.onHandlerSuccess?.({ parsed: props, before_handler_result, handler_result, after_handler_result, });
+        } catch (e) {
+          handler_failure_result = await this.onHandlerFailure?.({ parsed: props, });
+        }
 
-  //   this.operation = operation;
+        return {
+          before_handler_result,
+          handler_result,
+          after_handler_result,
+          handler_success_result,
+          handler_failure_result,
+        };
+      };
+    }
 
-  //   return this;
-  // };
+    this.operation = operation;
+
+    return this;
+  };
 }
