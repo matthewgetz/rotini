@@ -1,3 +1,4 @@
+import { RotiniFile, } from './configuration-files';
 import Utils, { ConfigurationError, } from '../utils';
 
 const FIVE_MINS_IN_MS = 300000;
@@ -16,24 +17,24 @@ export type ParseObject = {
   global_flags: {
     [key: string]: string | number | boolean | (string | number | boolean)[]
   }
-  getConfigurationFile: (id: string) => File
+  getConfigurationFile: (id: string) => RotiniFile
 }
 
+export type BeforeHandler = ((props: ParseObject) => Promise<unknown> | unknown) | undefined
 export type Handler = ((props: ParseObject) => Promise<unknown> | unknown) | undefined
 
 export interface I_Operation {
   timeout?: number
   handler?: Handler
-  beforeHandler?: Handler
+  beforeHandler?: BeforeHandler
   afterHandler?: Handler
   onHandlerSuccess?: Handler
   onHandlerFailure?: Handler
-  onHandlerTimeout?: Handler;
+  onHandlerTimeout?: Handler
 }
 
 export default class Operation implements I_Operation {
   #command_name: string;
-
   timeout!: number;
   handler!: Handler;
   beforeHandler!: Handler;
@@ -41,6 +42,7 @@ export default class Operation implements I_Operation {
   onHandlerSuccess!: Handler;
   onHandlerFailure!: Handler;
   onHandlerTimeout!: Handler;
+  operation!: Handler;
 
   constructor (command_name: string, operation: I_Operation = {}) {
     this.#command_name = command_name;
@@ -52,6 +54,7 @@ export default class Operation implements I_Operation {
       .#setAfterHandler(operation.afterHandler)
       .#setOnHandlerSuccess(operation.onHandlerSuccess)
       .#setOnHandlerFailure(operation.onHandlerFailure);
+    // .#setOperation();
   }
 
   #setTimeout = (timeout: number = FIVE_MINS_IN_MS): Operation | never => {
@@ -123,4 +126,29 @@ export default class Operation implements I_Operation {
 
     return this;
   };
+
+  // #setOperation = (): Operation => {
+  //   let operation: Handler;
+
+  //   if (this.handler) {
+  //     operation = async (props: ParseObject): Promise<unknown> => {
+  //       let beforeHandlerResult: unknown;
+  //       let handlerResult: unknown;
+  //       let afterHandlerResult: unknown;
+
+  //       try {
+  //         beforeHandlerResult = await this.beforeHandler?.(props);
+  //         handlerResult = await this.handler!(props, beforeHandlerResult);
+  //         afterHandlerResult = await this.afterHandler?.(props, beforeHandlerResult, handlerResult);
+  //         await this.onHandlerSuccess?.(props, beforeHandlerResult, handlerResult, afterHandlerResult);
+  //       } catch (e) {
+  //         await this.onHandlerFailure?.(props);
+  //       }
+  //     };
+  //   }
+
+  //   this.operation = operation;
+
+  //   return this;
+  // };
 }

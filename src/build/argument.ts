@@ -7,6 +7,7 @@ export interface I_Argument {
   type?: 'string' | 'number' | 'boolean'
   values?: string[] | number[] | boolean[]
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
+  parse?: ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }) => unknown
 }
 
 export default class Argument implements I_Argument {
@@ -16,6 +17,7 @@ export default class Argument implements I_Argument {
   type!: 'string' | 'number' | 'boolean';
   values!: string[] | number[] | boolean[];
   isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
+  parse!: ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }) => unknown;
 
   constructor (argument: I_Argument) {
     this
@@ -24,7 +26,8 @@ export default class Argument implements I_Argument {
       .#setVariant(argument.variant)
       .#setType(argument.type)
       .#setValues(argument.values)
-      .#setIsValid(argument.isValid);
+      .#setIsValid(argument.isValid)
+      .#setParse(argument.parse);
   }
 
   #setName = (name: string): Argument | never => {
@@ -84,14 +87,31 @@ export default class Argument implements I_Argument {
       throw new ConfigurationError(`Argument property "isValid" must be of type "function" for argument "${this.name}".`);
     }
 
-    this.isValid = (data: string | number | boolean): boolean | never => {
+    this.isValid = (value: string | number | boolean): boolean | never => {
       try {
-        if (isValid(data as never) === false) {
-          throw new ParseError(`Argument value "${data}" is invalid for argument "${this.name}".`);
+        if (isValid(value as never) === false) {
+          throw new ParseError(`Argument value "${value}" is invalid for argument "${this.name}".`);
         }
         return true;
       } catch (error) {
         throw new ParseError((error as Error).message);
+      }
+    };
+
+    return this;
+  };
+
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }) => unknown = (({ type_coerced_value, }): string | number | boolean => type_coerced_value)): Argument | never => {
+    if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
+      throw new ConfigurationError(`Argument property "parse" must be of type "function" for argument "${this.name}".`);
+    }
+
+    this.parse = ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }): unknown => {
+      try {
+        const parsed = parse({ original_value, type_coerced_value, });
+        return parsed;
+      } catch (error) {
+        throw new ParseError(`Argument value could not be parsed for argument "${this.name}".`);
       }
     };
 

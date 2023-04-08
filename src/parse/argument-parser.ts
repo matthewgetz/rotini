@@ -89,6 +89,12 @@ export const parseCommandArguments = (commandString: string, program: Program, c
           throw new ParseError((e as Error).message, createCommandHelp({ commandString, command, program, }));
         }
 
+        try {
+          typedParameter = arg.parse({ original_value: parameter, type_coerced_value: typedParameter, }) as string;
+        } catch (e) {
+          throw new ParseError((e as Error).message, createCommandHelp({ commandString, command, program, }));
+        }
+
         result.values.push(typedParameter);
         PARSED_PARAMETERS.push(parameter);
       }
@@ -109,6 +115,12 @@ export const parseCommandArguments = (commandString: string, program: Program, c
 
       try {
         arg.isValid(typedParameter);
+      } catch (e) {
+        throw new ParseError((e as Error).message, createCommandHelp({ commandString, command, program, }));
+      }
+
+      try {
+        typedParameter = arg.parse({ original_value: parameter, type_coerced_value: typedParameter, }) as string;
       } catch (e) {
         throw new ParseError((e as Error).message, createCommandHelp({ commandString, command, program, }));
       }

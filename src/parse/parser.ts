@@ -128,7 +128,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
   });
 
   const operations = COMMANDS.results.map(command => {
-    return command.operation || ((): void => console.info(command.help));
+    return command.handler || ((): void => console.info(command.help));
   });
 
   const matchedGlobalFlags = matchFlags(program.global_flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), true);

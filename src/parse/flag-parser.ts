@@ -101,7 +101,7 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: st
   const RESULTS: { [key: string]: T_ParseValue } = {};
   const FLAG_TYPE = isGlobal ? 'Global Flag' : 'Flag';
 
-  flags.forEach(({ long_key, name, short_key, type, isValid, default: defaultValue, required, values, }) => {
+  flags.forEach(({ long_key, name, short_key, type, isValid, parse, default: defaultValue, required, values, }) => {
     UNMATCHED_PARSED_FLAGS.forEach(({ id, key, value, prefix, }) => {
       if ((short_key === key && prefix === '-') || (long_key === key && prefix === '--')) {
         if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
@@ -118,9 +118,17 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: st
           throw new ParseError((e as Error).message, help);
         }
 
+        let parsed_value;
+
+        try {
+          parsed_value = parse({ original_value: value.toString(), type_coerced_value: value, }) as string;
+        } catch (e) {
+          throw new ParseError((e as Error).message, help);
+        }
+
         if (!RESULTS[name]) {
-          RESULTS[name] = value;
-          MATCHED_PARSED_FLAGS.push({ id, key, value, prefix, });
+          RESULTS[name] = parsed_value;
+          MATCHED_PARSED_FLAGS.push({ id, key, value: parsed_value, prefix, });
           UNMATCHED_PARSED_FLAGS = UNMATCHED_PARSED_FLAGS.filter(f => f.id !== id);
         }
       }

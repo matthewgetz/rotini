@@ -14,7 +14,7 @@ export {
   GetContent,
   SetContent,
   ParseObject,
-  File,
+  RotiniFile,
 } from './build';
 export {
   ConfigurationError,

@@ -1,25 +1,9 @@
 import Argument, { I_Argument, } from './argument';
 import Arguments from './arguments';
-import { File, } from './configuration-files';
 import Flag, { ForceFlag, HelpFlag, I_LocalFlag, } from './flag';
 import Flags from './flags';
+import Operation, { I_Operation, } from './operation';
 import Utils, { ConfigurationError, } from '../utils';
-
-export type ParseObject = {
-  commands: Array<{
-    name: string,
-    arguments: {
-      [key: string]: string | number | boolean | (string | number | boolean)[]
-    },
-    flags: {
-      [key: string]: string | number | boolean | (string | number | boolean)[]
-    }
-  }>
-  global_flags: {
-    [key: string]: string | number | boolean | (string | number | boolean)[]
-  }
-  getConfigurationFile: (id: string) => File
-}
 
 export interface I_Command {
   name: string
@@ -30,7 +14,7 @@ export interface I_Command {
   flags?: I_LocalFlag[]
   commands?: I_Command[]
   examples?: string[]
-  operation?: ((props: ParseObject) => Promise<unknown> | unknown) | undefined
+  operation?: I_Operation
 }
 
 export default class Command implements I_Command {
@@ -42,7 +26,7 @@ export default class Command implements I_Command {
   flags!: (Flag | ForceFlag | HelpFlag)[];
   commands!: Command[];
   examples!: string[];
-  operation: ((props: ParseObject) => Promise<unknown> | unknown) | undefined;
+  operation!: Operation;
   isForceCommand!: boolean;
 
   constructor (command: I_Command) {
@@ -159,12 +143,8 @@ export default class Command implements I_Command {
     return this;
   };
 
-  #setOperation = (operation?: ((props: ParseObject) => Promise<unknown> | unknown) | undefined): Command | never => {
-    if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
-      throw new ConfigurationError(`Command property "operation" must be of type "function" for command "${this.name}".`);
-    }
-
-    this.operation = operation;
+  #setOperation = (operation?: I_Operation): Command | never => {
+    this.operation = new Operation(this.name, operation);
 
     return this;
   };

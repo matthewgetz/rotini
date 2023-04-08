@@ -3,7 +3,7 @@ import * as transformations from './transformations';
 import * as updates from './updates';
 import * as validations from './validations';
 
-export { ConfigurationError, OperationError, ParseError, } from './errors';
+export { ConfigurationError, OperationError, ParseError, TimeoutError, } from './errors';
 
 export default {
   ...prompts,

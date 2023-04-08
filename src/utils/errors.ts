@@ -23,3 +23,11 @@ export class ParseError extends Error {
     this.help = help ? `\n\n${help}` : '';
   }
 }
+
+export class TimeoutError extends Error {
+  constructor (message: string) {
+    super(message);
+    Error.captureStackTrace(this, this.constructor);
+    this.name = 'TimeoutError';
+  }
+}

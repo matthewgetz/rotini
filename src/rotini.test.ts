@@ -30,7 +30,9 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): string => 'Hello World!',
+            operation: {
+              handler: (): string => 'Hello World!',
+            },
           },
         ],
       };
@@ -54,7 +56,9 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): string => 'Hello World!',
+            operation: {
+              handler: (): string => 'Hello World!',
+            },
           },
         ],
       };
@@ -84,7 +88,9 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): string => 'Hello World!',
+            operation: {
+              handler: (): string => 'Hello World!',
+            },
           },
         ],
       };
@@ -107,9 +113,11 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): never => {
-              const error = new Error('hello-world error');
-              throw error;
+            operation: {
+              handler: (): unknown => {
+                const error = new Error('hello-world error');
+                throw error;
+              },
             },
           },
         ],
@@ -146,9 +154,11 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): never => {
-              const error = new Error('hello-world error');
-              throw error;
+            operation: {
+              handler: (): unknown => {
+                const error = new Error('hello-world error');
+                throw error;
+              },
             },
           },
         ],

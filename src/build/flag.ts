@@ -11,6 +11,7 @@ interface I_GenericFlag {
   default?: string | number | boolean
   required?: boolean
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
+  parse?: ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }) => unknown
 }
 
 export interface I_GlobalFlag extends I_GenericFlag {}
@@ -35,6 +36,7 @@ export default class Flag implements I_Flag {
   default: string | number | boolean | undefined;
   required!: boolean;
   isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
+  parse!: ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }) => unknown;
 
   constructor (flag: I_Flag) {
     this
@@ -47,7 +49,8 @@ export default class Flag implements I_Flag {
       .#setValues(flag.values)
       .#setDefault(flag.default)
       .#setRequired(flag.required)
-      .#setIsValid(flag.isValid);
+      .#setIsValid(flag.isValid)
+      .#setParse(flag.parse);
   }
 
   #setName = (name: string): Flag | never => {
@@ -191,6 +194,23 @@ export default class Flag implements I_Flag {
         return true;
       } catch (error) {
         throw new ParseError((error as Error).message);
+      }
+    };
+
+    return this;
+  };
+
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }) => unknown = (({ type_coerced_value, }): string | number | boolean => type_coerced_value)): Flag | never => {
+    if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
+      throw new ConfigurationError(`Flag property "parse" must be of type "function" for flag "${this.name}".`);
+    }
+
+    this.parse = ({ original_value, type_coerced_value, }: { original_value: string, type_coerced_value: string | number | boolean }): unknown => {
+      try {
+        const parsed = parse({ original_value, type_coerced_value, });
+        return parsed;
+      } catch (error) {
+        throw new ParseError(`Flag value could not be parsed for flag "${this.name}".`);
       }
     };
 
