@@ -7,7 +7,7 @@ import Flag, { ForceFlag, HelpFlag, I_LocalFlag, } from './flag';
 import Flags from './flags';
 import Operation, { I_Operation, } from './operation';
 import Utils, { ConfigurationError, } from '../utils';
-import { makeAliasesSection, makeCommandsSection, makeExamplesSection, makeFlagsSection, } from './help';
+import { makeAliasesSection, makeArgumentsSection, makeCommandsSection, makeExamplesSection, makeFlagsSection, } from './help';
 
 export interface I_Command {
   name: string
@@ -45,6 +45,7 @@ export default class Command implements I_ResolvedCommand {
   #aliases!: string;
   #usage!: string;
   #examples!: string;
+  #arguments!: string;
   #commands!: string;
   #flags!: string;
 
@@ -119,6 +120,8 @@ export default class Command implements I_ResolvedCommand {
       },
       arguments: args,
     }).get();
+
+    this.#arguments = makeArgumentsSection(this.arguments);
 
     return this;
   };
@@ -208,6 +211,7 @@ export default class Command implements I_ResolvedCommand {
       this.#usage,
       this.#examples,
       this.#aliases,
+      this.#arguments,
       this.#commands,
       this.#flags,
       this.commands.length > 0 ? `\n\nUse "${this.usage} <command> --help" for more information about a given command.` : '',

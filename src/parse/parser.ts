@@ -38,6 +38,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
 
   const COMMANDS = parseCommands(program, parameters);
   const FLAGS = parseFlags(COMMANDS.unparsed_parameters);
+  let ERRORS: Error[] = [];
 
   if (COMMANDS.results.length === 0) {
     const unknownParameters = `Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.parameter))}.`;
@@ -110,6 +111,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     };
 
     unmatched_flags = matchedResults.unmatched_parsed_flags;
+    ERRORS = [ ...ERRORS, ...matchedResults.errors, ];
 
     return formatted_command;
   });
@@ -128,6 +130,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
   });
 
   const matchedGlobalFlags = matchFlags(program.global_flags, unmatched_flags, COMMAND.help, true);
+  ERRORS = [ ...ERRORS, ...matchedGlobalFlags.errors, ];
 
   const global_flags = matchedGlobalFlags.results;
   unmatched_flags = matchedGlobalFlags.unmatched_parsed_flags;
@@ -153,6 +156,10 @@ export const parse = async (program: Program, program_configuration: ProgramConf
       process.exit(0);
     }
   });
+
+  if (ERRORS.length > 0) {
+    throw ERRORS[0];
+  }
 
   if (COMMAND.isForceCommand && command.flags.force !== true) {
     const result = await Utils.promptForYesOrNo('Are you sure you want to continue?');
