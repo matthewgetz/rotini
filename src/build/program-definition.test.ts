@@ -164,7 +164,7 @@ describe('Program', () => {
   });
 
   describe('commands', () => {
-    const expectedErrorMessage = 'Program definition property "commands" must be of type "array"';
+    const expectedErrorMessage = 'Program property "commands" must be of type "array" for program "rotini".';
 
     it('throws error when program definition property "commands" is not array', () => {
       expect(() => {
@@ -190,7 +190,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate command "name" found: ["command1"]');
+      }).toThrowError('Duplicate command "name" found for program "rotini": ["command1"].');
     });
 
     it('throws error when program definition property commands has multiple duplicate command names', () => {
@@ -218,7 +218,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate command "name" found: ["command1","command2"]');
+      }).toThrowError('Duplicate command "name" found for program "rotini": ["command1","command2"].');
     });
 
     it('throws error when program definition property commands has a duplicate command aliases', () => {
@@ -240,7 +240,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate command "aliases" found: ["c1"]');
+      }).toThrowError('Duplicate command "aliases" found for program "rotini": ["c1"].');
     });
 
     it('throws error when program definition property commands has multiple duplicate command aliases', () => {
@@ -272,7 +272,7 @@ describe('Program', () => {
             },
           ],
         });
-      }).toThrowError('Duplicate command "aliases" found: ["c1","c2"]');
+      }).toThrowError('Duplicate command "aliases" found for program "rotini": ["c1","c2"].');
     });
   });
 
@@ -468,53 +468,54 @@ describe('Program', () => {
   });
 
   describe('examples', () => {
-    const expectedErrorMessage = 'Program definition property "examples" must be of type "array" and can only contain indexes of type "string".';
+    const arrayErrorMessage = 'Program property "examples" must be of type "array".';
+    const descriptionErrorMessage = 'Example property "description" must be defined and of type "string" for program "rotini".';
 
     it('throws error when program definition property "examples" is string', () => {
       expect(() => {
         // @ts-expect-error program definition property "examples" is number
         new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: 'examples', });
-      }).toThrowError(expectedErrorMessage);
+      }).toThrowError(arrayErrorMessage);
     });
 
     it('throws error when program definition property "examples" is number', () => {
       expect(() => {
         // @ts-expect-error program definition property "examples" is number
         new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: 23, });
-      }).toThrowError(expectedErrorMessage);
+      }).toThrowError(arrayErrorMessage);
     });
 
     it('throws error when program definition property "examples" is boolean', () => {
       expect(() => {
         // @ts-expect-error program definition property "examples" is boolean
         new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: true, });
-      }).toThrowError(expectedErrorMessage);
-    });
-
-    it('does not throw error when program definition property "examples" is object', () => {
-      expect(() => {
-        // @ts-expect-error program definition property "examples" is object
-        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: { some: 'property', }, });
-      }).toThrowError(expectedErrorMessage);
+      }).toThrowError(arrayErrorMessage);
     });
 
     it('throws error when program definition property "examples" is array of number', () => {
       expect(() => {
         // @ts-expect-error program definition property "examples" is array of numbers
         new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ 1, 2, 3, ], });
-      }).toThrowError(expectedErrorMessage);
+      }).toThrowError(descriptionErrorMessage);
     });
 
     it('throws error when program definition property "examples" is array of boolean', () => {
       expect(() => {
         // @ts-expect-error program definition property "examples" is array of booleans
         new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ true, false, ], });
-      }).toThrowError(expectedErrorMessage);
+      }).toThrowError(descriptionErrorMessage);
     });
 
     it('does not throw error when program definition property "examples" is array of strings', () => {
       expect(() => {
+        // @ts-expect-error program definition property "examples" is object
         new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ 'something', ], });
+      }).toThrowError(descriptionErrorMessage);
+    });
+
+    it('does not throw error when program definition property "examples" is object', () => {
+      expect(() => {
+        new Program({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ { description: 'example description', usage: 'example', }, ], });
       }).not.toThrow();
     });
   });

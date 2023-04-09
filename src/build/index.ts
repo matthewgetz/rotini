@@ -6,4 +6,4 @@ export { default as Flag, ForceFlag, GlobalFlag, HelpFlag, I_Flag, I_GlobalFlag,
 export { default as ProgramConfiguration, I_ProgramConfiguration, } from './program-configuration';
 export { default as Program, I_ProgramDefinition, } from './program-definition';
 export { Handler, I_Operation, ParseObject, } from './operation';
-export { createCliHelp, createCommandHelp, I_CliHelp, I_CommandHelp, } from './help';
+export { makeAliasesSection, makeArgumentsSection, makeCommandsSection, makeExamplesSection, makeFlagsSection, } from './help';

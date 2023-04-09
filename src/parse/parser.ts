@@ -1,4 +1,4 @@
-import { Program, ProgramConfiguration, createCliHelp, createCommandHelp, PositionalFlag, } from '../build';
+import { Program, ProgramConfiguration, PositionalFlag, } from '../build';
 import { parseCommands, } from './command-parser';
 import { matchFlags, parseFlags, } from './flag-parser';
 import Utils, { ParseError, } from '../utils';
@@ -51,7 +51,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
 
-    throw new ParseError(`${unknownParameters}${didYouMean}`, createCliHelp({ program, }));
+    throw new ParseError(`${unknownParameters}${didYouMean}`, program.help);
   }
 
   if (program_configuration.check_for_new_npm_version && Utils.isNotTrueString(process.env.CI!)) {
@@ -97,12 +97,11 @@ export const parse = async (program: Program, program_configuration: ProgramConf
 
   const lastCommand = COMMANDS.results[COMMANDS.results.length - 1];
   const { command: COMMAND, } = lastCommand;
-  const usage = lastCommand.usage;
 
   let unmatched_flags = FLAGS.results;
 
   const commands = COMMANDS.results.map(result => {
-    const matchedResults = matchFlags(result.command.flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), false);
+    const matchedResults = matchFlags(result.command.flags, unmatched_flags, COMMAND.help, false);
 
     const formatted_command = {
       name: result.command.name,
@@ -128,7 +127,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     return command.handler || ((): void => console.info(command.help));
   });
 
-  const matchedGlobalFlags = matchFlags(program.global_flags, unmatched_flags, createCommandHelp({ command: COMMAND, commandString: usage, program, }), true);
+  const matchedGlobalFlags = matchFlags(program.global_flags, unmatched_flags, COMMAND.help, true);
 
   const global_flags = matchedGlobalFlags.results;
   unmatched_flags = matchedGlobalFlags.unmatched_parsed_flags;

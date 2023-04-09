@@ -5,46 +5,68 @@ import Commands from './commands';
 import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
 import ConfigurationFiles, { ConfigFile, } from './configuration-files';
 import { GlobalFlag, I_GlobalFlag, PositionalFlag, I_PositionalFlag, } from './flag';
-import { createCliHelp, } from './help';
+import { makeCommandsSection, makeFlagsSection, makeExamplesSection, } from './help';
 import Flags from './flags';
+import Example, { I_Example, } from './example';
+import Examples from './examples';
 import Utils, { ConfigurationError, } from '../utils/index';
 
 export interface I_ProgramDefinition {
   name: string
   description: string
   version: string
+  documentation?: string
   configuration_files?: I_ConfigurationFile[]
   commands?: I_Command[]
   global_flags?: I_GlobalFlag[]
   positional_flags?: I_PositionalFlag[]
-  examples?: string[]
+  examples?: I_Example[]
 }
 
 export default class ProgramDefinition implements I_ProgramDefinition {
   name!: string;
   description!: string;
   version!: string;
-  configuration_file: ConfigurationFile;
-  configuration_files!: I_ConfigurationFile[];
+  documentation?: string;
+  configuration_files!: ConfigurationFile[];
   commands!: Command[];
   global_flags!: GlobalFlag[];
   positional_flags!: PositionalFlag[];
-  examples!: string[];
+  examples!: Example[];
+  configuration_file: ConfigurationFile;
+  usage!: string;
   help!: string;
   getConfigurationFile!: (id: string) => ConfigFile;
 
+  // help sections
+  #name!: string;
+  #description!: string;
+  #version!: string;
+  #documentation!: string;
+  #usage!: string;
+  #examples!: string;
+  #commands!: string;
+  #positional_flags!: string;
+  #global_flags!: string;
+
   constructor (program: I_ProgramDefinition) {
-    this.configuration_file = new ConfigurationFile({ id: 'rotini', directory: `${homedir()}/.rotini`, file: '.rotini.config.json', });
+    this.configuration_file = new ConfigurationFile({
+      id: 'rotini',
+      directory: `${homedir()}/.rotini`,
+      file: '.rotini.config.json',
+    });
 
     this
       .#setName(program?.name)
       .#setDescription(program.description)
       .#setVersion(program.version)
+      .#setDocumentation(program.documentation)
       .#setGlobalFlags(program.global_flags)
       .#setPositionalFlags(program.positional_flags)
       .#setCommands(program.commands)
       .#setExamples(program.examples)
       .#setConfigurationFiles(program.configuration_files)
+      .#setUsage()
       .#setHelp();
   }
 
@@ -54,6 +76,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     }
 
     this.name = name;
+    this.#name = this.name;
 
     return this;
   };
@@ -64,6 +87,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     }
 
     this.description = description;
+    this.#description = `\n\n  ${this.description}`;
 
     return this;
   };
@@ -74,12 +98,38 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     }
 
     this.version = version;
+    this.#version = this.version;
+
+    return this;
+  };
+
+  #setDocumentation = (documentation?: string): ProgramDefinition | never => {
+    if (Utils.isDefined(documentation) && Utils.isNotString(documentation)) {
+      throw new ConfigurationError(`Program definition property "documentation" must be of type "string".`);
+    }
+
+    this.documentation = documentation;
+    this.#documentation = this.documentation
+      ? [
+        '\n\n',
+        `  Find more information at: ${this.documentation}`,
+      ].join('')
+      : '';
 
     return this;
   };
 
   #setCommands = (commands: I_Command[] = []): ProgramDefinition | never => {
-    this.commands = new Commands(commands).get();
+    this.commands = new Commands({
+      entity: {
+        type: 'Program',
+        name: this.name,
+      },
+      usage: this.name,
+      commands,
+    }).get();
+
+    this.#commands = makeCommandsSection(this.commands);
 
     return this;
   };
@@ -93,6 +143,8 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       },
       flags: global_flags,
     }).get();
+
+    this.#global_flags = makeFlagsSection('GLOBAL FLAGS', this.global_flags);
 
     return this;
   };
@@ -181,7 +233,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
         short_key: 'h',
         long_key: 'help',
         operation: (): void => {
-          console.info(createCliHelp({ program: this, }));
+          console.info(this.help);
         },
       }));
     }
@@ -195,21 +247,21 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       flags: positional_flags,
     }).get();
 
-    return this;
-  };
-
-  #setExamples = (examples: string[] = []): ProgramDefinition | never => {
-    if (!Utils.isArray(examples) || !Utils.isArrayOfStrings(examples)) {
-      throw new ConfigurationError(`Program definition property "examples" must be of type "array" and can only contain indexes of type "string".`);
-    }
-
-    this.examples = examples;
+    this.#positional_flags = makeFlagsSection('POSITIONAL FLAGS', this.positional_flags);
 
     return this;
   };
 
-  #setHelp = (): ProgramDefinition | never => {
-    this.help = createCliHelp({ program: this, });
+  #setExamples = (examples: I_Example[] = []): ProgramDefinition | never => {
+    this.examples = new Examples({
+      entity: {
+        type: 'Program',
+        name: this.name,
+      },
+      examples,
+    }).get();
+
+    this.#examples = makeExamplesSection(this.examples);
 
     return this;
   };
@@ -223,6 +275,70 @@ export default class ProgramDefinition implements I_ProgramDefinition {
 
     this.configuration_files = files.get();
     this.getConfigurationFile = files.getConfigurationFile;
+
+    return this;
+  };
+
+  #setUsage = (): ProgramDefinition => {
+    let command_usage = `  ${this.name}`;
+    let positional_flag_usage;
+
+    if (this.positional_flags.length > 0) {
+      const flags = this.positional_flags.map(flag => {
+        let usage = '';
+        let y = '';
+
+        if (flag.variant !== 'boolean' && flag.values.length > 0) {
+          y = `=${JSON.stringify(flag.values)}`;
+        } else if (flag.variant !== 'boolean') {
+          y = `=${flag.type}`;
+        }
+
+        if (flag.short_key && flag.long_key) {
+          usage += `[-${flag.short_key}${y} | --${flag.long_key}${y}]`;
+        } else if (flag.short_key) {
+          usage += `[-${flag.short_key}${y}]`;
+        } else if (flag.long_key) {
+          usage += `[--${flag.long_key}${y}]`;
+        }
+
+        return usage;
+      });
+
+      positional_flag_usage = `  ${this.name} ${flags.join(' ')}`;
+    }
+
+    if (this.commands.length > 0) {
+      command_usage += ` <command>`;
+    }
+
+    if (this.global_flags.length > 0) {
+      command_usage += ` [global flags]`;
+    }
+
+    this.#usage = [
+      '\n\n',
+      'USAGE:',
+      '\n\n',
+      command_usage,
+      positional_flag_usage ? `\n${positional_flag_usage}` : '',
+    ].join('');
+
+    return this;
+  };
+
+  #setHelp = (): ProgramDefinition => {
+    this.help = [
+      `${this.#name} ${this.#version}`,
+      this.#description,
+      this.#documentation,
+      this.#usage,
+      this.#examples,
+      this.#commands,
+      this.#positional_flags,
+      this.#global_flags,
+      this.commands.length > 0 ? `\n\nUse "${this.#name} <command> --help" for more information about a given command.` : '',
+    ].join('');
 
     return this;
   };

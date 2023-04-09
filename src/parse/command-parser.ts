@@ -1,4 +1,4 @@
-import { Command, Program, ParseObject, createCommandHelp, } from '../build';
+import { Command, Program, ParseObject, } from '../build';
 import { parseArguments, } from './argument-parser';
 
 export type T_ParseResult = {
@@ -48,8 +48,7 @@ export const parseCommands = (program: Program, parameters: { id: number, parame
         if (result.command.flags.length > 0) usageString += ' [flags]';
         return usageString;
       }).join(' ');
-      const { results: args, parsed_parameters, unparsed_parameters, } = parseArguments(`${program.name}${usage ? ` ${usage}` : ''}`, program, command, WORKING_PARAMETERS);
-      const help = createCommandHelp({ commandString: `${program.name} ${usage}`, command, program, });
+      const { results: args, parsed_parameters, unparsed_parameters, } = parseArguments(command, WORKING_PARAMETERS);
 
       const potential_commands = potential_next_commands.map(command => command.name);
       const potential_aliases = potential_next_commands.map(command => command.aliases).flat();
@@ -63,8 +62,8 @@ export const parseCommands = (program: Program, parameters: { id: number, parame
         isAliasMatch: command.aliases.includes(parameter),
         flags: {},
         arguments: args,
-        handler: command.operation.operation || ((): void => console.info(help)),
-        help,
+        handler: command.operation.operation || ((): void => console.info(command.help)),
+        help: command.help,
       });
       PARSED_PARAMETERS.push(parameter as never);
       PARSED_PARAMETERS = [ ...PARSED_PARAMETERS, ...parsed_parameters, ];
