@@ -18,5 +18,6 @@ export {
 export {
   ConfigurationError,
   OperationError,
+  OperationTimeoutError,
   ParseError,
 } from './utils';
