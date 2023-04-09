@@ -40,15 +40,16 @@ export default class Flags {
     };
 
     this.#flags = flags.map((flag) => {
-      let ResolvedFlag;
-
       if (key === 'local_flags') {
-        ResolvedFlag = SpecialFlags[flag.name] || Flags[key];
+        const Flag = SpecialFlags[flag.name] || Flags[key];
+        return new Flag(flag);
+      } else if (key === 'global_flags') {
+        const globalFlag = flag as GlobalFlag;
+        return new GlobalFlag(globalFlag);
       } else {
-        ResolvedFlag = Flags[key];
+        const positionalFlag = flag as PositionalFlag;
+        return new PositionalFlag(positionalFlag);
       }
-
-      return new ResolvedFlag(flag);
     });
 
     const helpFlag = this.#flags.find(flag => flag.name === 'help');
