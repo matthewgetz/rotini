@@ -4,14 +4,16 @@ import { ConfigurationError, OperationError, OperationTimeoutError, ParseError, 
 
 const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   let PROGRAM: Program;
+  const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
+
   try {
-    PROGRAM = new Program(program?.definition);
+    PROGRAM = new Program(program?.definition, PROGRAM_CONFIGURATION);
   } catch (e) {
     const error = e as ConfigurationError;
     console.error(`${error.name}: ${error.message}`);
     process.exit(1);
   }
-  const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
+
   const PARAMETERS: { id: number, parameter: string, }[] = program?.parameters
     ? program.parameters.map((parameter, id) => ({ id, parameter, }))
     : process.argv.splice(2).map((parameter, id) => ({ id, parameter, }));

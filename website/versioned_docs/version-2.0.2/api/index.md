@@ -83,7 +83,10 @@ void (async (): Promise<void> => {
 Creates a new configuration error. Configuration errors are thrown by rotini when the program is built from the provided program definition and the definition contains invalid data.
 
 ### OperationError
-Creates a new operation error. Operation errors are thrown by rotini when the final parsed command operation is called and throws an error. That error is caught and re-thrown as a rotini operation error.
+Creates a new operation error. Operation errors are thrown by rotini when the final parsed command operation is called and throws an error.
+
+### OperationTimeoutError
+Creates a new operation timeout error. Operation timeout errors are thrown by rotini when the final parsed command operation is called exceeds the configured (or default) timeout for promised operations.
 
 ### ParseError
 Creates a new parse error. Parse errors are thrown by rotini when a passed parameter cannot be reconciled by the rotini parser. This may be due to not finding the value in the program definition or because an invalid parameter was supplied for a defined argument or flag.
@@ -97,10 +100,12 @@ interface I_ProgramDefinition {
   name: string;
   description: string;
   version: string;
+  documentation?: string;
   configuration_files?: I_ConfigurationFile[];
   commands?: I_Command[];
   global_flags?: I_GlobalFlag[];
-  examples?: string[];
+  positional_flags?: I_PositionalFlag[];
+  examples?: I_Example[];
 }
 ```
 
@@ -135,8 +140,8 @@ interface I_Command {
   arguments?: I_Argument[];
   flags?: I_LocalFlag[];
   commands?: I_Command[];
-  examples?: string[];
-  operation?: ((props: ParseObject) => Promise<unknown> | unknown) | undefined;
+  examples?: I_Example[];
+  operation?: I_Operation;
 }
 ```
 
@@ -144,12 +149,16 @@ interface I_Command {
 
 ```js
 interface I_Argument {
-  name: string;
-  description: string;
-  variant?: 'value' | 'variadic';
-  type?: 'string' | 'number' | 'boolean';
-  values?: string[] | number[] | boolean[];
-  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
+    name: string;
+    description: string;
+    variant?: 'value' | 'variadic';
+    type?: 'string' | 'number' | 'boolean';
+    values?: string[] | number[] | boolean[];
+    isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
+    parse?: ({ original_value, type_coerced_value, }: {
+        original_value: string;
+        type_coerced_value: string | number | boolean;
+    }) => unknown;
 }
 ```
 
@@ -164,9 +173,11 @@ interface I_GenericFlag {
   short_key?: string;
   long_key?: string;
   values?: string[];
-  default?: string | number | boolean;
-  required?: boolean;
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
+  parse?: ({ original_value, type_coerced_value, }: {
+    original_value: string | string[];
+    type_coerced_value: string | number | boolean;
+  }) => unknown;
 }
 ```
 
@@ -174,6 +185,8 @@ interface I_GenericFlag {
 
 ```js
 interface I_GlobalFlag extends I_GenericFlag {
+  default?: string | number | boolean;
+  required?: boolean;
 }
 ```
 
@@ -181,6 +194,7 @@ interface I_GlobalFlag extends I_GenericFlag {
 
 ```js
 interface I_PositionalFlag extends I_GenericFlag {
+  operation: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
 }
 ```
 
@@ -188,6 +202,31 @@ interface I_PositionalFlag extends I_GenericFlag {
 
 ```js
 interface I_LocalFlag extends I_GenericFlag {
+  default?: string | number | boolean;
+  required?: boolean;
+}
+```
+
+### I_Operation
+
+```js
+interface I_Operation {
+  timeout?: number;
+  handler?: Handler;
+  beforeHandler?: BeforeHandler;
+  afterHandler?: AfterHandler;
+  onHandlerSuccess?: SuccessHandler;
+  onHandlerFailure?: FailureHandler;
+  onHandlerTimeout?: Handler;
+}
+```
+
+### I_Example
+
+```js
+interface I_Example {
+  description: string;
+  usage: string;
 }
 ```
 
@@ -210,5 +249,65 @@ type ParseObject = {
     [key: string]: string | number | boolean | (string | number | boolean)[];
   };
   getConfigurationFile: (id: string) => ConfigurationFile;
+};
+```
+
+### Handlers
+
+```js
+type BeforeHandlerProps = {
+  parsed: ParseObject;
+};
+
+type HandlerProps = {
+  parsed: ParseObject;
+  before_handler_result: unknown;
+};
+
+type AfterHandlerProps = {
+  parsed: ParseObject;
+  before_handler_result: unknown;
+  handler_result: unknown;
+};
+
+type SuccessHandlerProps = {
+  parsed: ParseObject;
+  before_handler_result: unknown;
+  handler_result: unknown;
+  after_handler_result: unknown;
+};
+
+type FailureHandlerProps = {
+  parsed: ParseObject;
+};
+
+type BeforeHandler = ((props: BeforeHandlerProps) => Promise<unknown> | unknown) | undefined;
+
+type Handler = ((props: HandlerProps) => Promise<unknown> | unknown) | undefined;
+
+type AfterHandler = ((props: AfterHandlerProps) => Promise<unknown> | unknown) | undefined;
+
+type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> | unknown) | undefined;
+
+type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined;
+```
+
+### Config File
+
+```js
+type GetContent<T> = {
+  data: T | undefined;
+  error: Error | undefined;
+  hasError: boolean;
+};
+
+type SetContent = {
+  error: Error | undefined;
+  hasError: boolean;
+};
+
+type ConfigFile = {
+  getContent: <T = object>() => GetContent<T>;
+  setContent: (data: object) => SetContent;
 };
 ```

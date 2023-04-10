@@ -10,6 +10,7 @@ import Flags from './flags';
 import Example, { I_Example, } from './example';
 import Examples from './examples';
 import Utils, { ConfigurationError, } from '../utils/index';
+import ProgramConfiguration from './program-configuration';
 
 export interface I_ProgramDefinition {
   name: string
@@ -49,7 +50,10 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   #positional_flags!: string;
   #global_flags!: string;
 
-  constructor (program: I_ProgramDefinition) {
+  #configuration: ProgramConfiguration;
+
+  constructor (program: I_ProgramDefinition, configuration: ProgramConfiguration) {
+    this.#configuration = configuration;
     this.configuration_file = new ConfigurationFile({
       id: 'rotini',
       directory: `${homedir()}/.rotini`,
@@ -72,7 +76,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
 
   #setName = (name: string): ProgramDefinition | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
-      throw new ConfigurationError('Program definition property "name" must be defined, of type "string", and cannot contain spaces.');
+      throw new ConfigurationError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
     }
 
     this.name = name;
@@ -83,7 +87,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
 
   #setDescription = (description: string): ProgramDefinition | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
-      throw new ConfigurationError('Program definition property "description" must be defined and of type "string".');
+      throw new ConfigurationError('Program property "description" must be defined and of type "string".');
     }
 
     this.description = description;
@@ -94,7 +98,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
 
   #setVersion = (version: string): ProgramDefinition | never => {
     if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
-      throw new ConfigurationError('Program definition property "version" must be defined and of type "string".');
+      throw new ConfigurationError('Program property "version" must be defined and of type "string".');
     }
 
     this.version = version;
@@ -105,7 +109,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
 
   #setDocumentation = (documentation?: string): ProgramDefinition | never => {
     if (Utils.isDefined(documentation) && Utils.isNotString(documentation)) {
-      throw new ConfigurationError(`Program definition property "documentation" must be of type "string".`);
+      throw new ConfigurationError(`Program property "documentation" must be of type "string".`);
     }
 
     this.documentation = documentation;
@@ -160,48 +164,50 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       reservedPositionalFlags.update.variant = 'boolean';
       reservedPositionalFlags.update.type = 'boolean';
     } else {
-      positional_flags.push(new PositionalFlag({
-        name: 'update',
-        description: 'install the latest version of the program',
-        variant: 'boolean',
-        type: 'boolean',
-        short_key: 'u',
-        long_key: 'update',
-        operation: async (): Promise<Promise<void>> => {
-          const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
+      if (this.#configuration.check_for_new_npm_version) {
+        positional_flags.push(new PositionalFlag({
+          name: 'update',
+          description: 'install the latest version of the program',
+          variant: 'boolean',
+          type: 'boolean',
+          short_key: 'u',
+          long_key: 'update',
+          operation: async (): Promise<Promise<void>> => {
+            const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
 
-          let packageHasUpdate = false;
-          let latestVersion = '';
-          try {
-            const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
-            packageHasUpdate = result.hasUpdate;
-            latestVersion = result.latestVersion;
-          } catch (e) {
-            const programData = data?.[this.name] || {};
-            this.configuration_file.setContent({
-              ...data,
-              [this.name]: {
-                ...programData,
-                last_update_time: new Date().getTime(),
-              },
-            });
-          }
+            let packageHasUpdate = false;
+            let latestVersion = '';
+            try {
+              const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
+              packageHasUpdate = result.hasUpdate;
+              latestVersion = result.latestVersion;
+            } catch (e) {
+              const programData = data?.[this.name] || {};
+              this.configuration_file.setContent({
+                ...data,
+                [this.name]: {
+                  ...programData,
+                  last_update_time: new Date().getTime(),
+                },
+              });
+            }
 
-          if (packageHasUpdate) {
-            const programData = data?.[this.name] || {};
-            this.configuration_file.setContent({
-              ...data,
-              [this.name]: {
-                ...programData,
-                last_update_time: new Date().getTime(),
-              },
-            });
-            await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
-          } else {
-            console.info(`Latest version of ${this.name} is installed.`);
-          }
-        },
-      }));
+            if (packageHasUpdate) {
+              const programData = data?.[this.name] || {};
+              this.configuration_file.setContent({
+                ...data,
+                [this.name]: {
+                  ...programData,
+                  last_update_time: new Date().getTime(),
+                },
+              });
+              await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
+            } else {
+              console.info(`Latest version of ${this.name} is installed.`);
+            }
+          },
+        }));
+      }
     }
 
     if (reservedPositionalFlags?.version) {
@@ -268,7 +274,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
 
   #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): ProgramDefinition | never => {
     if (Utils.isDefined(configuration_files) && Utils.isNotArray(configuration_files)) {
-      throw new ConfigurationError('Program definition property "configuration_files" must be of type "array".');
+      throw new ConfigurationError('Program property "configuration_files" must be of type "array".');
     }
 
     const files = new ConfigurationFiles(configuration_files);

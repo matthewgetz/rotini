@@ -164,6 +164,9 @@ Program definition property "description" must be defined and of type "string".
 ### Version
 Program definition property "version" must be defined and of type "string".
 
+### Documentation
+Program definition property "documentation" must be of type "string".
+
 ### Configurations
 Program definition property "configurations" is the optional array of configuration objects used to setup a program configuration files. See the [I_Configuration](./api#i_configuration) interface for more information. When defined it must be an array objects that contain "id", "directory", and "file" properties.
 
@@ -240,7 +243,7 @@ If a `force` flag name is defined in the program definition for a given command,
 Command property "commands" must of type "array". Additionally, the same command "name" cannot exist at the same level in the definition. For example, if a "get" command has been registered in an array of commands, then a second "get" command cannot exist within that command array. However, a "get" command could be registered in the commands array of the first "get" command as a subcommand.
 
 #### command.examples
-Command property "examples" must be of type "array" and can only contain indexes of type "string".
+Command property "examples" must be of type "array".
 
 #### command.operation
 Command property "operation" must be of type "function".
@@ -289,50 +292,96 @@ const command: I_Command = {
     {
       name: 'hello-world',
       description: 'say hello world',
-      operation: ({ flags }) => {
-        return (flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+      operation: {
+        handler: ({ parsed }) => {
+          const { global_flags } = parsed
+          return (global_flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+        }
       }
     }
   ],
-  operation: ({ commands }) => {
-    const [get,] = commands;
-    return `GET /${get.arguments.resource}s/${get.arguments.id}`;
-  }
+  operation: {
+    handler: ({ parsed }) => {
+      const [get,] = parsed.commands;
+      return `GET /${get.arguments.resource}s/${get.arguments.id}`;
+    }
 };
 ```
 
-### Flags
-Program definition property "flags" must be of type "array". Additionally, the same flag "name", "short_key", or "long_key" cannot exist at the same level in the definition. However, subcommands with flags can register a previously defined flag "name", "short_key", or "long_key".
+### Positional Flags
+Program definition property "positional_flags" must be of type "array". Additionally, the same flag "name", "short_key", or "long_key" cannot exist in the array.
 
-#### flag.name
-Flag property "name" must be defined, of type "string", and cannot contain spaces.
+#### positional_flag.name
+Positional flag property "name" must be defined, of type "string", and cannot contain spaces.
 
-#### flag.description
-Flag property "description" must be defined and of type "string".
+#### positional_flag.description
+Positional flag property "description" must be defined and of type "string".
 
-#### flag.variant
-Flag property "variant" must be defined, of type "string", and set as "boolean" or "value". Defaults to `value`.
+#### positional_flag.variant
+Positional flag property "variant" must be defined, of type "string", and set as "boolean" or "value". Defaults to `value`.
 
-#### flag.type
-Flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean". Defaults to `string` unless flag.variant is set as "boolean", in which case the value is set as `boolean` if not explicitly defined.
+#### positional_flag.type
+Positional flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean". Defaults to `string` unless flag.variant is set as "boolean", in which case the value is set as `boolean` if not explicitly defined.
 
-#### flag.short_key
-Flag property "short_key" must be of type "string" and cannot contain spaces. A flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value.
+#### positional_flag.short_key
+Positional flag property "short_key" must be of type "string" and cannot contain spaces. A flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value.
 
-#### flag.long_key
-Flag property "long_key" must be of type "string" and cannot contain spaces. A flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value.
+#### positional_flag.long_key
+Positional flag property "long_key" must be of type "string" and cannot contain spaces. A flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value.
 
-#### flag.values
-Flag property "values" must be of type "array" and can only contain indexes of type "flag.type".
+#### positional_flag.values
+Positional flag property "values" must be of type "array" and can only contain indexes of type "flag.type".
 
-#### flag.default
-Flag property "default" must be of type "string", "number", or "boolean". The type of the value defined for the flag "default" must match the flag.type, and if an allowed values array is supplied the value must be found in that array.
+#### positional_flag.default
+Positional flag property "default" must be of type "string", "number", or "boolean". The type of the value defined for the flag "default" must match the flag.type, and if an allowed values array is supplied the value must be found in that array.
 
-#### flag.required
-Flag property "required" must be of type "boolean". If a flag is marked as required, if it is not found by the rotini parser an error will be thrown.
+#### positional_flag.required
+Positional flag property "required" must be of type "boolean". If a flag is marked as required, if it is not found by the rotini parser an error will be thrown.
 
-#### flag.isValid
-Flag property "isValid" must be of type "function". The flag "isValid" function is provided the parsed value found for the flag so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "isValid" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
+#### positional_flag.isValid
+Positional flag property "isValid" must be of type "function". The "isValid" function is provided the parsed value found for the flag so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "isValid" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
+
+#### positional_flag.parse
+Positional flag property "parse" must be of type "function". The "parse" function is provided the original value and the type-coerced value found for the flag and can be used to additionally manipulate how the value is parsed for the flag.
+
+#### positional_flag.operation
+Positional flag property "operation" must be of type "function". The "operation" function is called when the positional flag is passed and found by the parser. If the defined flag is of type "value", it will be handed the remaining passed arguments.
+
+### Global Flags
+Program definition property "global_flags" must be of type "array". Additionally, the same flag "name", "short_key", or "long_key" cannot exist in the array.
+
+#### global_flag.name
+Global flag property "name" must be defined, of type "string", and cannot contain spaces.
+
+#### global_flag.description
+Global flag property "description" must be defined and of type "string".
+
+#### global_flag.variant
+Global flag property "variant" must be defined, of type "string", and set as "boolean" or "value". Defaults to `value`.
+
+#### global_flag.type
+Global flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean". Defaults to `string` unless flag.variant is set as "boolean", in which case the value is set as `boolean` if not explicitly defined.
+
+#### global_flag.short_key
+Global flag property "short_key" must be of type "string" and cannot contain spaces. A flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value.
+
+#### global_flag.long_key
+Global flag property "long_key" must be of type "string" and cannot contain spaces. A flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value.
+
+#### global_flag.values
+Global flag property "values" must be of type "array" and can only contain indexes of type "flag.type".
+
+#### global_flag.default
+Global flag property "default" must be of type "string", "number", or "boolean". The type of the value defined for the flag "default" must match the flag.type, and if an allowed values array is supplied the value must be found in that array.
+
+#### global_flag.required
+Global flag property "required" must be of type "boolean". If a flag is marked as required, if it is not found by the rotini parser an error will be thrown.
+
+#### global_flag.isValid
+Global flag property "isValid" must be of type "function". The "isValid" function is provided the parsed value found for the flag so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "isValid" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
+
+#### global_flag.parse
+Global flag property "parse" must be of type "function". The "parse" function is provided the original value and the type-coerced value found for the flag and can be used to additionally manipulate how the value is parsed for the flag.
 
 ```js
 const flag: I_Flag = {
@@ -372,8 +421,11 @@ const definition = {
     {
       name: 'hello-world',
       description: 'say hello world',
-      operation: ({ flags }) => {
-        return (flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+      operation: {
+        handler: ({ parsed }) => {
+          const { global_flags } = parsed
+          return (global_flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+        }
       }
     }
   ],
@@ -391,8 +443,14 @@ const definition = {
     }
   ],
   examples: [
-    'rotini hello-world',
-    'rotini hello-world --output json'
+    {
+      definition: 'a description of the example command',
+      usage: 'rotini hello-world'
+    },
+    {
+      definition: 'a description of the example command',
+      usage: 'rotini hello-world --output json'
+    }
   ]
 };
 ```
@@ -418,8 +476,11 @@ const definition: I_ProgramDefinition = {
     {
       name: 'hello-world',
       description: 'say hello world',
-      operation: ({ flags }) => {
-        return (flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+      operation: {
+        handler: ({ parsed }) => {
+          const { global_flags } = parsed
+          return (global_flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+        }
       }
     }
   ],
@@ -437,8 +498,14 @@ const definition: I_ProgramDefinition = {
     }
   ],
   examples: [
-    'rotini hello-world',
-    'rotini hello-world --output json'
+    {
+      definition: 'a description of the example command',
+      usage: 'rotini hello-world'
+    },
+    {
+      definition: 'a description of the example command',
+      usage: 'rotini hello-world --output json'
+    }
   ]
 };
 ```
