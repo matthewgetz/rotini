@@ -233,7 +233,7 @@ export class GlobalFlag extends Flag {
 }
 
 export class PositionalFlag extends Flag {
-  operation?: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
+  operation!: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
 
   constructor (flag: I_PositionalFlag) {
     super({ ...flag, style: 'positional', });
