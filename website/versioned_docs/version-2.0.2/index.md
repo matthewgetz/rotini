@@ -152,7 +152,8 @@ Defines a rotini program. See the [I_ProgramDefinition](./api#i_programdefinitio
 | configurations | [I_Configuration[]](./api#i_configuration) | false |
 | commands | [I_Command[]](./api#i_command) | false |
 | flags | [I_Flag[]](./api#i_flag) | false |
-| examples | string[] | false |
+| examples | [I_Example[]](./api/#i_example) | false |
+| help | string | false |
 
 
 ### Name
