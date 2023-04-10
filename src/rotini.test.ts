@@ -10,13 +10,14 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       // @ts-expect-error no program definition
       rotini({ configuration, parameters: [ 'hello-world', ], });
 
       expect(error).toHaveBeenCalledTimes(1);
-      expect(error).toHaveBeenCalledWith('ConfigurationError: Program definition property "name" must be defined, of type "string", and cannot contain spaces.');
+      expect(error).toHaveBeenCalledWith('ConfigurationError: Program property "name" must be defined, of type "string", and cannot contain spaces.');
       expect(exit).toHaveBeenCalledTimes(1);
       expect(exit).toHaveBeenCalledWith(1);
     });
@@ -40,6 +41,7 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
@@ -140,6 +142,7 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello', ], });
@@ -181,6 +184,7 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
