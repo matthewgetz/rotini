@@ -1,4 +1,4 @@
-import { Command, Program, createCommandHelp, } from '../build';
+import { Command, } from '../build';
 import Utils, { ParseError, } from '../utils';
 
 type T_Result = {
@@ -17,7 +17,7 @@ type T_ParseCommandArgumentsReturn = {
   results: T_Result[]
 }
 
-export const parseCommandArguments = (commandString: string, program: Program, command: Command, parameters: { id: number, parameter: string, }[] = []): T_ParseCommandArgumentsReturn => {
+export const parseCommandArguments = (command: Command, parameters: { id: number, parameter: string, }[] = []): T_ParseCommandArgumentsReturn => {
   const ORIGINAL_PARAMETERS: readonly { id: number, parameter: string, }[] = Object.freeze(parameters);
   const PARSED_PARAMETERS: string[] = [];
   let UNPARSED_PARAMETERS: { id: number, parameter: string, }[] = [];
@@ -37,14 +37,7 @@ export const parseCommandArguments = (commandString: string, program: Program, c
     };
 
     if (!parameter) {
-      throw new ParseError(`Expected argument "${arg.name}" for command "${command.name}".`, createCommandHelp({ commandString, command, program, }));
-    }
-
-    let typedParameter: string | number | boolean;
-    try {
-      typedParameter = Utils.getTypedValue({ value: parameter, coerceTo: arg.type, additionalErrorInfo: `for command "${command.name}" argument "${arg.name}"`, }) as never;
-    } catch (error) {
-      throw new ParseError((error as Error).message, createCommandHelp({ commandString, command, program, }));
+      throw new ParseError(`Expected argument "${arg.name}" for command "${command.name}".`, command.help);
     }
 
     if (arg.variant === 'variadic') {
@@ -62,31 +55,37 @@ export const parseCommandArguments = (commandString: string, program: Program, c
           break;
         }
 
-        let typedParameter;
-        try {
-          typedParameter = Utils.getTypedValue({ value: parameter, coerceTo: arg.type, additionalErrorInfo: `for command "${command.name}" argument "${arg.name}"`, }) as never;
-        } catch (error) {
-          throw new ParseError((error as Error).message, createCommandHelp({ commandString, command, program, }));
-        }
-
         const helpFlag = command.flags.find(flag => flag.name === 'help');
         if (parameter === `-${helpFlag?.short_key}` || parameter === `--${helpFlag?.long_key}`) {
-          console.info(createCommandHelp({ commandString, command, program, }));
+          console.info(command.help);
           process.exit(0);
         }
 
         if (parameter.startsWith('-')) {
-          throw new ParseError(`Expected argument "${arg.name}" for command "${command.name}" but found flag "${parameter}".`, createCommandHelp({ commandString, command, program, }));
+          throw new ParseError(`Expected argument "${arg.name}" for command "${command.name}" but found flag "${parameter}".`, command.help);
+        }
+
+        let typedParameter;
+        try {
+          typedParameter = Utils.getTypedValue({ value: parameter, coerceTo: arg.type, additionalErrorInfo: `for command "${command.name}" argument "${arg.name}"`, }) as never;
+        } catch (error) {
+          throw new ParseError((error as Error).message, command.help);
         }
 
         if (arg.values.length > 0 && !arg.values.includes(typedParameter)) {
-          throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)}.`, createCommandHelp({ commandString, command, program, }));
+          throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)}.`, command.help);
         }
 
         try {
           arg.isValid(typedParameter);
         } catch (e) {
-          throw new ParseError((e as Error).message, createCommandHelp({ commandString, command, program, }));
+          throw new ParseError((e as Error).message, command.help);
+        }
+
+        try {
+          typedParameter = arg.parse({ original_value: parameter, type_coerced_value: typedParameter, }) as string;
+        } catch (e) {
+          throw new ParseError((e as Error).message, command.help);
         }
 
         result.values.push(typedParameter);
@@ -95,22 +94,35 @@ export const parseCommandArguments = (commandString: string, program: Program, c
     } else {
       const helpFlag = command.flags.find(flag => flag.name === 'help');
       if (parameter === `-${helpFlag?.short_key}` || parameter === `--${helpFlag?.long_key}`) {
-        console.info(createCommandHelp({ commandString, command, program, }));
+        console.info(command.help);
         process.exit(0);
       }
 
       if (parameter.startsWith('-')) {
-        throw new ParseError(`Expected argument "${arg.name}" for command "${command.name}" but found flag "${parameter}".`, createCommandHelp({ commandString, command, program, }));
+        throw new ParseError(`Expected argument "${arg.name}" for command "${command.name}" but found flag "${parameter}".`, command.help);
+      }
+
+      let typedParameter: string | number | boolean;
+      try {
+        typedParameter = Utils.getTypedValue({ value: parameter, coerceTo: arg.type, additionalErrorInfo: `for command "${command.name}" argument "${arg.name}"`, }) as never;
+      } catch (error) {
+        throw new ParseError((error as Error).message, command.help);
       }
 
       if (arg.values.length > 0 && !arg.values.includes(typedParameter)) {
-        throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)}.`, createCommandHelp({ commandString, command, program, }));
+        throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)}.`, command.help);
       }
 
       try {
         arg.isValid(typedParameter);
       } catch (e) {
-        throw new ParseError((e as Error).message, createCommandHelp({ commandString, command, program, }));
+        throw new ParseError((e as Error).message, command.help);
+      }
+
+      try {
+        typedParameter = arg.parse({ original_value: parameter, type_coerced_value: typedParameter, }) as string;
+      } catch (e) {
+        throw new ParseError((e as Error).message, command.help);
       }
 
       result.values.push(typedParameter);
@@ -138,8 +150,8 @@ type T_ParsedArgumentsReturn = {
   unparsed_parameters: { id: number, parameter: string, }[]
 }
 
-export const parseArguments = (commandString: string, program: Program, command: Command, parameters: { id: number, parameter: string, }[] = []): T_ParsedArgumentsReturn => {
-  const { results, parsed_parameters, unparsed_parameters, } = parseCommandArguments(commandString, program, command, parameters);
+export const parseArguments = (command: Command, parameters: { id: number, parameter: string, }[] = []): T_ParsedArgumentsReturn => {
+  const { results, parsed_parameters, unparsed_parameters, } = parseCommandArguments(command, parameters);
   const mappedResults: { [key: string]: string | number | boolean | (string | number | boolean)[] } = {};
   results.map((result: T_Result) => {
     mappedResults[result.name] = (result.variant === 'variadic') ? result.values : result.values[0];

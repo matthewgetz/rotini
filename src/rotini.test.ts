@@ -10,13 +10,14 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       // @ts-expect-error no program definition
       rotini({ configuration, parameters: [ 'hello-world', ], });
 
       expect(error).toHaveBeenCalledTimes(1);
-      expect(error).toHaveBeenCalledWith('ConfigurationError: Program definition property "name" must be defined, of type "string", and cannot contain spaces.');
+      expect(error).toHaveBeenCalledWith('ConfigurationError: Program property "name" must be defined, of type "string", and cannot contain spaces.');
       expect(exit).toHaveBeenCalledTimes(1);
       expect(exit).toHaveBeenCalledWith(1);
     });
@@ -30,7 +31,9 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): string => 'Hello World!',
+            operation: {
+              handler: (): string => 'Hello World!',
+            },
           },
         ],
       };
@@ -38,11 +41,19 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
       const result = await program.run().catch(program.error);
-      expect(result).toEqual('Hello World!');
+      expect(result).toEqual({
+        after_handler_result: undefined,
+        before_handler_result: undefined,
+        handler_failure_result: undefined,
+        handler_result: 'Hello World!',
+        handler_success_result: undefined,
+        handler_timeout_result: undefined,
+      });
     });
 
     it('calls operation when program configuration is not passed', async () => {
@@ -54,14 +65,23 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): string => 'Hello World!',
+            operation: {
+              handler: (): string => 'Hello World!',
+            },
           },
         ],
       };
 
       const program = rotini({ definition, parameters: [ 'hello-world', ], });
       const result = await program.run().catch(program.error);
-      expect(result).toEqual('Hello World!');
+      expect(result).toEqual({
+        after_handler_result: undefined,
+        before_handler_result: undefined,
+        handler_failure_result: undefined,
+        handler_result: 'Hello World!',
+        handler_success_result: undefined,
+        handler_timeout_result: undefined,
+      });
     });
 
     it('outputs help when no parameters are passed', async () => {
@@ -84,7 +104,9 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): string => 'Hello World!',
+            operation: {
+              handler: (): string => 'Hello World!',
+            },
           },
         ],
       };
@@ -107,9 +129,11 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): never => {
-              const error = new Error('hello-world error');
-              throw error;
+            operation: {
+              handler: (): unknown => {
+                const error = new Error('hello-world error');
+                throw error;
+              },
             },
           },
         ],
@@ -118,6 +142,7 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello', ], });
@@ -130,7 +155,7 @@ describe('rotini', () => {
         program.error(error);
       }
       expect(exit).toHaveBeenCalled();
-      expect(result).toBe('Unknown parameters found ["hello"].');
+      expect(result).toBe('Unknown parameters found ["hello"].\n\nDid you mean one of these?\n  hello-world');
       expect(error).toHaveBeenCalledOnce();
     });
 
@@ -146,9 +171,11 @@ describe('rotini', () => {
           {
             name: 'hello-world',
             description: 'hello-world command',
-            operation: (): never => {
-              const error = new Error('hello-world error');
-              throw error;
+            operation: {
+              handler: (): unknown => {
+                const error = new Error('hello-world error');
+                throw error;
+              },
             },
           },
         ],
@@ -157,6 +184,7 @@ describe('rotini', () => {
       const configuration: I_ProgramConfiguration = {
         strict_commands: true,
         strict_flags: true,
+        check_for_new_npm_version: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
@@ -171,7 +199,7 @@ describe('rotini', () => {
         program.error(error);
       }
       expect(exit).toHaveBeenCalled();
-      expect(errorName).toBe('OperationError');
+      expect(errorName).toBe('Error');
       expect(errorMessage).toBe('hello-world error');
       expect(error).toHaveBeenCalledOnce();
     });

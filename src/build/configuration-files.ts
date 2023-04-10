@@ -1,7 +1,7 @@
 import ConfigurationFile, { I_ConfigurationFile, GetContent, SetContent, } from './configuration-file';
 import Utils, { ConfigurationError, } from '../utils';
 
-export type File = {
+export type ConfigFile = {
   getContent: <T = object>() => GetContent<T>
   setContent: (data: object) => SetContent
 }
@@ -25,7 +25,7 @@ export default class ConfigurationFiles {
 
   get = (): ConfigurationFile[] => this.#configuration_files;
 
-  getConfigurationFile = (id: string): File | never => {
+  getConfigurationFile = (id: string): ConfigFile | never => {
     const configuration_file = this.#configuration_files.find(configuration_file => configuration_file.id === id);
 
     if (!configuration_file) {

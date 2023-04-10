@@ -14,6 +14,7 @@ export type T_ParseFlagsReturn = {
   original_parameters: readonly { id: number, parameter: string, }[]
   parsed_parameters: string[]
   unparsed_parameters: { id: number, parameter: string, }[]
+  errors: Error[]
   results: T_ParseResult[]
 }
 
@@ -21,6 +22,7 @@ export const parseFlags = (parameters: { id: number, parameter: string, }[] = []
   const ORIGINAL_PARAMETERS: readonly { id: number, parameter: string, }[] = Object.freeze(parameters);
   const PARSED_PARAMETERS: string[] = [];
   const UNPARSED_PARAMETERS: { id: number, parameter: string, }[] = [];
+  const ERRORS: Error[] = [];
   const RESULTS: T_ParseResult[] = [];
 
   for (let p = 0; p < parameters.length; p++) {
@@ -83,6 +85,7 @@ export const parseFlags = (parameters: { id: number, parameter: string, }[] = []
     original_parameters: ORIGINAL_PARAMETERS,
     parsed_parameters: PARSED_PARAMETERS,
     unparsed_parameters: UNPARSED_PARAMETERS,
+    errors: ERRORS,
     results: RESULTS,
   };
 };
@@ -91,6 +94,7 @@ export type T_ParseGlobalFlagsReturn = {
   original_parsed_flags: readonly T_ParseResult[],
   matched_parsed_flags: T_ParseResult[],
   unmatched_parsed_flags: T_ParseResult[],
+  errors: Error[]
   results: { [key: string]: T_ParseValue },
 }
 
@@ -98,10 +102,11 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: st
   const ORIGINAL_PARSED_FLAGS: readonly T_ParseResult[] = Object.freeze([ ...parsedFlags, ]);
   const MATCHED_PARSED_FLAGS: T_ParseResult[] = [];
   let UNMATCHED_PARSED_FLAGS: T_ParseResult[] = parsedFlags;
+  const ERRORS: Error[] = [];
   const RESULTS: { [key: string]: T_ParseValue } = {};
   const FLAG_TYPE = isGlobal ? 'Global Flag' : 'Flag';
 
-  flags.forEach(({ long_key, name, short_key, type, isValid, default: defaultValue, required, values, }) => {
+  flags.forEach(({ long_key, name, short_key, type, isValid, parse, default: defaultValue, required, values, }) => {
     UNMATCHED_PARSED_FLAGS.forEach(({ id, key, value, prefix, }) => {
       if ((short_key === key && prefix === '-') || (long_key === key && prefix === '--')) {
         if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
@@ -118,9 +123,17 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: st
           throw new ParseError((e as Error).message, help);
         }
 
+        let parsed_value;
+
+        try {
+          parsed_value = parse({ original_value: value.toString(), type_coerced_value: value, }) as string;
+        } catch (e) {
+          throw new ParseError((e as Error).message, help);
+        }
+
         if (!RESULTS[name]) {
-          RESULTS[name] = value;
-          MATCHED_PARSED_FLAGS.push({ id, key, value, prefix, });
+          RESULTS[name] = parsed_value;
+          MATCHED_PARSED_FLAGS.push({ id, key, value: parsed_value, prefix, });
           UNMATCHED_PARSED_FLAGS = UNMATCHED_PARSED_FLAGS.filter(f => f.id !== id);
         }
       }
@@ -131,7 +144,8 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: st
     }
 
     if (required && RESULTS[name] === undefined) {
-      throw new ParseError(`${FLAG_TYPE} "${name}" is required, but was not found.`, help);
+      ERRORS.push(new ParseError(`${FLAG_TYPE} "${name}" is required, but was not found.`, help));
+      // throw new ParseError(`${FLAG_TYPE} "${name}" is required, but was not found.`, help);
     }
   });
 
@@ -139,6 +153,7 @@ export const matchFlags = (flags: Flag[], parsedFlags: T_ParseResult[], help: st
     original_parsed_flags: ORIGINAL_PARSED_FLAGS,
     matched_parsed_flags: MATCHED_PARSED_FLAGS,
     unmatched_parsed_flags: UNMATCHED_PARSED_FLAGS,
+    errors: ERRORS,
     results: RESULTS,
   };
 };

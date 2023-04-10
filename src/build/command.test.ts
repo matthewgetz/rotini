@@ -55,7 +55,7 @@ describe('Command', () => {
 
     it('does not throw error when command property "name" is string without spaces', () => {
       expect(() => {
-        new Command({ name: 'something', description: 'something description', });
+        new Command({ name: 'something', description: 'something description', usage: 'something', });
       }).not.toThrow();
     });
   });
@@ -100,7 +100,7 @@ describe('Command', () => {
 
     it('does not throw error when command property "name" is string without spaces', () => {
       expect(() => {
-        new Command({ name: 'something', description: 'something description', });
+        new Command({ name: 'something', description: 'something description', usage: 'something', });
       }).not.toThrow();
     });
   });
@@ -110,7 +110,7 @@ describe('Command', () => {
 
     it('does not throw error when command property "aliases" is not defined', () => {
       expect(() => {
-        new Command({ name: 'get', description: 'get command description', });
+        new Command({ name: 'get', description: 'get command description', usage: 'something', });
       }).not.toThrow();
     });
 
@@ -158,7 +158,7 @@ describe('Command', () => {
 
     it('does not throw error when command property "aliases" is array of strings', () => {
       expect(() => {
-        new Command({ name: 'get', description: 'get command description', aliases: [ 'something', ], });
+        new Command({ name: 'get', description: 'get command description', usage: 'something', aliases: [ 'something', ], });
       }).not.toThrow();
     });
   });
@@ -168,7 +168,7 @@ describe('Command', () => {
 
     it('does not throw error when command property "deprecated" is not defined', () => {
       expect(() => {
-        new Command({ name: 'get', description: 'get command description', });
+        new Command({ name: 'get', description: 'get command description', usage: 'something', });
       }).not.toThrow();
     });
 
@@ -202,7 +202,7 @@ describe('Command', () => {
 
     it('does not throw error when command property "deprecated" is boolean', () => {
       expect(() => {
-        new Command({ name: 'get', description: 'get command description', deprecated: true, });
+        new Command({ name: 'get', description: 'get command description', usage: 'something', deprecated: true, });
       }).not.toThrow();
     });
   });
