@@ -194,7 +194,7 @@ interface I_GlobalFlag extends I_GenericFlag {
 
 ```js
 interface I_PositionalFlag extends I_GenericFlag {
-  operation: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
+  operation?: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
 }
 ```
 

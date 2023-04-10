@@ -106,6 +106,7 @@ interface I_ProgramDefinition {
   global_flags?: I_GlobalFlag[];
   positional_flags?: I_PositionalFlag[];
   examples?: I_Example[];
+  help?: string;
 }
 ```
 
@@ -142,6 +143,7 @@ interface I_Command {
   commands?: I_Command[];
   examples?: I_Example[];
   operation?: I_Operation;
+  help?: string;
 }
 ```
 
@@ -194,7 +196,7 @@ interface I_GlobalFlag extends I_GenericFlag {
 
 ```js
 interface I_PositionalFlag extends I_GenericFlag {
-  operation: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
+  operation?: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
 }
 ```
 

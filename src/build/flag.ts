@@ -23,7 +23,7 @@ export interface I_LocalFlag extends I_GenericFlag {
 }
 
 export interface I_PositionalFlag extends I_GenericFlag {
-  operation: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown)
+  operation?: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown)
 }
 
 export interface I_Flag extends I_GenericFlag {
@@ -233,16 +233,16 @@ export class GlobalFlag extends Flag {
 }
 
 export class PositionalFlag extends Flag {
-  operation!: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
+  operation?: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown);
 
   constructor (flag: I_PositionalFlag) {
     super({ ...flag, style: 'positional', });
     this.#setOperation(flag.operation);
   }
 
-  #setOperation = (operation: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown)): PositionalFlag | never => {
-    if (Utils.isNotDefined(operation) || Utils.isNotFunction(operation)) {
-      throw new ConfigurationError(`Flag property "operation" must be defined and of type "function" for ${this.style} flag ${this.name}`);
+  #setOperation = (operation: ((value?: string | number | boolean | string[] | number[] | boolean[]) => Promise<unknown> | unknown) = ((): void => { })): PositionalFlag | never => {
+    if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
+      throw new ConfigurationError(`Flag property "operation" must be of type "function" for ${this.style} flag ${this.name}`);
     }
 
     this.operation = operation;

@@ -22,6 +22,7 @@ export interface I_ProgramDefinition {
   global_flags?: I_GlobalFlag[]
   positional_flags?: I_PositionalFlag[]
   examples?: I_Example[]
+  help?: string
 }
 
 export default class ProgramDefinition implements I_ProgramDefinition {
@@ -71,7 +72,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       .#setExamples(program.examples)
       .#setConfigurationFiles(program.configuration_files)
       .#setUsage()
-      .#setHelp();
+      .#setHelp(program.help);
   }
 
   #setName = (name: string): ProgramDefinition | never => {
@@ -154,6 +155,43 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   };
 
   #setPositionalFlags = (positional_flags: I_PositionalFlag[] = []): ProgramDefinition | never => {
+    const versionOperation = (): void => console.info(this.version);
+    const helpOperation = (): void => console.info(this.help);
+    const updateOperation = async (): Promise<Promise<void>> => {
+      const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
+
+      let packageHasUpdate = false;
+      let latestVersion = '';
+      try {
+        const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
+        packageHasUpdate = result.hasUpdate;
+        latestVersion = result.latestVersion;
+      } catch (e) {
+        const programData = data?.[this.name] || {};
+        this.configuration_file.setContent({
+          ...data,
+          [this.name]: {
+            ...programData,
+            last_update_time: new Date().getTime(),
+          },
+        });
+      }
+
+      if (packageHasUpdate) {
+        const programData = data?.[this.name] || {};
+        this.configuration_file.setContent({
+          ...data,
+          [this.name]: {
+            ...programData,
+            last_update_time: new Date().getTime(),
+          },
+        });
+        await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
+      } else {
+        console.info(`Latest version of ${this.name} is installed.`);
+      }
+    };
+
     const reservedPositionalFlags = {
       update: positional_flags.find(flag => flag.name === 'update'),
       version: positional_flags.find(flag => flag.name === 'version'),
@@ -163,6 +201,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     if (reservedPositionalFlags?.update) {
       reservedPositionalFlags.update.variant = 'boolean';
       reservedPositionalFlags.update.type = 'boolean';
+      reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
     } else {
       if (this.#configuration.check_for_new_npm_version) {
         positional_flags.push(new PositionalFlag({
@@ -172,40 +211,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
           type: 'boolean',
           short_key: 'u',
           long_key: 'update',
-          operation: async (): Promise<Promise<void>> => {
-            const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
-
-            let packageHasUpdate = false;
-            let latestVersion = '';
-            try {
-              const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
-              packageHasUpdate = result.hasUpdate;
-              latestVersion = result.latestVersion;
-            } catch (e) {
-              const programData = data?.[this.name] || {};
-              this.configuration_file.setContent({
-                ...data,
-                [this.name]: {
-                  ...programData,
-                  last_update_time: new Date().getTime(),
-                },
-              });
-            }
-
-            if (packageHasUpdate) {
-              const programData = data?.[this.name] || {};
-              this.configuration_file.setContent({
-                ...data,
-                [this.name]: {
-                  ...programData,
-                  last_update_time: new Date().getTime(),
-                },
-              });
-              await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
-            } else {
-              console.info(`Latest version of ${this.name} is installed.`);
-            }
-          },
+          operation: updateOperation,
         }));
       }
     }
@@ -213,6 +219,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     if (reservedPositionalFlags?.version) {
       reservedPositionalFlags.version.variant = 'boolean';
       reservedPositionalFlags.version.type = 'boolean';
+      reservedPositionalFlags.version.operation = reservedPositionalFlags.version.operation || versionOperation;
     } else {
       positional_flags.push(new PositionalFlag({
         name: 'version',
@@ -221,15 +228,14 @@ export default class ProgramDefinition implements I_ProgramDefinition {
         type: 'boolean',
         short_key: 'v',
         long_key: 'version',
-        operation: (): void => {
-          console.info(this.version);
-        },
+        operation: versionOperation,
       }));
     }
 
     if (reservedPositionalFlags?.help) {
       reservedPositionalFlags.help.variant = 'boolean';
       reservedPositionalFlags.help.type = 'boolean';
+      reservedPositionalFlags.help.operation = reservedPositionalFlags.help.operation || helpOperation;
     } else {
       positional_flags.push(new PositionalFlag({
         name: 'help',
@@ -238,9 +244,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
         type: 'boolean',
         short_key: 'h',
         long_key: 'help',
-        operation: (): void => {
-          console.info(this.help);
-        },
+        operation: helpOperation,
       }));
     }
 
@@ -326,15 +330,20 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       '\n\n',
       'USAGE:',
       '\n\n',
-      command_usage,
-      positional_flag_usage ? `\n${positional_flag_usage}` : '',
+      this.commands.length > 0 ? `${command_usage}` : '',
+      (this.commands.length > 0 && positional_flag_usage) ? '\n' : '',
+      positional_flag_usage ? `${positional_flag_usage}` : '',
     ].join('');
 
     return this;
   };
 
-  #setHelp = (): ProgramDefinition => {
-    this.help = [
+  #setHelp = (help?: string): ProgramDefinition => {
+    if (Utils.isDefined(help) && Utils.isNotString(help)) {
+      throw new ConfigurationError(`Program property "help" must be of type "string".`);
+    }
+
+    this.help = help || [
       `${this.#name} ${this.#version}`,
       this.#description,
       this.#documentation,

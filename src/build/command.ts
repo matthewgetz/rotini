@@ -19,6 +19,7 @@ export interface I_Command {
   commands?: I_Command[]
   examples?: I_Example[]
   operation?: I_Operation
+  help?: string
 }
 
 interface I_ResolvedCommand extends I_Command {
@@ -62,7 +63,7 @@ export default class Command implements I_ResolvedCommand {
       .#setExamples(command.examples)
       .#setOperation(command.operation)
       .#setIsForceCommand()
-      .#setHelp();
+      .#setHelp(command.help);
   }
 
   #setName = (name: string): Command | never => {
@@ -204,8 +205,12 @@ export default class Command implements I_ResolvedCommand {
     return this;
   };
 
-  #setHelp = (): Command => {
-    this.help = [
+  #setHelp = (help?: string): Command => {
+    if (Utils.isDefined(help) && Utils.isNotString(help)) {
+      throw new ConfigurationError(`Command property "help" must be of type "string".`);
+    }
+
+    this.help = help || [
       this.#name,
       this.#description,
       this.#usage,
