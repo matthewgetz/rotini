@@ -17,14 +17,14 @@
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
-    "@vitest/coverage-c8": "^0.30.0",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "@vitest/coverage-c8": "^0.30.1",
     "eslint": "^8.38.0",
-    "npm-check-updates": "^16.10.7",
+    "npm-check-updates": "^16.10.8",
     "tsup": "^6.7.0",
     "typescript": "^5.0.4",
-    "vitest": "^0.30.0"
+    "vitest": "^0.30.1"
   },
   "eslintConfig": {
     "env": {
