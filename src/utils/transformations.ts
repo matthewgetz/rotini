@@ -1,3 +1,4 @@
+import { ParseError, } from './errors';
 import { isBooleanString, isDefined, isNumber, isTrueString, } from './validations';
 
 export const getDuplicateStrings = (array: string[]): { hasDuplicates: boolean, duplicates: string[] } => {
@@ -35,13 +36,13 @@ export const getTypedValue = ({ value, coerceTo, additionalErrorInfo, }: { value
       if (isNumber(valueString)) {
         coercedValue = Number(valueString);
       } else {
-        throw new Error(`Expected value "${value}" to be of type "${coerceTo}", but received type "${typeof value}"${additionalErrorInfo}.`);
+        throw new ParseError(`Expected value "${value}" to be of type "${coerceTo}", but received type "${typeof value}"${additionalErrorInfo}.`);
       }
     } else if (coerceTo === 'boolean') {
       if (isBooleanString(valueString)) {
         coercedValue = isTrueString(valueString);
       } else {
-        throw new Error(`Expected value "${value}" to be of type "${coerceTo}", but received type "${typeof value}"${additionalErrorInfo}.`);
+        throw new ParseError(`Expected value "${value}" to be of type "${coerceTo}", but received type "${typeof value}"${additionalErrorInfo}.`);
       }
     } else {
       coercedValue = valueString;

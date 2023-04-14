@@ -87,7 +87,7 @@ export default class ConfigurationFile implements I_ConfigurationFile {
     const isJsonData = Utils.isJson(data);
 
     if (!isJsonData) {
-      throw new Error('Configuration file data is not JSON data.');
+      throw new ConfigurationError('Configuration file data is not JSON data.');
     }
 
     let error;

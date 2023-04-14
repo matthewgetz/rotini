@@ -7,7 +7,7 @@ const parsePositionalFlag = async (parameters: { id: number, parameter: string }
   const helpFlag = positional_flags.find(flag => flag.name === 'help');
 
   if (parameters.length === 0) {
-    helpFlag?.operation();
+    helpFlag?.operation('' as never);
     process.exit(0);
   }
 
@@ -16,14 +16,24 @@ const parsePositionalFlag = async (parameters: { id: number, parameter: string }
 
   if (parameters[0] && parameters[0].parameter.startsWith('-')) {
     if (shortFlagMatch || longFlagMatch) {
-      const matchedFlag = shortFlagMatch || longFlagMatch;
+      const { name, type, values, isValid, parse, operation, } = (shortFlagMatch || longFlagMatch)!;
       const remaining_parameters = parameters.slice(1).map(p => p.parameter);
-      let value = remaining_parameters.length > 1 ? remaining_parameters : remaining_parameters[0];
-      const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: matchedFlag?.type, });
+      // no variadic until all flags have implemented variadic values
+      // let value = remaining_parameters.length > 1 ? remaining_parameters : remaining_parameters[0] || true;
+      let value = remaining_parameters[0] || true;
+      const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: type, });
 
-      matchedFlag?.isValid(value as never);
-      value = matchedFlag?.parse({ original_value: value, type_coerced_value, }) as string;
-      await matchedFlag?.operation(value);
+      if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
+        throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].parameter}" has value "${value}".`, help);
+      }
+
+      if (values.length > 0 && !values.includes(value as string)) {
+        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, help);
+      }
+
+      isValid(value as never);
+      value = parse({ original_value: value, type_coerced_value, }) as string;
+      await operation(value as never);
       process.exit(0);
     }
 

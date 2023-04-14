@@ -34,10 +34,11 @@ export default class Commands {
       throw new ConfigurationError(`${this.#entity_type} property "commands" must be of type "array" for ${this.#entity_type.toLowerCase()} "${this.#entity_name}".`);
     }
 
-    this.#commands = commands.map((command: I_Command) => new Command({
-      ...command,
-      usage: `${this.#usage}`,
-    }));
+    this.#commands = commands.map((command: I_Command) => {
+      const usage = command.usage || this.#usage;
+
+      return new Command({ ...command, usage, }, { isGeneratedUsage: usage === this.#usage, });
+    });
 
     return this;
   };
