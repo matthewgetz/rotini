@@ -178,7 +178,7 @@ interface I_GenericFlag {
   values?: string[];
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
   parse?: ({ original_value, type_coerced_value, }: {
-    original_value: string | string[];
+    original_value: string;
     type_coerced_value: string | number | boolean;
   }) => unknown;
 }

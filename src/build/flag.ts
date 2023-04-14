@@ -9,7 +9,7 @@ interface I_GenericFlag {
   long_key?: string
   values?: string[]
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
-  parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown
+  parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string, type_coerced_value: string | number | boolean }) => unknown
 }
 
 export interface I_GlobalFlag extends I_GenericFlag {
@@ -52,7 +52,7 @@ export default class Flag implements I_Flag {
   default: string | number | boolean | undefined;
   required!: boolean;
   isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
-  parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown;
+  parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string, type_coerced_value: string | number | boolean }) => unknown;
 
   constructor (flag: I_Flag) {
     this
@@ -216,12 +216,12 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown = (({ type_coerced_value, }): string | number | boolean => type_coerced_value)): Flag | never => {
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string, type_coerced_value: string | number | boolean }) => unknown = (({ type_coerced_value, }): string | number | boolean => type_coerced_value)): Flag | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Flag property "parse" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
 
-    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }): unknown => {
+    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string, type_coerced_value: string | number | boolean }): unknown => {
       try {
         const parsed = parse({ original_value, type_coerced_value, });
         return parsed;
