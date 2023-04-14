@@ -1,6 +1,6 @@
 import { Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
 import { parse, } from './parse';
-import { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from './utils';
+import { ConfigurationError, OperationTimeoutError, ParseError, } from './utils';
 
 const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   let PROGRAM: Program;
@@ -27,11 +27,10 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
   const error = (error: Error): void => {
     if (error instanceof ParseError) {
       console.error(`Error: ${error.message}${error.help}`);
-    }
-    else if (error instanceof OperationError || error instanceof OperationTimeoutError) {
+    } else if (error instanceof OperationTimeoutError) {
       console.error(`${error.name}: ${error.message}`);
     } else {
-      console.error(error);
+      throw error;
     }
     process.exit(1);
   };

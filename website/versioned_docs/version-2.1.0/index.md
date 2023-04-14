@@ -249,6 +249,9 @@ Command property "examples" must be of type "array".
 #### command.operation
 Command property "operation" must be of type "object". See the [I_Operation](./api#i_operation) interface for more information.
 
+#### command.usage
+Command property "usage" must be of type "string". This property will override the generated command usage if set.
+
 #### command.help
 Command property "help" must be of type "string". This property will override the generated command help output if set.
 

@@ -143,6 +143,7 @@ interface I_Command {
   commands?: I_Command[];
   examples?: I_Example[];
   operation?: I_Operation;
+  usage?: string;
   help?: string;
 }
 ```

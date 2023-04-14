@@ -19,14 +19,15 @@ export interface I_Command {
   commands?: I_Command[]
   examples?: I_Example[]
   operation?: I_Operation
+  usage?: string
   help?: string
 }
 
-interface I_ResolvedCommand extends I_Command {
-  usage: string
+interface I_CommandMetadata {
+  isGeneratedUsage: boolean
 }
 
-export default class Command implements I_ResolvedCommand {
+export default class Command implements I_Command {
   name!: string;
   description!: string;
   aliases!: string[];
@@ -50,7 +51,13 @@ export default class Command implements I_ResolvedCommand {
   #commands!: string;
   #flags!: string;
 
-  constructor (command: I_ResolvedCommand) {
+  #isGeneratedUsage: boolean;
+
+  #subcommands!: string[];
+
+  constructor (command: I_Command, metadata: I_CommandMetadata) {
+    this.#isGeneratedUsage = metadata.isGeneratedUsage;
+
     this
       .#setName(command?.name)
       .#setAliases(command.aliases)
@@ -63,7 +70,8 @@ export default class Command implements I_ResolvedCommand {
       .#setExamples(command.examples)
       .#setOperation(command.operation)
       .#setIsForceCommand()
-      .#setHelp(command.help);
+      .#setHelp(command.help)
+      .#setNextPossibleCommands();
   }
 
   #setName = (name: string): Command | never => {
@@ -177,7 +185,7 @@ export default class Command implements I_ResolvedCommand {
     return this;
   };
 
-  #setUsage = (usage: string): Command => {
+  #setUsage = (usage?: string): Command => {
     let command_usage = `${usage} ${this.name}`;
 
     if (this.arguments.length > 1) {
@@ -186,12 +194,23 @@ export default class Command implements I_ResolvedCommand {
       command_usage += ` <argument>`;
     }
 
-    this.usage = command_usage;
+    let resolvedUsage: string;
+    let resolvedUsageHelp: string;
+
+    if (this.#isGeneratedUsage) {
+      resolvedUsage = command_usage;
+      resolvedUsageHelp = `  ${command_usage}${this.flags.length > 0 ? ' [flags]' : ''}`;
+    } else {
+      resolvedUsage = usage!;
+      resolvedUsageHelp = `  ${usage}`;
+    }
+
+    this.usage = resolvedUsage;
     this.#usage = [
       '\n\n',
       'USAGE:',
       '\n\n',
-      `  ${command_usage}${this.flags.length > 0 ? ' [flags]' : ''}`,
+      resolvedUsageHelp,
     ].join('');
 
     return this;
@@ -223,5 +242,18 @@ export default class Command implements I_ResolvedCommand {
     ].join('');
 
     return this;
+  };
+
+  #setNextPossibleCommands = (): Command => {
+    const potential_commands = this.commands.map(command => command.name);
+    const potential_aliases = this.commands.map(command => command.aliases).flat();
+    this.#subcommands = [ ...potential_commands, ...potential_aliases, ];
+    return this;
+  };
+
+  isSubcommand = (parameter: string): boolean => this.#subcommands.includes(parameter);
+
+  parseCommand = (): void => {
+
   };
 }
