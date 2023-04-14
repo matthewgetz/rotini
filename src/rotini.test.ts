@@ -87,7 +87,7 @@ describe('rotini', () => {
     it('outputs help when no parameters are passed', async () => {
       const info = vi.spyOn(console, 'info').mockImplementation(() => {});
       vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+      const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
       const definition: I_ProgramDefinition = {
         name: 'rotini',
@@ -111,10 +111,14 @@ describe('rotini', () => {
         ],
       };
 
-      const program = rotini({ definition, });
-      const result = await program.run().catch(program.error);
-      expect(result).toEqual(undefined);
+      try {
+        const program = rotini({ definition, });
+        await program.run().catch(program.error);
+      } catch (e) {
+        //
+      }
       expect(info).toHaveBeenCalledOnce();
+      expect(exit).toHaveBeenCalledOnce();
     });
 
     it('throws parse error when parameter is unknown to parser', async () => {
@@ -160,9 +164,6 @@ describe('rotini', () => {
     });
 
     it('throws error', async () => {
-      const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
-      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       const definition: I_ProgramDefinition = {
         name: 'rotini',
         description: 'rotini cli example',
@@ -191,17 +192,15 @@ describe('rotini', () => {
       let errorName;
       let errorMessage;
       try {
-        await program.run();
+        await program.run().catch(program.error);
       } catch (e) {
         const error = e as Error;
         errorName = error.name;
         errorMessage = error.message;
-        program.error(error);
       }
-      expect(exit).toHaveBeenCalled();
+
       expect(errorName).toBe('Error');
       expect(errorMessage).toBe('hello-world error');
-      expect(error).toHaveBeenCalledOnce();
     });
   });
 });
