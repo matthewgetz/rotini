@@ -76,7 +76,11 @@ export const makeFlagsSection = (heading: 'FLAGS' | 'GLOBAL FLAGS' | 'POSITIONAL
     const long_key = flag.long_key;
     const variant = flag.variant;
     const values = flag.values;
-    const value = (variant === 'value' && values.length > 0) ? JSON.stringify(values) : flag.type;
+    const value = ((variant === 'value' || variant === 'variadic') && values.length > 0)
+      ? JSON.stringify(values)
+      : variant === 'variadic'
+        ? `[${flag.type}]`
+        : flag.type;
     const flags = (short_key && long_key)
       ? `-${short_key},--${long_key}=${value}`
       : (short_key)

@@ -18,19 +18,19 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
 
   if (parameters[0] && parameters[0].value.startsWith('-')) {
     if (shortFlagMatch || longFlagMatch) {
-      const { name, type, values, isValid, parse, operation, } = (shortFlagMatch || longFlagMatch)!;
+      const { name, type, variant, values, isValid, parse, operation, } = (shortFlagMatch || longFlagMatch)!;
       const remaining_parameters = parameters.slice(1).map(p => p.value);
-      // no variadic until all flags have implemented variadic values
-      // let value = remaining_parameters.length > 1 ? remaining_parameters : remaining_parameters[0] || true;
-      let value = remaining_parameters[0] || true;
+      let value = variant === 'variadic' ? remaining_parameters : remaining_parameters[0] || true;
       const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: type, });
 
       if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
         throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${value}".`, help);
       }
 
-      if (values.length > 0 && !values.includes(value as string)) {
+      if (variant === 'value' && values.length > 0 && !values.includes(value as string)) {
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, help);
+      } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => values.includes(v))) {
+        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, help);
       }
 
       isValid(value as never);
