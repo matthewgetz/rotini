@@ -3,8 +3,8 @@ import Utils, { ConfigurationError, ParseError, } from './utils';
 interface I_GenericFlag {
   name: string
   description: string
-  variant?: 'value' | 'boolean'
-  type?: 'string' | 'number' | 'boolean'
+  variant?: 'boolean' | 'value' | 'variadic'
+  type?: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]'
   short_key?: string
   long_key?: string
   values?: string[]
@@ -13,12 +13,12 @@ interface I_GenericFlag {
 }
 
 export interface I_GlobalFlag extends I_GenericFlag {
-  default?: string | number | boolean
+  default?: string | number | boolean | string[] | number[] | boolean[]
   required?: boolean
 }
 
 export interface I_LocalFlag extends I_GenericFlag {
-  default?: string | number | boolean
+  default?: string | number | boolean | string[] | number[] | boolean[]
   required?: boolean
 }
 
@@ -35,7 +35,7 @@ export interface I_PositionalFlag extends I_GenericFlag {
 }
 
 export interface I_Flag extends I_GenericFlag {
-  default?: string | number | boolean
+  default?: string | number | boolean | string[] | number[] | boolean[]
   required?: boolean
   style: 'positional' | 'global' | 'local'
 }
@@ -43,13 +43,13 @@ export interface I_Flag extends I_GenericFlag {
 export default class Flag implements I_Flag {
   name!: string;
   description!: string;
-  variant!: 'value' | 'boolean';
-  type!: 'string' | 'number' | 'boolean';
+  variant!: 'boolean' | 'value' | 'variadic';
+  type!: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]';
   style!: 'positional' | 'global' | 'local';
   short_key?: string;
   long_key?: string;
   values: string[] = [];
-  default: string | number | boolean | undefined;
+  default: string | number | boolean | string[] | number[] | boolean[] | undefined;
   required!: boolean;
   isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
   parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string, type_coerced_value: string | number | boolean }) => unknown;
@@ -58,9 +58,9 @@ export default class Flag implements I_Flag {
     this
       .#setName(flag?.name)
       .#setDescription(flag.description)
+      .#setStyle(flag.style)
       .#setVariant(flag.variant)
       .#setType(flag.type)
-      .#setStyle(flag.style)
       .#setFlags(flag.short_key, flag.long_key)
       .#setValues(flag.values)
       .#setDefault(flag.default)
@@ -89,8 +89,8 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setVariant = (variant: 'value' | 'boolean' = 'boolean'): Flag | never => {
-    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'value', 'boolean', ]))) {
+  #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): Flag | never => {
+    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'boolean', 'value', 'variadic', ]))) {
       throw new ConfigurationError(`Flag property "variant" must be defined, of type "string", and set as "boolean" or "value" for ${this.style} flag "${this.name}".`);
     }
 
@@ -99,8 +99,8 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setType = (type: 'string' | 'number' | 'boolean' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
-    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', ]))) {
+  #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
+    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', 'string[]', 'number[]', 'boolean[]', ]))) {
       throw new ConfigurationError(`Flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for ${this.style} flag "${this.name}".`);
     }
 
@@ -115,7 +115,7 @@ export default class Flag implements I_Flag {
 
   #setStyle = (style: 'positional' | 'global' | 'local'): Flag | never => {
     if (Utils.isNotDefined(style) || Utils.isNotString(style) || Utils.isNotAllowedStringValue(style, Object.freeze([ 'positional', 'global', 'local', ]))) {
-      throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for ${this.style} flag "${this.name}"`);
+      throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for ${this.style} flag "${this.name}".`);
     }
 
     this.style = style;
@@ -155,10 +155,18 @@ export default class Flag implements I_Flag {
   };
 
   #setValues = (values: string[] = []): Flag | never => {
-    const isNotArrayOfType = Object.freeze({ string: Utils.isNotArrayOfStrings, number: Utils.isNotArrayOfNumbers, boolean: Utils.isNotArrayOfBooleans, })[this.type];
+    const isNotArrayOfType = Object.freeze({
+      string: Utils.isNotArrayOfStrings,
+      'string[]': Utils.isNotArrayOfStrings,
+      number: Utils.isNotArrayOfNumbers,
+      'number[]': Utils.isNotArrayOfNumbers,
+      boolean: Utils.isNotArrayOfBooleans,
+      'boolean[]': Utils.isNotArrayOfBooleans,
+    })[this.type];
 
     if (Utils.isNotArray(values) || isNotArrayOfType(values)) {
-      throw new ConfigurationError(`Flag property "values" must be of type "array" and can only contain indexes of type "${this.type}" for ${this.style} flag "${this.name}".`);
+      const [ type, ] = this.type.split('[]');
+      throw new ConfigurationError(`Flag property "values" must be of type "array" and can only contain indexes of type "${type}" for ${this.style} flag "${this.name}".`);
     }
 
     this.values = values;
@@ -166,13 +174,26 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setDefault = (default_value?: string | number | boolean): Flag | never => {
-    if ((Utils.isDefined(default_value) && (Utils.isNotString(default_value) && Utils.isNotNumber(default_value) && Utils.isNotBoolean(default_value))) || Utils.isEmptyString(default_value!)) {
-      throw new ConfigurationError(`Flag property "default" must be of type "string", "number", or "boolean" for ${this.style} flag "${this.name}".`);
+  #setDefault = (default_value?: string | number | boolean | string[] | number[] | boolean[]): Flag | never => {
+    if (Utils.isDefined(default_value) && this.variant === 'boolean' && Utils.isNotBoolean(default_value)) {
+      throw new ConfigurationError(`Flag property "default" must be of type "boolean" for ${this.style} flag "${this.name}" when flag property "variant" is set to "boolean".`);
     }
 
-    if (Utils.isDefined(default_value) && ((this.type === 'string' && Utils.isNotString(default_value)) || (this.type === 'number' && Utils.isNotNumber(default_value)) || (this.type === 'boolean' && Utils.isNotBoolean(default_value)))) {
+    if ((Utils.isDefined(default_value) && this.variant === 'value' && (Utils.isNotString(default_value) && Utils.isNotNumber(default_value) && Utils.isNotBoolean(default_value))) || Utils.isEmptyString(default_value!)) {
+      throw new ConfigurationError(`Flag property "default" must be of type "string", "number", or "boolean" for ${this.style} flag "${this.name}" when flag property "variant" is set to "value".`);
+    }
+
+    if ((Utils.isDefined(default_value) && this.variant === 'variadic' && (Utils.isNotArrayOfStrings(default_value) && Utils.isNotArrayOfNumbers(default_value) && Utils.isNotArrayOfBooleans(default_value)))) {
+      throw new ConfigurationError(`Flag property "default" must be of type "string[]", "number[]", or "boolean[]" for ${this.style} flag "${this.name}" when flag property "variant" is set to "variadic".`);
+    }
+
+    if (Utils.isDefined(default_value) && this.variant === 'value' && ((this.type === 'string' && Utils.isNotString(default_value)) || (this.type === 'number' && Utils.isNotNumber(default_value)) || (this.type === 'boolean' && Utils.isNotBoolean(default_value)))) {
       throw new ConfigurationError(`Flag property "default" must be of type "${this.type}" when flag property "type" is set as "${this.type}" for ${this.style} flag "${this.name}.`);
+    }
+
+    if (Utils.isDefined(default_value) && this.variant === 'variadic' && ((this.type === 'string[]' && Utils.isNotArrayOfStrings(default_value)) || (this.type === 'number[]' && Utils.isNotArrayOfNumbers(default_value)) || (this.type === 'boolean[]' && Utils.isNotArrayOfBooleans(default_value)))) {
+      const [ type, ] = this.type.split('[]');
+      throw new ConfigurationError(`Flag property "default" must be of type "${type}" when flag property "type" is set as "${type}" for ${this.style} flag "${this.name}.`);
     }
 
     if (Utils.isDefined(default_value) && this.values.length > 0 && !this.values.includes(default_value as string)) {

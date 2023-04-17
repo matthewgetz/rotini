@@ -385,13 +385,13 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   };
 
   parseCommands = (parameters: Parameter[] = []): T_ParseCommandsReturn => {
-    const p = new Parameters(parameters);
+    const params = new Parameters(parameters);
     const RESULTS: T_ParseResult[] = [];
 
     let potential_next_commands = this.commands;
 
-    while (p.hasWorkingParameters()) {
-      const { id, value, } = p.nextWorkingParameter()!;
+    while (params.hasWorkingParameters()) {
+      const { id, value, } = params.nextWorkingParameter()!;
 
       const command = potential_next_commands.find(command => {
         const command_name_match = value === command.name;
@@ -403,10 +403,10 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       if (command) {
         potential_next_commands = command.commands;
 
-        const { results: args, parsed_parameters, unparsed_parameters, } = command.parseArguments(p.working_parameters);
+        const { results: args, parsed_parameters, unparsed_parameters, } = command.parseArguments(params.working_parameters);
 
         RESULTS.push({
-          id: RESULTS.length + 1,
+          id,
           command,
           isAliasMatch: command.aliases.includes(value),
           parsed: {
@@ -415,18 +415,18 @@ export default class ProgramDefinition implements I_ProgramDefinition {
           },
         });
 
-        p.parsed_parameters.push(value as never);
-        p.parsed_parameters = [ ...p.parsed_parameters, ...parsed_parameters, ];
-        p.working_parameters = unparsed_parameters;
+        params.parsed_parameters.push(value as never);
+        params.parsed_parameters = [ ...params.parsed_parameters, ...parsed_parameters, ];
+        params.working_parameters = unparsed_parameters;
       } else {
-        p.unparsed_parameters.push({ id, value, });
+        params.unparsed_parameters.push({ id, value, });
       }
     }
 
     return {
-      original_parameters: p.original_parameters,
-      parsed_parameters: p.parsed_parameters,
-      unparsed_parameters: p.unparsed_parameters,
+      original_parameters: params.original_parameters,
+      parsed_parameters: params.parsed_parameters,
+      unparsed_parameters: params.unparsed_parameters,
       results: RESULTS,
     };
   };

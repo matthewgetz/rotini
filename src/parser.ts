@@ -113,8 +113,8 @@ export const parse = async (program: Program, program_configuration: ProgramConf
 
   let unmatched_flags = FLAGS.results;
 
-  const commands = COMMANDS.results.map(result => {
-    const matchedResults = matchFlags(result.command.flags, unmatched_flags, COMMAND.help, false);
+  const commands = COMMANDS.results.map((result, index) => {
+    const matchedResults = matchFlags({ flags: result.command.flags, parsedFlags: unmatched_flags, help: COMMAND.help, isGlobal: false, next_command_id: COMMANDS.results[index + 1]?.id, });
 
     const formatted_command = {
       name: result.command.name,
@@ -137,7 +137,7 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     }
   });
 
-  const matchedGlobalFlags = matchFlags(program.global_flags, unmatched_flags, COMMAND.help, true);
+  const matchedGlobalFlags = matchFlags({ flags: program.global_flags, parsedFlags: unmatched_flags, help: COMMAND.help, isGlobal: true, });
   ERRORS = [ ...ERRORS, ...matchedGlobalFlags.errors, ];
 
   const global_flags = matchedGlobalFlags.results;

@@ -26,19 +26,19 @@ export const getShortFlagKeyAndValue = (parameter: string): { key: string, value
   return { key, value, };
 };
 
-export const getTypedValue = ({ value, coerceTo, additionalErrorInfo, }: { value: unknown, coerceTo?: 'string' | 'number' | 'boolean', additionalErrorInfo?: string }): string | number | boolean | never => {
+export const getTypedValue = ({ value, coerceTo, additionalErrorInfo, }: { value: unknown, coerceTo?: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]', additionalErrorInfo?: string }): string | number | boolean | never => {
   const valueString = value as string;
   let coercedValue: string | number | boolean;
   additionalErrorInfo = isDefined(additionalErrorInfo) ? ` ${additionalErrorInfo}` : '';
 
   if (isDefined(coerceTo)) {
-    if (coerceTo === 'number') {
+    if (coerceTo === 'number' || coerceTo === 'number[]') {
       if (isNumber(valueString)) {
         coercedValue = Number(valueString);
       } else {
         throw new ParseError(`Expected value "${value}" to be of type "${coerceTo}", but received type "${typeof value}"${additionalErrorInfo}.`);
       }
-    } else if (coerceTo === 'boolean') {
+    } else if (coerceTo === 'boolean' || coerceTo === 'boolean[]') {
       if (isBooleanString(valueString)) {
         coercedValue = isTrueString(valueString);
       } else {
