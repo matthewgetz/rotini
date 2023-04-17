@@ -6,8 +6,22 @@ import Examples from './examples';
 import Flag, { ForceFlag, HelpFlag, I_LocalFlag, } from './flag';
 import Flags from './flags';
 import Operation, { I_Operation, } from './operation';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, ParseError, } from './utils';
 import { makeAliasesSection, makeArgumentsSection, makeCommandsSection, makeExamplesSection, makeFlagsSection, } from './help';
+import Parameters, { Parameter, } from './parameters';
+
+type T_Result = {
+  name: string
+  variant: 'value' | 'variadic'
+  values: (string | number | boolean)[]
+}
+
+type T_ParseCommandArgumentsReturn = {
+  original_parameters: readonly Parameter[]
+  parsed_parameters: (string | number | boolean)[]
+  unparsed_parameters: Parameter[]
+  results: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+}
 
 export interface I_Command {
   name: string
@@ -53,7 +67,7 @@ export default class Command implements I_Command {
 
   #isGeneratedUsage: boolean;
 
-  #subcommands!: string[];
+  subcommand_identifiers!: string[];
 
   constructor (command: I_Command, metadata: I_CommandMetadata) {
     this.#isGeneratedUsage = metadata.isGeneratedUsage;
@@ -68,10 +82,10 @@ export default class Command implements I_Command {
       .#setUsage(command.usage)
       .#setCommands(command.commands)
       .#setExamples(command.examples)
-      .#setOperation(command.operation)
       .#setIsForceCommand()
       .#setHelp(command.help)
-      .#setNextPossibleCommands();
+      .#setOperation(command.operation)
+      .#setSubcommandIdentifiers();
   }
 
   #setName = (name: string): Command | never => {
@@ -180,6 +194,13 @@ export default class Command implements I_Command {
   };
 
   #setOperation = (operation?: I_Operation): Command | never => {
+    if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
+      throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
+    }
+
+    const resolved_operation = operation || {};
+    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
+
     this.operation = new Operation(this.name, operation);
 
     return this;
@@ -244,16 +265,96 @@ export default class Command implements I_Command {
     return this;
   };
 
-  #setNextPossibleCommands = (): Command => {
+  #setSubcommandIdentifiers = (): Command => {
     const potential_commands = this.commands.map(command => command.name);
     const potential_aliases = this.commands.map(command => command.aliases).flat();
-    this.#subcommands = [ ...potential_commands, ...potential_aliases, ];
+    this.subcommand_identifiers = [ ...potential_commands, ...potential_aliases, ];
     return this;
   };
 
-  isSubcommand = (parameter: string): boolean => this.#subcommands.includes(parameter);
+  parseArguments = (parameters: Parameter[] = []): T_ParseCommandArgumentsReturn => {
+    const params = new Parameters(parameters);
 
-  parseCommand = (): void => {
+    const RESULTS: T_Result[] = [];
 
+    const help_flag = this.flags.find(flag => flag.name === 'help');
+
+    const parseArgument = (result: T_Result, arg: Argument, parameter: string): void => {
+      if (parameter === `-${help_flag?.short_key}` || parameter === `--${help_flag?.long_key}`) {
+        console.info(this.help);
+        process.exit(0);
+      }
+
+      if (parameter.startsWith('-')) {
+        throw new ParseError(`Expected argument "${arg.name}" but found flag "${parameter}" for command "${this.name}".`);
+      }
+
+      let typedParameter: string | number | boolean;
+      try {
+        typedParameter = Utils.getTypedValue({ value: parameter, coerceTo: arg.type, additionalErrorInfo: `for command "${this.name}" argument "${arg.name}"`, }) as never;
+      } catch (error) {
+        throw new ParseError((error as Error).message);
+      }
+
+      if (arg.values.length > 0 && !arg.values.includes(typedParameter)) {
+        throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)} for command "${this.name}".`);
+      }
+
+      try {
+        arg.isValid(typedParameter);
+      } catch (e) {
+        throw new ParseError((e as Error).message);
+      }
+
+      try {
+        typedParameter = arg.parse({ original_value: parameter, type_coerced_value: typedParameter, }) as string;
+      } catch (e) {
+        throw new ParseError((e as Error).message);
+      }
+
+      result.values.push(typedParameter);
+      params.parsed_parameters.push(parameter);
+    };
+
+    this.arguments.forEach((arg, index) => {
+      const parameter = parameters[index]?.value;
+      const values: (string | number | boolean)[] = [];
+      const result = { name: arg.name, variant: arg.variant, values, };
+
+      if (!parameter) {
+        throw new ParseError(`Expected argument "${arg.name}" for command "${this.name}".`);
+      }
+
+      if (arg.variant === 'variadic') {
+        for (let p = index; p < parameters.length; p++) {
+          const parameter = parameters[p].value;
+
+          if ((this.subcommand_identifiers.includes(parameter) || parameter.startsWith('-')) && result.values.length > 0) {
+            params.unparsed_parameters = parameters.slice(p);
+            break;
+          }
+
+          parseArgument(result, arg, parameter);
+        }
+      } else {
+        parseArgument(result, arg, parameter);
+      }
+
+      RESULTS.push(result);
+    });
+
+    params.adjustUnparsedParameters();
+
+    const mappedResults: { [key: string]: string | number | boolean | (string | number | boolean)[] } = {};
+    RESULTS.map((result: T_Result) => {
+      mappedResults[result.name] = (result.variant === 'variadic') ? result.values : result.values[0];
+    });
+
+    return {
+      original_parameters: params.original_parameters,
+      parsed_parameters: params.parsed_parameters,
+      unparsed_parameters: params.unparsed_parameters,
+      results: mappedResults,
+    };
   };
 }

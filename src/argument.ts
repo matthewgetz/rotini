@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, ParseError, } from '../utils';
+import Utils, { ConfigurationError, ParseError, } from './utils';
 
 export interface I_Argument {
   name: string

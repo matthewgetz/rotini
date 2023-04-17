@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 export type GetContent<T> = {
   data: T | undefined

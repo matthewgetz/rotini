@@ -1,5 +1,6 @@
-import Flag from '../build/flag';
-import Utils, { ParseError, } from '../utils';
+import Flag from './flag';
+import Parameters, { Parameter, } from './parameters';
+import Utils, { ParseError, } from './utils';
 
 export type T_ParseValue = string | number | boolean
 
@@ -11,42 +12,41 @@ export type T_ParseResult = {
 }
 
 export type T_ParseFlagsReturn = {
-  original_parameters: readonly { id: number, parameter: string, }[]
-  parsed_parameters: string[]
-  unparsed_parameters: { id: number, parameter: string, }[]
+  original_parameters: readonly Parameter[]
+  parsed_parameters: (string | number | boolean)[]
+  unparsed_parameters: Parameter[]
   errors: Error[]
   results: T_ParseResult[]
 }
 
-export const parseFlags = (parameters: { id: number, parameter: string, }[] = []): T_ParseFlagsReturn => {
-  const ORIGINAL_PARAMETERS: readonly { id: number, parameter: string, }[] = Object.freeze(parameters);
-  const PARSED_PARAMETERS: string[] = [];
-  const UNPARSED_PARAMETERS: { id: number, parameter: string, }[] = [];
+export const parseFlags = (parameters: Parameter[] = []): T_ParseFlagsReturn => {
+  const params = new Parameters(parameters);
+
   const ERRORS: Error[] = [];
   const RESULTS: T_ParseResult[] = [];
 
   for (let p = 0; p < parameters.length; p++) {
-    const parameter = parameters[p].parameter;
+    const parameter = parameters[p].value;
     const parameterId = parameters[p].id;
-    const nextParameter = parameters[p + 1]?.parameter;
+    const nextParameter = parameters[p + 1]?.value;
     const nextParameterId = parameters[p + 1]?.id;
 
     const handleFlag = ({ parameter, key, value, prefix, }: { parameter: string, key: string, value: string, prefix: '-' | '--' }): void => {
       if (Utils.isDefined(value) && Utils.isNotFlag(value)) {
         const typedValue = Utils.getTypedValue({ value, });
         RESULTS.push({ id: RESULTS.length + 1, key, value: typedValue, prefix, });
-        PARSED_PARAMETERS.push(parameter);
-        PARSED_PARAMETERS.push(value);
+        params.parsed_parameters.push(parameter);
+        params.parsed_parameters.push(value);
         p++;
       } else if (Utils.isBooleanString(value)) {
         const typedValue = Utils.getTypedValue({ value, });
         RESULTS.push({ id: RESULTS.length + 1, key, value: typedValue, prefix, });
-        PARSED_PARAMETERS.push(parameter);
-        PARSED_PARAMETERS.push(value);
+        params.parsed_parameters.push(parameter);
+        params.parsed_parameters.push(value);
         p++;
       } else {
         RESULTS.push({ id: RESULTS.length + 1, key, value: true, prefix, });
-        PARSED_PARAMETERS.push(parameter);
+        params.parsed_parameters.push(parameter);
       }
     };
 
@@ -54,37 +54,37 @@ export const parseFlags = (parameters: { id: number, parameter: string, }[] = []
       const { key, value, } = Utils.getLongFlagKeyAndValue(parameter);
       const typedValue = Utils.getTypedValue({ value, });
       RESULTS.push({ id: RESULTS.length + 1, key, value: typedValue, prefix: '--', });
-      PARSED_PARAMETERS.push(parameter);
+      params.parsed_parameters.push(parameter);
     } else if (Utils.isLongFlag(parameter)) {
       const key = Utils.getLongFlagKey(parameter);
       if ((parameterId + 1) === nextParameterId) {
         handleFlag({ parameter, key, value: nextParameter, prefix: '--', });
       } else {
         RESULTS.push({ id: RESULTS.length + 1, key, value: true, prefix: '--', });
-        PARSED_PARAMETERS.push(parameter);
+        params.parsed_parameters.push(parameter);
       }
     } else if (Utils.isShortFlagEquals(parameter)) {
       const { key, value, } = Utils.getShortFlagKeyAndValue(parameter);
       const typedValue = Utils.getTypedValue({ value, });
       RESULTS.push({ id: RESULTS.length + 1, key, value: typedValue, prefix: '-', });
-      PARSED_PARAMETERS.push(parameter);
+      params.parsed_parameters.push(parameter);
     } else if (Utils.isShortFlag(parameter)) {
       const key = Utils.getShortFlagKey(parameter);
       if ((parameterId + 1) === nextParameterId) {
         handleFlag({ parameter, key, value: nextParameter, prefix: '-', });
       } else {
         RESULTS.push({ id: RESULTS.length + 1, key, value: true, prefix: '-', });
-        PARSED_PARAMETERS.push(parameter);
+        params.parsed_parameters.push(parameter);
       }
     } else {
-      UNPARSED_PARAMETERS.push(parameter as never);
+      params.unparsed_parameters.push(parameter as never);
     }
   }
 
   return {
-    original_parameters: ORIGINAL_PARAMETERS,
-    parsed_parameters: PARSED_PARAMETERS,
-    unparsed_parameters: UNPARSED_PARAMETERS,
+    original_parameters: params.original_parameters,
+    parsed_parameters: params.parsed_parameters,
+    unparsed_parameters: params.unparsed_parameters,
     errors: ERRORS,
     results: RESULTS,
   };

@@ -2,7 +2,7 @@ import Argument from './argument';
 import Command from './command';
 import Flag from './flag';
 import Example from './example';
-import Utils from '../utils';
+import Utils from './utils';
 
 export const makeAliasesSection = (aliases: string[]): string => {
   return aliases.length > 0 ? [

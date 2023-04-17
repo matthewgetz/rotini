@@ -1,5 +1,5 @@
 import Command, { I_Command, } from './command';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 export interface CommandsProperties {
   entity: {

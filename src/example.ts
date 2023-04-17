@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 export interface I_Example {
   description: string

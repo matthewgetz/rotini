@@ -1,5 +1,5 @@
 import Argument, { I_Argument, } from './argument';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 type Properties = {
   entity: {

@@ -1,5 +1,5 @@
 import { ConfigFile, } from './configuration-files';
-import Utils, { ConfigurationError, OperationTimeoutError, } from '../utils';
+import Utils, { ConfigurationError, OperationTimeoutError, } from './utils';
 
 const FIVE_MINS_IN_MS = 300000;
 

@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, ParseError, } from '../utils';
+import Utils, { ConfigurationError, ParseError, } from './utils';
 
 interface I_GenericFlag {
   name: string

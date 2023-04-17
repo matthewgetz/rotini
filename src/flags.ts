@@ -1,5 +1,5 @@
 import { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './flag';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 type Properties = {
   entity: {

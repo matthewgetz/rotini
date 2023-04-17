@@ -9,8 +9,26 @@ import { makeCommandsSection, makeFlagsSection, makeExamplesSection, } from './h
 import Flags from './flags';
 import Example, { I_Example, } from './example';
 import Examples from './examples';
-import Utils, { ConfigurationError, } from '../utils/index';
+import Utils, { ConfigurationError, } from './utils';
 import ProgramConfiguration from './program-configuration';
+import Parameters, { Parameter, } from './parameters';
+
+export type T_ParseResult = {
+  id: number
+  command: Command
+  isAliasMatch: boolean
+  parsed: {
+    flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+    arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+  }
+}
+
+export type T_ParseCommandsReturn = {
+  original_parameters: readonly Parameter[]
+  parsed_parameters: (string | number | boolean)[]
+  unparsed_parameters: Parameter[]
+  results: T_ParseResult[]
+}
 
 export interface I_ProgramDefinition {
   name: string
@@ -22,6 +40,7 @@ export interface I_ProgramDefinition {
   global_flags?: I_GlobalFlag[]
   positional_flags?: I_PositionalFlag[]
   examples?: I_Example[]
+  usage?: string
   help?: string
 }
 
@@ -71,7 +90,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       .#setCommands(program.commands)
       .#setExamples(program.examples)
       .#setConfigurationFiles(program.configuration_files)
-      .#setUsage()
+      .#setUsage(program.usage)
       .#setHelp(program.help);
   }
 
@@ -289,7 +308,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setUsage = (): ProgramDefinition => {
+  #setUsage = (usage?: string): ProgramDefinition => {
     let command_usage = `  ${this.name}`;
     let positional_flag_usage;
 
@@ -326,14 +345,21 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       command_usage += ` [global flags]`;
     }
 
-    this.#usage = [
-      '\n\n',
-      'USAGE:',
-      '\n\n',
-      this.commands.length > 0 ? `${command_usage}` : '',
-      (this.commands.length > 0 && positional_flag_usage) ? '\n' : '',
-      positional_flag_usage ? `${positional_flag_usage}` : '',
-    ].join('');
+    this.#usage = usage
+      ? [
+        '\n\n',
+        'USAGE:',
+        '\n\n',
+        `  ${usage}`,
+      ].join('')
+      : [
+        '\n\n',
+        'USAGE:',
+        '\n\n',
+        this.commands.length > 0 ? `${command_usage}` : '',
+        (this.commands.length > 0 && positional_flag_usage) ? '\n' : '',
+        positional_flag_usage ? `${positional_flag_usage}` : '',
+      ].join('');
 
     return this;
   };
@@ -356,5 +382,52 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     ].join('');
 
     return this;
+  };
+
+  parseCommands = (parameters: Parameter[] = []): T_ParseCommandsReturn => {
+    const p = new Parameters(parameters);
+    const RESULTS: T_ParseResult[] = [];
+
+    let potential_next_commands = this.commands;
+
+    while (p.hasWorkingParameters()) {
+      const { id, value, } = p.nextWorkingParameter()!;
+
+      const command = potential_next_commands.find(command => {
+        const command_name_match = value === command.name;
+        const command_alias_match = command.aliases.includes(value);
+        const command_match = command_name_match || command_alias_match;
+        return command_match;
+      });
+
+      if (command) {
+        potential_next_commands = command.commands;
+
+        const { results: args, parsed_parameters, unparsed_parameters, } = command.parseArguments(p.working_parameters);
+
+        RESULTS.push({
+          id: RESULTS.length + 1,
+          command,
+          isAliasMatch: command.aliases.includes(value),
+          parsed: {
+            flags: {},
+            arguments: args,
+          },
+        });
+
+        p.parsed_parameters.push(value as never);
+        p.parsed_parameters = [ ...p.parsed_parameters, ...parsed_parameters, ];
+        p.working_parameters = unparsed_parameters;
+      } else {
+        p.unparsed_parameters.push({ id, value, });
+      }
+    }
+
+    return {
+      original_parameters: p.original_parameters,
+      parsed_parameters: p.parsed_parameters,
+      unparsed_parameters: p.unparsed_parameters,
+      results: RESULTS,
+    };
   };
 }

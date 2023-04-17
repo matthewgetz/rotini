@@ -1,6 +1,8 @@
-import { Program, ProgramConfiguration, I_ProgramConfiguration, I_ProgramDefinition, } from './build';
-import { parse, } from './parse';
+import Program, { I_ProgramDefinition, } from './program-definition';
+import ProgramConfiguration, { I_ProgramConfiguration, } from './program-configuration';
+import { parse, } from './parser';
 import { ConfigurationError, OperationTimeoutError, ParseError, } from './utils';
+import { Parameter, createParameters, } from './parameters';
 
 const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
   let PROGRAM: Program;
@@ -14,9 +16,9 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
     process.exit(1);
   }
 
-  const PARAMETERS: { id: number, parameter: string, }[] = program?.parameters
-    ? program.parameters.map((parameter, id) => ({ id, parameter, }))
-    : process.argv.splice(2).map((parameter, id) => ({ id, parameter, }));
+  const PARAMETERS: Parameter[] = program?.parameters
+    ? createParameters(program.parameters)
+    : createParameters(process.argv.splice(2));
 
   const run = async (): Promise<unknown> | never => {
     const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, PARAMETERS);

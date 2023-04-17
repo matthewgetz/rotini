@@ -1,5 +1,5 @@
 import ConfigurationFile, { I_ConfigurationFile, GetContent, SetContent, } from './configuration-file';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 export type ConfigFile = {
   getContent: <T = object>() => GetContent<T>

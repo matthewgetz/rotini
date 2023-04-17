@@ -1,5 +1,5 @@
 import Example, { I_Example, } from './example';
-import Utils, { ConfigurationError, } from '../utils';
+import Utils, { ConfigurationError, } from './utils';
 
 export interface ExamplesProperties {
   entity: {
