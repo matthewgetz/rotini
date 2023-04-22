@@ -330,10 +330,10 @@
     "@pnpm/network.ca-file" "^1.0.1"
     config-chain "^1.1.11"
 
-"@rotini/configs@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@rotini/configs/-/configs-1.0.3.tgz#b3114590f6801e5aeb6f4404d2f3d6161b12c30b"
-  integrity sha512-81osrIPYdW1BkSB2cDVK1J9dltr4ZG4YQGViDUfjb+AuT0XgA/Dsvo1NbUJK8ODzLRYO+Qb4bxHAlDH5HJAClg==
+"@rotini/configs@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@rotini/configs/-/configs-1.0.4.tgz#5754071171c312968f8ca8b5468934129487355c"
+  integrity sha512-sc+8MRbOeY9MyxJMaaVTZmBqsMx77WLg3qjsp7XCCm7GCV+JFX1o8rC+7tm1bHChV1AqjUAIwLqwoWROQYb/4g==
   dependencies:
     "@types/node" "*"
     "@typescript-eslint/eslint-plugin" "*"
