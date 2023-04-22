@@ -7,7 +7,7 @@ export interface I_Argument {
   type?: 'string' | 'number' | 'boolean'
   values?: string[] | number[] | boolean[]
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
-  parse?: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean }) => unknown
+  parse?: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown
 }
 
 export default class Argument implements I_Argument {
@@ -17,7 +17,7 @@ export default class Argument implements I_Argument {
   type!: 'string' | 'number' | 'boolean';
   values!: string[] | number[] | boolean[];
   isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
-  parse!: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean }) => unknown;
+  parse!: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown;
 
   constructor (argument: I_Argument) {
     this
@@ -101,12 +101,12 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean }) => unknown = (({ type_coerced_value, }): string | number | boolean => type_coerced_value)): Argument | never => {
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): Argument | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Argument property "parse" must be of type "function" for argument "${this.name}".`);
     }
 
-    this.parse = ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean }): unknown => {
+    this.parse = ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }): unknown => {
       try {
         const parsed = parse({ original_value, type_coerced_value, });
         return parsed;

@@ -10,7 +10,7 @@ interface I_GenericFlag {
   values?: string[]
   default?: string | number | boolean | string[] | number[] | boolean[]
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
-  parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown
+  parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown
 }
 
 export interface I_GlobalFlag extends I_GenericFlag {
@@ -50,7 +50,7 @@ export default class Flag implements I_Flag {
   default: string | number | boolean | string[] | number[] | boolean[] | undefined;
   required!: boolean;
   isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
-  parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown;
+  parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown;
 
   constructor (flag: I_Flag) {
     this
@@ -198,7 +198,8 @@ export default class Flag implements I_Flag {
       throw new ConfigurationError(`Flag property "default" must be one of allowed values ${JSON.stringify(this.values)} but received value "${default_value}" for ${this.style} flag "${this.name}".`);
     }
 
-    if (Utils.isDefined(default_value) && this.variant === 'variadic' && this.values.length > 0 && !(default_value as string[])!.every(value => this.values.includes(value))) {
+    const string_values = this.values.map(v => v.toString());
+    if (Utils.isDefined(default_value) && this.variant === 'variadic' && this.values.length > 0 && !(default_value as string[])!.every(value => string_values.includes(value))) {
       throw new ConfigurationError(`Flag property "default" must be one of allowed values ${JSON.stringify(this.values)} but received value "${JSON.stringify(default_value)}" for ${this.style} flag "${this.name}".`);
     }
 
@@ -239,12 +240,12 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown = (({ type_coerced_value, }): string | number | boolean => type_coerced_value)): Flag | never => {
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): Flag | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Flag property "parse" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
 
-    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }): unknown => {
+    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }): unknown => {
       try {
         const parsed = parse({ original_value, type_coerced_value, });
         return parsed;

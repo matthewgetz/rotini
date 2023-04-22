@@ -201,7 +201,7 @@ export default class Command implements I_Command {
     const resolved_operation = operation || {};
     resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
 
-    this.operation = new Operation(this.name, operation);
+    this.operation = new Operation(this.name, resolved_operation);
 
     return this;
   };

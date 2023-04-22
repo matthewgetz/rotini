@@ -32,20 +32,26 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
       const hasValue = (Utils.isNotArray(value) && value) || (Utils.isArray(value) && (value as unknown as string[]).length > 0);
       value = hasValue ? value : default_value || true;
 
-      const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: type, });
+      const type_coerced_value = value && Utils.isArray(value)
+        ? (value as string[]).map(v => Utils.getTypedValue({ value: v, coerceTo: type, }))
+        : value
+          ? Utils.getTypedValue({ value, coerceTo: type, })
+          : undefined;
 
       if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
         throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${value}".`, resolvedHelp);
       }
 
+      const string_values = values.map(v => v.toString());
+
       if (variant === 'value' && values.length > 0 && !values.includes(value as string)) {
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, resolvedHelp);
-      } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => values.includes(v))) {
+      } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => string_values.includes(v))) {
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, resolvedHelp);
       }
 
       isValid(value as never);
-      value = parse({ original_value: (value as string), type_coerced_value, }) as string;
+      value = parse({ original_value: (value as string), type_coerced_value: type_coerced_value as string, }) as string;
       await operation(value as never);
       process.exit(0);
     }

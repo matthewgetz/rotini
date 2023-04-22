@@ -113,7 +113,7 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
 
   flags.forEach(({ long_key, name, short_key, type, variant, isValid, parse, default: defaultValue, required, values, }) => {
     UNMATCHED_PARSED_FLAGS.forEach(({ id, key, value, prefix, }) => {
-      if ((short_key === key && prefix === '-') || (long_key === key && prefix === '--')) {
+      if (((short_key === key && prefix === '-') || (long_key === key && prefix === '--')) && (!next_command_id || (next_command_id && id < next_command_id))) {
         if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
           throw new ParseError(`${FLAG_TYPE} "${name}" is of type "${type}" but flag "${prefix}${key}" has value "${value}".`, help);
         }
@@ -181,11 +181,3 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
     results: mappedResults,
   };
 };
-
-/*
-
-Variadic Flags:
-
-- use a mapper like or arguments to see if array is longer than one value - return string if one value, return entire array otherwise
-
-*/
