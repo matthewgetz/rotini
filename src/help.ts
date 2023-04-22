@@ -69,18 +69,22 @@ export const makeFlagsSection = (heading: 'FLAGS' | 'GLOBAL FLAGS' | 'POSITIONAL
   const flagInfo = flags.map(flag => {
     let description = flag.description;
     if (Utils.isDefined(flag.default)) {
-      description += ` (default=${flag.default})`;
+      description += Utils.isArray(flag.default)
+        ? ` (default=${JSON.stringify(flag.default)})`
+        : ` (default=${flag.default})`;
     }
 
     const short_key = flag.short_key;
     const long_key = flag.long_key;
     const variant = flag.variant;
     const values = flag.values;
-    const value = ((variant === 'value' || variant === 'variadic') && values.length > 0)
-      ? JSON.stringify(values)
-      : variant === 'variadic'
-        ? `[${flag.type}]`
-        : flag.type;
+    const value = (variant === 'variadic' && values.length > 0)
+      ? `${JSON.stringify(values)}...`
+      : (variant === 'value' && values.length > 0)
+        ? JSON.stringify(values)
+        : variant === 'variadic'
+          ? `${flag.type}...`
+          : flag.type;
     const flags = (short_key && long_key)
       ? `-${short_key},--${long_key}=${value}`
       : (short_key)
@@ -90,6 +94,7 @@ export const makeFlagsSection = (heading: 'FLAGS' | 'GLOBAL FLAGS' | 'POSITIONAL
     return {
       flag: `  ${flags}`,
       description,
+      variant,
     };
   });
 
@@ -99,7 +104,7 @@ export const makeFlagsSection = (heading: 'FLAGS' | 'GLOBAL FLAGS' | 'POSITIONAL
     const flagLength = f.flag.length;
     const numberOfSpaces = longestName - flagLength;
     const spaces = ' '.repeat(numberOfSpaces);
-    return `${f.flag}${spaces}     ${f.description || ''}`;
+    return `${f.flag}${spaces}     ${f.description}`;
   });
 
   return formattedNames.length > 0

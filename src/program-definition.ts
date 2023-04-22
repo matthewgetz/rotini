@@ -317,9 +317,13 @@ export default class ProgramDefinition implements I_ProgramDefinition {
         let usage = '';
         let y = '';
 
-        if (flag.variant !== 'boolean' && flag.values.length > 0) {
+        if (flag.variant == 'variadic' && flag.values.length > 0) {
+          y = `=${JSON.stringify(flag.values)}...`;
+        } else if (flag.variant === 'value' && flag.values.length > 0) {
           y = `=${JSON.stringify(flag.values)}`;
-        } else if (flag.variant !== 'boolean') {
+        } else if (flag.variant === 'variadic') {
+          y = `=${flag.type}...`;
+        } else {
           y = `=${flag.type}`;
         }
 

@@ -8,17 +8,16 @@ interface I_GenericFlag {
   short_key?: string
   long_key?: string
   values?: string[]
+  default?: string | number | boolean | string[] | number[] | boolean[]
   isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
   parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean }) => unknown
 }
 
 export interface I_GlobalFlag extends I_GenericFlag {
-  default?: string | number | boolean | string[] | number[] | boolean[]
   required?: boolean
 }
 
 export interface I_LocalFlag extends I_GenericFlag {
-  default?: string | number | boolean | string[] | number[] | boolean[]
   required?: boolean
 }
 
@@ -35,7 +34,6 @@ export interface I_PositionalFlag extends I_GenericFlag {
 }
 
 export interface I_Flag extends I_GenericFlag {
-  default?: string | number | boolean | string[] | number[] | boolean[]
   required?: boolean
   style: 'positional' | 'global' | 'local'
 }
@@ -196,8 +194,12 @@ export default class Flag implements I_Flag {
       throw new ConfigurationError(`Flag property "default" must be of type "${type}" when flag property "type" is set as "${type}" for ${this.style} flag "${this.name}.`);
     }
 
-    if (Utils.isDefined(default_value) && this.values.length > 0 && !this.values.includes(default_value as string)) {
+    if (Utils.isDefined(default_value) && this.variant === 'value' && this.values.length > 0 && !this.values.includes(default_value as string)) {
       throw new ConfigurationError(`Flag property "default" must be one of allowed values ${JSON.stringify(this.values)} but received value "${default_value}" for ${this.style} flag "${this.name}".`);
+    }
+
+    if (Utils.isDefined(default_value) && this.variant === 'variadic' && this.values.length > 0 && !(default_value as string[])!.every(value => this.values.includes(value))) {
+      throw new ConfigurationError(`Flag property "default" must be one of allowed values ${JSON.stringify(this.values)} but received value "${JSON.stringify(default_value)}" for ${this.style} flag "${this.name}".`);
     }
 
     this.default = default_value;

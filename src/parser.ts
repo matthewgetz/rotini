@@ -6,6 +6,7 @@ import { Parameter, } from './parameters';
 import Utils, { ParseError, } from './utils';
 
 const parsePositionalFlag = async (parameters: Parameter[], positional_flags: PositionalFlag[], program_configuration: ProgramConfiguration, help: string): Promise<void> | never => {
+  const resolvedHelp = program_configuration.strict_usage ? help : undefined;
   const helpFlag = positional_flags.find(flag => flag.name === 'help');
 
   if (parameters.length === 0) {
@@ -18,29 +19,39 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
 
   if (parameters[0] && parameters[0].value.startsWith('-')) {
     if (shortFlagMatch || longFlagMatch) {
-      const { name, type, variant, values, isValid, parse, operation, } = (shortFlagMatch || longFlagMatch)!;
+      const { name, type, variant, values, default: default_value, isValid, parse, operation, } = (shortFlagMatch || longFlagMatch)!;
       const remaining_parameters = parameters.slice(1).map(p => p.value);
-      let value = variant === 'variadic' ? remaining_parameters : remaining_parameters[0] || true;
+
+      if (program_configuration.strict_flags && variant === 'value' && remaining_parameters.length > 1) {
+        throw new ParseError(`Positional flag "${name}" is of variant "${variant}" but found multiple values: ${JSON.stringify(remaining_parameters)}.`, resolvedHelp);
+      }
+
+      let value: string | number | boolean | string[] | number[] | boolean[] = variant === 'variadic' ? remaining_parameters : remaining_parameters[0];
+
+      value = (type === 'boolean' && !value) ? true : value;
+      const hasValue = (Utils.isNotArray(value) && value) || (Utils.isArray(value) && (value as unknown as string[]).length > 0);
+      value = hasValue ? value : default_value || true;
+
       const type_coerced_value = value && Utils.getTypedValue({ value, coerceTo: type, });
 
       if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
-        throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${value}".`, help);
+        throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${value}".`, resolvedHelp);
       }
 
       if (variant === 'value' && values.length > 0 && !values.includes(value as string)) {
-        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, help);
+        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, resolvedHelp);
       } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => values.includes(v))) {
-        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, help);
+        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, resolvedHelp);
       }
 
       isValid(value as never);
-      value = parse({ original_value: value, type_coerced_value, }) as string;
+      value = parse({ original_value: (value as string), type_coerced_value, }) as string;
       await operation(value as never);
       process.exit(0);
     }
 
     if (program_configuration.strict_flags) {
-      throw new ParseError(`Unknown positional flag found "${parameters[0].value}".`, help);
+      throw new ParseError(`Unknown positional flag found "${parameters[0].value}".`, resolvedHelp);
     }
   }
 };
@@ -63,8 +74,9 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     const nextPossibleOrdered = nextPossible.sort((a, b) => b.similarity - a.similarity).filter(p => p.similarity > 0);
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
+    const help = (didYouMean !== '' && program_configuration.strict_usage === false) ? undefined : program.help;
 
-    throw new ParseError(`${unknownParameters}${didYouMean}`, program.help);
+    throw new ParseError(`${unknownParameters}${didYouMean}`, help);
   }
 
   if (program_configuration.check_for_new_npm_version && Utils.isNotTrueString(process.env.CI!)) {
@@ -150,8 +162,9 @@ export const parse = async (program: Program, program_configuration: ProgramConf
     const nextPossibleOrdered = nextPossible.sort((a, b) => b.similarity - a.similarity).filter(p => p.similarity > 0);
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
+    const help = (didYouMean !== '' && program_configuration.strict_usage === false) ? undefined : COMMANDS.results[COMMANDS.results.length - 1].command.help;
 
-    throw new ParseError(`${unknownCommands}${didYouMean}`, COMMANDS.results[COMMANDS.results.length - 1].command.help);
+    throw new ParseError(`${unknownCommands}${didYouMean}`, help);
   }
 
   if (program_configuration.strict_flags && unmatched_flags.length > 0) {

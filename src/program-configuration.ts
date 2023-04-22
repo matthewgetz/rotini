@@ -3,18 +3,21 @@ import Utils, { ConfigurationError, } from './utils';
 export interface I_ProgramConfiguration {
   strict_commands?: boolean
   strict_flags?: boolean
+  strict_usage?: boolean
   check_for_new_npm_version?: boolean
 }
 
 export default class ProgramConfiguration {
   strict_commands!: boolean;
   strict_flags!: boolean;
+  strict_usage!: boolean;
   check_for_new_npm_version!: boolean;
 
   constructor (configuration: I_ProgramConfiguration = {}) {
     this
       .#setStrictCommands(configuration.strict_commands)
       .#setStrictFlags(configuration.strict_flags)
+      .#setStrictUsage(configuration.strict_usage)
       .#setCheckForNpmUpdate(configuration.check_for_new_npm_version);
   }
 
@@ -34,6 +37,16 @@ export default class ProgramConfiguration {
     }
 
     this.strict_flags = strict_flags;
+
+    return this;
+  };
+
+  #setStrictUsage = (strict_usage = false): ProgramConfiguration | never => {
+    if (Utils.isNotBoolean(strict_usage)) {
+      throw new ConfigurationError('Program configuration property "strict_usage" must be of type "boolean".');
+    }
+
+    this.strict_usage = strict_usage;
 
     return this;
   };
