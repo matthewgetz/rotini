@@ -3,8 +3,8 @@
 const { rotini } = require('rotini');
 
 const definition = {
-  name: 'hello-world',
-  description: 'an example "hello world" rotini cli program',
+  name: 'rfe',
+  description: 'rotini framework example "hello world" program',
   version: '1.0.0',
   commands: [
     {

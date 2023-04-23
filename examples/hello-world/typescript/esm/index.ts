@@ -3,8 +3,8 @@
 import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';
 
 const definition: I_ProgramDefinition = {
-  name: 'hello-world',
-  description: 'an example "hello world" rotini cli program',
+  name: 'rfe',
+  description: 'rotini framework example "hello world" program',
   version: '1.0.0',
   commands: [
     {
