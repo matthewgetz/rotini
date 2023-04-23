@@ -46,7 +46,7 @@ describe('rotini', () => {
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
-      const result = await program.run().catch(program.error);
+      const result = await program.run();
       expect(result).toEqual({
         after_handler_result: undefined,
         before_handler_result: undefined,
@@ -74,7 +74,7 @@ describe('rotini', () => {
       };
 
       const program = rotini({ definition, parameters: [ 'hello-world', ], });
-      const result = await program.run().catch(program.error);
+      const result = await program.run();
       expect(result).toEqual({
         after_handler_result: undefined,
         before_handler_result: undefined,
@@ -114,7 +114,7 @@ describe('rotini', () => {
 
       try {
         const program = rotini({ definition, });
-        await program.run().catch(program.error);
+        await program.run();
       } catch (e) {
         //
       }
@@ -151,17 +151,10 @@ describe('rotini', () => {
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello', ], });
-      let result;
-      try {
-        await program.run();
-      } catch (e) {
-        const error = e as Error;
-        result = error.message;
-        program.error(error);
-      }
+      await program.run();
+
       expect(exit).toHaveBeenCalled();
-      expect(result).toBe('Unknown parameters found ["hello"].\n\nDid you mean one of these?\n  hello-world');
-      expect(error).toHaveBeenCalledOnce();
+      expect(error).toHaveBeenCalledWith('Error: Unknown parameters found ["hello"].\n\nDid you mean one of these?\n  hello-world');
     });
 
     it('throws error', async () => {
@@ -193,7 +186,7 @@ describe('rotini', () => {
       let errorName;
       let errorMessage;
       try {
-        await program.run().catch(program.error);
+        await program.run();
       } catch (e) {
         const error = e as Error;
         errorName = error.name;
