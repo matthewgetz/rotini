@@ -5,7 +5,7 @@
     "rfe": "./index.js"
   },
   "scripts": {
-    "setup": "npm install && tsc && chmod +x index.js && npm link"
+    "setup": "npm install && tsc && chmod +x index.js && npm link --force"
   },
   "devDependencies": {
     "typescript": "*"

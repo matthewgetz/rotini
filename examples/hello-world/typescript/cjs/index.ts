@@ -12,7 +12,7 @@ const definition: I_ProgramDefinition = {
       description: 'say hello world',
       operation: {
         handler: ({ parsed }) => {
-          return (parsed.flags.output === 'json')
+          return (parsed.global_flags.output === 'json')
             ? { hello: 'world' }
             : 'Hello World!';
         }
@@ -30,7 +30,7 @@ const definition: I_ProgramDefinition = {
       operation: {
         handler: ({ parsed }) => {
           const [hello] = parsed.commands;
-          return (parsed.flags.output === 'json')
+          return (parsed.global_flags.output === 'json')
             ? { hello: hello.arguments.name }
             : 'Hello ' + hello.arguments.name + '!';
         }
