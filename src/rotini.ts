@@ -5,7 +5,7 @@ import { ConfigurationError, OperationTimeoutError, ParseError, } from './utils'
 import { Parameter, createParameters, } from './parameters';
 import { OperationResult, } from './operation';
 
-const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<OperationResult> | never, error: (error: Error) => void } => {
+const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<OperationResult> | never } => {
   let PROGRAM: Program;
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
 
@@ -22,23 +22,24 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
     : createParameters(process.argv.splice(2));
 
   const run = async (): Promise<OperationResult> | never => {
-    const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, PARAMETERS);
-    const result = await operation() as OperationResult;
-    return result;
-  };
-
-  const error = (error: Error): void => {
-    if (error instanceof ParseError) {
-      console.error(`Error: ${error.message}${error.help}`);
-    } else if (error instanceof OperationTimeoutError) {
-      console.error(`${error.name}: ${error.message}`);
-    } else {
-      throw error;
+    try {
+      const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, PARAMETERS);
+      const result = await operation() as OperationResult;
+      return result;
+    } catch (e) {
+      const error = e as Error;
+      if (error instanceof ParseError) {
+        console.error(`Error: ${error.message}${error.help}`);
+      } else if (error instanceof OperationTimeoutError) {
+        console.error(`${error.name}: ${error.message}`);
+      } else {
+        throw error;
+      }
+      process.exit(1);
     }
-    process.exit(1);
   };
 
-  return { run, error, };
+  return { run, };
 };
 
 export default rotini;
