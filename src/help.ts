@@ -8,8 +8,8 @@ export const makeAliasesSection = (aliases: string[]): string => {
   return aliases.length > 0 ? [
     '\n\n',
     'ALIASES:',
-    '\n',
-    ...aliases.map(example => `\n  ${example}`).join(''),
+    '\n\n',
+    `  ${aliases.join(',')}`,
   ].join('') : '';
 };
 
@@ -17,7 +17,7 @@ export const makeCommandsSection = (commands: Command[] = []): string => {
   const commandNamesAndAliases = commands.map(command => {
     const name = command.name;
     const aliases = command.aliases?.join(',');
-    const commandName = Utils.isDefined(aliases) ? `${name},${aliases}` : name;
+    const commandName = Utils.isDefined(aliases) ? `${name};${aliases}` : name;
     return {
       name: `  ${commandName}`,
       description: command.description,
@@ -30,7 +30,7 @@ export const makeCommandsSection = (commands: Command[] = []): string => {
     const nameLength = c.name.length;
     const numberOfSpaces = longestName - nameLength;
     const spaces = ' '.repeat(numberOfSpaces);
-    return `${c.name}${spaces}    ${c.description}`;
+    return `${c.name}${spaces}      ${c.description}`;
   });
 
   return formattedNames.length > 0
@@ -45,16 +45,38 @@ export const makeCommandsSection = (commands: Command[] = []): string => {
 
 export const makeArgumentsSection = (args: Argument[] = []): string => {
   const longestName = Math.max(...(args.map(arg => {
-    const values = arg.values.length > 0 ? `=${JSON.stringify(arg.values)}` : `=${arg.type}`;
+    let values;
+
+    if (arg.variant === 'variadic' && arg.values.length > 0) {
+      values = `=${JSON.stringify(arg.values)}...`;
+    } else if (arg.variant === 'variadic') {
+      values = `=${arg.type}...`;
+    } else if (arg.values.length > 0) {
+      values = `=${JSON.stringify(arg.values)}`;
+    } else {
+      values = `=${arg.type}`;
+    }
+
     return `${arg.name}${values}`.length;
   })));
 
   const formattedNames = args.map(arg => {
-    const values = arg.values.length > 0 ? `=${JSON.stringify(arg.values)}` : `=${arg.type}`;
+    let values;
+
+    if (arg.variant === 'variadic' && arg.values.length > 0) {
+      values = `=${JSON.stringify(arg.values)}...`;
+    } else if (arg.variant === 'variadic') {
+      values = `=${arg.type}...`;
+    } else if (arg.values.length > 0) {
+      values = `=${JSON.stringify(arg.values)}`;
+    } else {
+      values = `=${arg.type}`;
+    }
+
     const nameLength = `${arg.name}${values}`.length;
     const numberOfSpaces = longestName - nameLength;
     const spaces = ' '.repeat(numberOfSpaces);
-    return `  ${arg.name}${values}${spaces}     ${arg.description} (${arg.variant})`;
+    return `  ${arg.name}${values}${spaces}      ${arg.description}`;
   });
 
   return formattedNames.length > 0 ? [
@@ -104,7 +126,7 @@ export const makeFlagsSection = (heading: 'FLAGS' | 'GLOBAL FLAGS' | 'POSITIONAL
     const flagLength = f.flag.length;
     const numberOfSpaces = longestName - flagLength;
     const spaces = ' '.repeat(numberOfSpaces);
-    return `${f.flag}${spaces}     ${f.description}`;
+    return `${f.flag}${spaces}      ${f.description}`;
   });
 
   return formattedNames.length > 0

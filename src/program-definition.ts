@@ -374,7 +374,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     }
 
     this.help = help || [
-      `${this.#name} ${this.#version}`,
+      `${this.#name} · ${this.#version}`,
       this.#description,
       this.#documentation,
       this.#usage,
