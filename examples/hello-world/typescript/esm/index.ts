@@ -37,7 +37,7 @@ const definition: I_ProgramDefinition = {
       }
     }
   ],
-  flags: [
+  global_flags: [
     {
       name: 'output',
       description: 'specify the output format for command operation results',
