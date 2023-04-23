@@ -1,0 +1,16 @@
+{
+  "name": "hello-world",
+  "type": "module",
+  "bin": {
+    "hello-world": "./index.js"
+  },
+  "scripts": {
+    "setup": "npm install && tsc && chmod +x index.js && npm link"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  },
+  "dependencies": {
+    "rotini": "*"
+  }
+}
