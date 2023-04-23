@@ -7,6 +7,6 @@ export { I_ConfigurationFile, GetContent, SetContent, } from './configuration-fi
 export { I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './flag';
 export { I_ProgramConfiguration, } from './program-configuration';
 export { I_ProgramDefinition, } from './program-definition';
-export { ParseObject, } from './operation';
+export { ParseObject, OperationResult, } from './operation';
 export { ConfigFile, } from './configuration-files';
 export { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from './errors';

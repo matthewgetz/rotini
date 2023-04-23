@@ -3,8 +3,9 @@ import ProgramConfiguration, { I_ProgramConfiguration, } from './program-configu
 import { parse, } from './parser';
 import { ConfigurationError, OperationTimeoutError, ParseError, } from './utils';
 import { Parameter, createParameters, } from './parameters';
+import { OperationResult, } from './operation';
 
-const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<unknown> | never, error: (error: Error) => void } => {
+const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<OperationResult> | never, error: (error: Error) => void } => {
   let PROGRAM: Program;
   const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
 
@@ -20,9 +21,9 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
     ? createParameters(program.parameters)
     : createParameters(process.argv.splice(2));
 
-  const run = async (): Promise<unknown> | never => {
+  const run = async (): Promise<OperationResult> | never => {
     const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, PARAMETERS);
-    const result = await operation() as Function;
+    const result = await operation() as OperationResult;
     return result;
   };
 

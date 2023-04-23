@@ -11,8 +11,8 @@ const definition: I_ProgramDefinition = {
       name: 'hello-world',
       description: 'say hello world',
       operation: {
-        handler: ({ flags }) => {
-          return (flags.output === 'json')
+        handler: ({ parsed }) => {
+          return (parsed.flags.output === 'json')
             ? { hello: 'world' }
             : 'Hello World!';
         }
@@ -28,9 +28,9 @@ const definition: I_ProgramDefinition = {
         }
       ],
       operation: {
-        handler: ({ commands, flags }) => {
-          const [hello] = commands;
-          return (flags.output === 'json')
+        handler: ({ parsed }) => {
+          const [hello] = parsed.commands;
+          return (parsed.flags.output === 'json')
             ? { hello: hello.arguments.name }
             : 'Hello ' + hello.arguments.name + '!';
         }

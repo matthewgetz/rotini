@@ -45,7 +45,7 @@ export type ParseObject = {
   parsed: ParseObject
 }
 
- type OperationResults = {
+export type OperationResult = {
   before_handler_result: unknown
   handler_result: unknown
   after_handler_result: unknown
@@ -59,7 +59,7 @@ export type Handler = ((props: HandlerProps) => Promise<unknown> | unknown) | un
 export type AfterHandler = ((props: AfterHandlerProps) => Promise<unknown> | unknown) | undefined
 export type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> | unknown) | undefined
 export type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined
- type OperationHandler = ((props: ParseObject) => Promise<OperationResults> | never) | undefined
+ type OperationHandler = ((props: ParseObject) => Promise<OperationResult> | never) | undefined
 
 export interface I_Operation {
   timeout?: number
@@ -171,7 +171,7 @@ export default class Operation implements I_Operation {
     if (this.handler) {
       const timeoutError = new OperationTimeoutError(`Command handler for command "${this.#command_name}" has timed out after ${this.timeout}ms.`);
 
-      operation = async (props: ParseObject): Promise<OperationResults> | never => {
+      operation = async (props: ParseObject): Promise<OperationResult> | never => {
         let before_handler_result: unknown;
         let handler_result: unknown;
         let after_handler_result: unknown;
