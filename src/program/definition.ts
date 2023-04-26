@@ -1,17 +1,12 @@
 import { homedir, } from 'os';
 
-import Command, { I_Command, } from './command';
-import Commands from './commands';
-import ConfigurationFile, { I_ConfigurationFile, } from './configuration-file';
-import ConfigurationFiles, { ConfigFile, } from './configuration-files';
-import { GlobalFlag, I_GlobalFlag, PositionalFlag, I_PositionalFlag, } from './flag';
-import { makeCommandsSection, makeFlagsSection, makeExamplesSection, } from './help';
-import Flags from './flags';
-import Example, { I_Example, } from './example';
-import Examples from './examples';
-import Utils, { ConfigurationError, } from './utils';
-import ProgramConfiguration from './program-configuration';
-import Parameters, { Parameter, } from './parameters';
+import { Command, Commands, I_Command, } from '../commands';
+import { ConfigurationFile, ConfigurationFiles, ConfigFile, I_ConfigurationFile, } from '../configuration-files';
+import { Flags, GlobalFlag, I_GlobalFlag, PositionalFlag, I_PositionalFlag, } from '../flags';
+import { Example, Examples, I_Example, } from '../examples';
+import Utils, { ConfigurationError, } from '../utils';
+import { Configuration, } from './configuration';
+import { Parameter, Parameters, } from './parameters';
 
 export type T_ParseResult = {
   id: number
@@ -30,7 +25,7 @@ export type T_ParseCommandsReturn = {
   results: T_ParseResult[]
 }
 
-export interface I_ProgramDefinition {
+export interface I_Definition {
   name: string
   description: string
   version: string
@@ -44,7 +39,7 @@ export interface I_ProgramDefinition {
   help?: string
 }
 
-export default class ProgramDefinition implements I_ProgramDefinition {
+export class Definition implements I_Definition {
   name!: string;
   description!: string;
   version!: string;
@@ -70,9 +65,9 @@ export default class ProgramDefinition implements I_ProgramDefinition {
   #positional_flags!: string;
   #global_flags!: string;
 
-  #configuration: ProgramConfiguration;
+  #configuration: Configuration;
 
-  constructor (program: I_ProgramDefinition, configuration: ProgramConfiguration) {
+  constructor (program: I_Definition, configuration: Configuration) {
     this.#configuration = configuration;
     this.configuration_file = new ConfigurationFile({
       id: 'rotini',
@@ -94,7 +89,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       .#setHelp(program.help);
   }
 
-  #setName = (name: string): ProgramDefinition | never => {
+  #setName = (name: string): Definition | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -105,7 +100,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setDescription = (description: string): ProgramDefinition | never => {
+  #setDescription = (description: string): Definition | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
       throw new ConfigurationError('Program property "description" must be defined and of type "string".');
     }
@@ -116,7 +111,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setVersion = (version: string): ProgramDefinition | never => {
+  #setVersion = (version: string): Definition | never => {
     if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
       throw new ConfigurationError('Program property "version" must be defined and of type "string".');
     }
@@ -127,7 +122,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setDocumentation = (documentation?: string): ProgramDefinition | never => {
+  #setDocumentation = (documentation?: string): Definition | never => {
     if (Utils.isDefined(documentation) && Utils.isNotString(documentation)) {
       throw new ConfigurationError(`Program property "documentation" must be of type "string".`);
     }
@@ -143,37 +138,39 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setCommands = (commands: I_Command[] = []): ProgramDefinition | never => {
-    this.commands = new Commands({
+  #setCommands = (commands: I_Command[] = []): Definition | never => {
+    const cmds = new Commands({
       entity: {
         type: 'Program',
         name: this.name,
       },
       usage: this.name,
       commands,
-    }).get();
+    });
 
-    this.#commands = makeCommandsSection(this.commands);
+    this.commands = cmds.get();
+    this.#commands = cmds.help;
 
     return this;
   };
 
-  #setGlobalFlags = (global_flags: I_GlobalFlag[] = []): ProgramDefinition | never => {
-    this.global_flags = new Flags({
+  #setGlobalFlags = (global_flags: I_GlobalFlag[] = []): Definition | never => {
+    const GLOBAL_FLAGS = new Flags({
       entity: {
         type: 'Program',
         key: 'global_flags',
         name: this.name,
       },
       flags: global_flags,
-    }).get();
+    });
 
-    this.#global_flags = makeFlagsSection('GLOBAL FLAGS', this.global_flags);
+    this.global_flags = GLOBAL_FLAGS.get();
+    this.#global_flags = GLOBAL_FLAGS.help;
 
     return this;
   };
 
-  #setPositionalFlags = (positional_flags: I_PositionalFlag[] = []): ProgramDefinition | never => {
+  #setPositionalFlags = (positional_flags: I_PositionalFlag[] = []): Definition | never => {
     const versionOperation = (): void => console.info(this.version);
     const helpOperation = (): void => console.info(this.help);
     const updateOperation = async (): Promise<Promise<void>> => {
@@ -267,35 +264,37 @@ export default class ProgramDefinition implements I_ProgramDefinition {
       }));
     }
 
-    this.positional_flags = <PositionalFlag[]> new Flags({
+    const POSITIONAL_FLAGS = new Flags({
       entity: {
         type: 'Program',
         key: 'positional_flags',
         name: this.name,
       },
       flags: positional_flags,
-    }).get();
+    });
 
-    this.#positional_flags = makeFlagsSection('POSITIONAL FLAGS', this.positional_flags);
+    this.positional_flags = <PositionalFlag[]> POSITIONAL_FLAGS.get();
+    this.#positional_flags = POSITIONAL_FLAGS.help;
 
     return this;
   };
 
-  #setExamples = (examples: I_Example[] = []): ProgramDefinition | never => {
-    this.examples = new Examples({
+  #setExamples = (examples: I_Example[] = []): Definition | never => {
+    const EXAMPLES = new Examples({
       entity: {
         type: 'Program',
         name: this.name,
       },
       examples,
-    }).get();
+    });
 
-    this.#examples = makeExamplesSection(this.examples);
+    this.examples = EXAMPLES.get();
+    this.#examples = EXAMPLES.help;
 
     return this;
   };
 
-  #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): ProgramDefinition | never => {
+  #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): Definition | never => {
     if (Utils.isDefined(configuration_files) && Utils.isNotArray(configuration_files)) {
       throw new ConfigurationError('Program property "configuration_files" must be of type "array".');
     }
@@ -308,7 +307,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setUsage = (usage?: string): ProgramDefinition => {
+  #setUsage = (usage?: string): Definition => {
     let command_usage = `  ${this.name}`;
     let positional_flag_usage;
 
@@ -368,7 +367,7 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     return this;
   };
 
-  #setHelp = (help?: string): ProgramDefinition => {
+  #setHelp = (help?: string): Definition => {
     if (Utils.isDefined(help) && Utils.isNotString(help)) {
       throw new ConfigurationError(`Program property "help" must be of type "string".`);
     }
@@ -435,3 +434,14 @@ export default class ProgramDefinition implements I_ProgramDefinition {
     };
   };
 }
+
+export const getDefinition = (definition: I_Definition, configuration: Configuration): Definition => {
+  try {
+    const DEFINITION = new Definition(definition, configuration);
+    return DEFINITION;
+  } catch (e) {
+    const error = e as ConfigurationError;
+    console.error(`${error.name}: ${error.message}`);
+    process.exit(1);
+  }
+};

@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, OperationError, ParseError, } from './utils';
+import Utils, { ConfigurationError, OperationError, ParseError, } from '.';
 
 vi.mock('readline', () => {
   return {

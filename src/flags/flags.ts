@@ -1,5 +1,5 @@
 import { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './flag';
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 type Properties = {
   entity: {
@@ -10,12 +10,15 @@ type Properties = {
   flags: I_GlobalFlag[] | I_LocalFlag[] | I_PositionalFlag[]
 }
 
-export default class Flags {
+export class Flags {
   #flags!: GlobalFlag[] | LocalFlag[] | PositionalFlag[];
+
+  help!: string;
 
   constructor (properties: Properties) {
     this.#setFlags(properties);
     this.#ensureNoDuplicateFlagProperties(properties);
+    this.#makeFlagsSection(properties);
   }
 
   get = (): GlobalFlag[] | LocalFlag[] | PositionalFlag[] => this.#flags;
@@ -66,6 +69,67 @@ export default class Flags {
     }
 
     return this;
+  };
+
+  #makeFlagsSection = (properties: Properties): void => {
+    const HEADINGS = {
+      local_flags: 'FLAGS',
+      global_flags: 'GLOBAL FLAGS',
+      positional_flags: 'POSITIONAL FLAGS',
+    };
+
+    const heading = properties.entity.key;
+    const HEADING = HEADINGS[heading];
+
+    const flagInfo = this.#flags.map(flag => {
+      let description = flag.description;
+      if (Utils.isDefined(flag.default)) {
+        description += Utils.isArray(flag.default)
+          ? ` (default=${JSON.stringify(flag.default)})`
+          : ` (default=${flag.default})`;
+      }
+
+      const short_key = flag.short_key;
+      const long_key = flag.long_key;
+      const variant = flag.variant;
+      const values = flag.values;
+      const value = (variant === 'variadic' && values.length > 0)
+        ? `${JSON.stringify(values)}...`
+        : (variant === 'value' && values.length > 0)
+          ? JSON.stringify(values)
+          : variant === 'variadic'
+            ? `${flag.type}...`
+            : flag.type;
+      const flags = (short_key && long_key)
+        ? `-${short_key},--${long_key}=${value}`
+        : (short_key)
+          ? `-${short_key}=${value}`
+          : `--${long_key}=${value}`;
+
+      return {
+        flag: `  ${flags}`,
+        description,
+        variant,
+      };
+    });
+
+    const longestName = Math.max(...(flagInfo.map(f => f.flag.length)));
+
+    const formattedNames = flagInfo.map(f => {
+      const flagLength = f.flag.length;
+      const numberOfSpaces = longestName - flagLength;
+      const spaces = ' '.repeat(numberOfSpaces);
+      return `${f.flag}${spaces}      ${f.description}`;
+    });
+
+    this.help = formattedNames.length > 0
+      ? [
+        '\n\n',
+        `${HEADING}:`,
+        '\n\n',
+        formattedNames.join('\n'),
+      ].join('')
+      : '';
   };
 
   #ensureNoDuplicateFlagProperties = (properties: Properties): void | never => {

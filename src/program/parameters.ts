@@ -1,9 +1,11 @@
+import Utils from '../utils';
+
 export type Parameter = {
   id: number
   value: string
 }
 
-export default class Parameters {
+export class Parameters {
   original_parameters: readonly Parameter[];
   working_parameters: Parameter[];
   parsed_parameters: (string | number | boolean)[] = [];
@@ -26,3 +28,9 @@ export default class Parameters {
 }
 
 export const createParameters = (parameters: string[]): Parameter[] => parameters.map((value, id) => ({ id, value, }));
+
+export const getParameters = (parameters?: string[]): Parameter[] => {
+  return (Utils.isDefined(parameters) && Utils.isArrayOfStrings(parameters))
+    ? createParameters(parameters!)
+    : createParameters(process.argv.splice(2));
+};

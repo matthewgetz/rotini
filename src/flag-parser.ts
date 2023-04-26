@@ -1,5 +1,5 @@
-import Flag from './flag';
-import Parameters, { Parameter, } from './parameters';
+import { Flag, } from './flags';
+import { Parameter, Parameters, } from './program';
 import Utils, { ParseError, } from './utils';
 
 type FlagResult = {
@@ -118,7 +118,8 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
           throw new ParseError(`${FLAG_TYPE} "${name}" is of type "${type}" but flag "${prefix}${key}" has value "${value}".`, help);
         }
 
-        if (values.length > 0 && !values.includes(value as string) && !values.includes(value.toString())) {
+        const stringValue = value.toString() as never;
+        if (values.length > 0 && !values.includes(value as never) && !values.includes(stringValue)) {
           throw new ParseError(`${FLAG_TYPE} "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, help);
         }
 

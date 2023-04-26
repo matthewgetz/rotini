@@ -1,19 +1,19 @@
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
-export interface I_ProgramConfiguration {
+export interface I_Configuration {
   strict_commands?: boolean
   strict_flags?: boolean
   strict_usage?: boolean
   check_for_new_npm_version?: boolean
 }
 
-export default class ProgramConfiguration {
+export class Configuration {
   strict_commands!: boolean;
   strict_flags!: boolean;
   strict_usage!: boolean;
   check_for_new_npm_version!: boolean;
 
-  constructor (configuration: I_ProgramConfiguration = {}) {
+  constructor (configuration: I_Configuration = {}) {
     this
       .#setStrictCommands(configuration.strict_commands)
       .#setStrictFlags(configuration.strict_flags)
@@ -21,7 +21,7 @@ export default class ProgramConfiguration {
       .#setCheckForNpmUpdate(configuration.check_for_new_npm_version);
   }
 
-  #setStrictCommands = (strict_commands = true): ProgramConfiguration | never => {
+  #setStrictCommands = (strict_commands = true): Configuration | never => {
     if (Utils.isNotBoolean(strict_commands)) {
       throw new ConfigurationError('Program configuration property "strict_commands" must be of type "boolean".');
     }
@@ -31,7 +31,7 @@ export default class ProgramConfiguration {
     return this;
   };
 
-  #setStrictFlags = (strict_flags = true): ProgramConfiguration | never => {
+  #setStrictFlags = (strict_flags = true): Configuration | never => {
     if (Utils.isNotBoolean(strict_flags)) {
       throw new ConfigurationError('Program configuration property "strict_flags" must be of type "boolean".');
     }
@@ -41,7 +41,7 @@ export default class ProgramConfiguration {
     return this;
   };
 
-  #setStrictUsage = (strict_usage = false): ProgramConfiguration | never => {
+  #setStrictUsage = (strict_usage = false): Configuration | never => {
     if (Utils.isNotBoolean(strict_usage)) {
       throw new ConfigurationError('Program configuration property "strict_usage" must be of type "boolean".');
     }
@@ -51,7 +51,7 @@ export default class ProgramConfiguration {
     return this;
   };
 
-  #setCheckForNpmUpdate = (check_for_new_npm_version = false): ProgramConfiguration | never => {
+  #setCheckForNpmUpdate = (check_for_new_npm_version = false): Configuration | never => {
     if (Utils.isNotBoolean(check_for_new_npm_version)) {
       throw new ConfigurationError('Program configuration property "check_for_new_npm_version" must be of type "boolean".');
     }

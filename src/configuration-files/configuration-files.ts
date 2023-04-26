@@ -1,12 +1,12 @@
-import ConfigurationFile, { I_ConfigurationFile, GetContent, SetContent, } from './configuration-file';
-import Utils, { ConfigurationError, } from './utils';
+import { ConfigurationFile, I_ConfigurationFile, GetContent, SetContent, } from './configuration-file';
+import Utils, { ConfigurationError, } from '../utils';
 
 export type ConfigFile = {
   getContent: <T = object>() => GetContent<T>
   setContent: (data: object) => SetContent
 }
 
-export default class ConfigurationFiles {
+export class ConfigurationFiles {
   #configuration_files: ConfigurationFile[];
 
   constructor (configuration_files: I_ConfigurationFile[] = []) {

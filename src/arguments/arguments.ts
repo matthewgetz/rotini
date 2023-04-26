@@ -1,5 +1,5 @@
-import Argument, { I_Argument, } from './argument';
-import Utils, { ConfigurationError, } from './utils';
+import { Argument, I_Argument, } from './argument';
+import Utils, { ConfigurationError, } from '../utils';
 
 type Properties = {
   entity: {
@@ -9,7 +9,7 @@ type Properties = {
   arguments: I_Argument[]
 }
 
-export default class Arguments {
+export class Arguments {
   #args!: Argument[];
 
   constructor (properties: Properties) {

@@ -1,29 +1,16 @@
-import Program, { I_ProgramDefinition, } from './program-definition';
-import ProgramConfiguration, { I_ProgramConfiguration, } from './program-configuration';
+import { Configuration, I_Configuration, I_Definition, getDefinition, getParameters, } from './program';
 import { parse, } from './parser';
-import { ConfigurationError, OperationTimeoutError, ParseError, OperationError, } from './utils';
-import { Parameter, createParameters, } from './parameters';
+import { OperationTimeoutError, ParseError, OperationError, } from './utils';
 import { OperationResult, } from './operation';
 
-const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_ProgramConfiguration, parameters?: string[] }): { run: () => Promise<OperationResult> | never } => {
-  let PROGRAM: Program;
-  const PROGRAM_CONFIGURATION = new ProgramConfiguration(program.configuration);
-
-  try {
-    PROGRAM = new Program(program?.definition, PROGRAM_CONFIGURATION);
-  } catch (e) {
-    const error = e as ConfigurationError;
-    console.error(`${error.name}: ${error.message}`);
-    process.exit(1);
-  }
-
-  const PARAMETERS: Parameter[] = program?.parameters
-    ? createParameters(program.parameters)
-    : createParameters(process.argv.splice(2));
+export const rotini = (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): { run: () => Promise<OperationResult> | never } => {
+  const configuration = new Configuration(program.configuration);
+  const definition = getDefinition(program.definition, configuration);
+  const parameters = getParameters(program.parameters);
 
   const run = async (): Promise<OperationResult> | never => {
     try {
-      const operation = await parse(PROGRAM, PROGRAM_CONFIGURATION, PARAMETERS);
+      const operation = await parse(definition, configuration, parameters);
       const result = await operation() as OperationResult;
       return result;
     } catch (e) {
@@ -41,5 +28,3 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
 
   return { run, };
 };
-
-export default rotini;

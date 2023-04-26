@@ -1,4 +1,4 @@
-import ConfigurationFile from './configuration-file';
+import { ConfigurationFile, } from './configuration-file';
 
 describe('Configuration', () => {
   describe('setConfigurationFile', () => {

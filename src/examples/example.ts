@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 export interface I_Example {
   description: string
@@ -13,7 +13,7 @@ interface ExampleProperties {
   example: I_Example
 }
 
-export default class Example implements I_Example {
+export class Example implements I_Example {
   description!: string;
   usage!: string;
 

@@ -1,5 +1,5 @@
-import Command, { I_Command, } from './command';
-import Utils, { ConfigurationError, } from './utils';
+import { Command, I_Command, } from './command';
+import Utils, { ConfigurationError, } from '../utils';
 
 export interface CommandsProperties {
   entity: {
@@ -10,12 +10,13 @@ export interface CommandsProperties {
   commands: I_Command[]
 }
 
-export default class Commands {
+export class Commands {
   #entity_type: string;
   #entity_name: string;
   #usage: string;
 
   #commands!: Command[];
+  help!: string;
 
   constructor (properties: CommandsProperties) {
     this.#entity_type = properties.entity.type;
@@ -25,6 +26,7 @@ export default class Commands {
     this.#setCommands(properties.commands);
     this.#ensureNoDuplicateCommandPropertyValues('name');
     this.#ensureNoDuplicateCommandPropertyValues('aliases');
+    this.#makeCommandsSection();
   }
 
   get = (): Command[] => this.#commands;
@@ -52,5 +54,35 @@ export default class Commands {
     if (hasDuplicates) {
       throw new ConfigurationError(`Duplicate command "${property}" found for ${this.#entity_type.toLowerCase()} "${this.#entity_name}": ${JSON.stringify(duplicates)}.`);
     }
+  };
+
+  #makeCommandsSection = (): void => {
+    const commandNamesAndAliases = this.#commands.map(command => {
+      const name = command.name;
+      const aliases = command.aliases?.join(',');
+      const commandName = Utils.isDefined(aliases) ? `${name};${aliases}` : name;
+      return {
+        name: `  ${commandName}`,
+        description: command.description,
+      };
+    });
+
+    const longestName = Math.max(...(commandNamesAndAliases.map(c => c.name.length)));
+
+    const formattedNames = commandNamesAndAliases.map(c => {
+      const nameLength = c.name.length;
+      const numberOfSpaces = longestName - nameLength;
+      const spaces = ' '.repeat(numberOfSpaces);
+      return `${c.name}${spaces}      ${c.description}`;
+    });
+
+    this.help = formattedNames.length > 0
+      ? [
+        '\n\n',
+        'COMMANDS:',
+        '\n\n',
+        formattedNames.join('\n'),
+      ].join('')
+      : '';
   };
 }

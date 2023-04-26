@@ -1,15 +1,15 @@
-import Utils, { ConfigurationError, ParseError, } from './utils';
+import Utils, { ConfigurationError, ParseError, Type, Value, Values, Variant, IsValid, Style, } from '../utils';
 
 interface I_GenericFlag {
   name: string
   description: string
-  variant?: 'boolean' | 'value' | 'variadic'
-  type?: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]'
+  variant?: Variant
+  type?: Type
   short_key?: string
   long_key?: string
-  values?: string[]
-  default?: string | number | boolean | string[] | number[] | boolean[]
-  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
+  values?: Values
+  default?: Value
+  isValid?: IsValid
   parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown
 }
 
@@ -38,18 +38,18 @@ export interface I_Flag extends I_GenericFlag {
   style: 'positional' | 'global' | 'local'
 }
 
-export default class Flag implements I_Flag {
+export class Flag implements I_Flag {
   name!: string;
   description!: string;
-  variant!: 'boolean' | 'value' | 'variadic';
-  type!: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]';
-  style!: 'positional' | 'global' | 'local';
+  variant!: Variant;
+  type!: Type;
+  style!: Style;
   short_key?: string;
   long_key?: string;
-  values: string[] = [];
-  default: string | number | boolean | string[] | number[] | boolean[] | undefined;
+  values!: Values;
+  default?: Value;
   required!: boolean;
-  isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
+  isValid!: IsValid;
   parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown;
 
   constructor (flag: I_Flag) {
@@ -152,7 +152,7 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setValues = (values: string[] = []): Flag | never => {
+  #setValues = (values: Values = []): Flag | never => {
     const isNotArrayOfType = Object.freeze({
       string: Utils.isNotArrayOfStrings,
       'string[]': Utils.isNotArrayOfStrings,
@@ -172,7 +172,7 @@ export default class Flag implements I_Flag {
     return this;
   };
 
-  #setDefault = (default_value?: string | number | boolean | string[] | number[] | boolean[]): Flag | never => {
+  #setDefault = (default_value?: Value): Flag | never => {
     if (Utils.isDefined(default_value) && this.variant === 'boolean' && Utils.isNotBoolean(default_value)) {
       throw new ConfigurationError(`Flag property "default" must be of type "boolean" for ${this.style} flag "${this.name}" when flag property "variant" is set to "boolean".`);
     }
@@ -194,7 +194,7 @@ export default class Flag implements I_Flag {
       throw new ConfigurationError(`Flag property "default" must be of type "${type}" when flag property "type" is set as "${type}" for ${this.style} flag "${this.name}.`);
     }
 
-    if (Utils.isDefined(default_value) && this.variant === 'value' && this.values.length > 0 && !this.values.includes(default_value as string)) {
+    if (Utils.isDefined(default_value) && this.variant === 'value' && this.values.length > 0 && !this.values.includes(default_value as never)) {
       throw new ConfigurationError(`Flag property "default" must be one of allowed values ${JSON.stringify(this.values)} but received value "${default_value}" for ${this.style} flag "${this.name}".`);
     }
 
@@ -223,13 +223,13 @@ export default class Flag implements I_Flag {
       throw new ConfigurationError(`Flag property "isValid" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
 
-    this.isValid = (data: string | number | boolean): boolean | never => {
+    this.isValid = (value: Value): boolean | never => {
       try {
-        if (isValid(data as never) === false) {
+        if (isValid(value as never) === false) {
           const flags = [];
           if (Utils.isDefined(this.short_key)) flags.push(`-${this.short_key}`);
           if (Utils.isDefined(this.long_key)) flags.push(`--${this.long_key}`);
-          throw new ParseError(`Flag value "${data}" is invalid for ${this.style} flag "${this.name}" (${flags.join(',')}).`);
+          throw new ParseError(`Flag value "${value}" is invalid for ${this.style} flag "${this.name}" (${flags.join(',')}).`);
         }
         return true;
       } catch (error) {

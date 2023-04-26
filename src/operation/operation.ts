@@ -1,5 +1,5 @@
-import { ConfigFile, } from './configuration-files';
-import Utils, { ConfigurationError, OperationTimeoutError, } from './utils';
+import { ConfigFile, } from '../configuration-files';
+import Utils, { ConfigurationError, OperationTimeoutError, } from '../utils';
 
 const FIVE_MINS_IN_MS = 300000;
 
@@ -71,7 +71,7 @@ export interface I_Operation {
   onHandlerTimeout?: Handler
 }
 
-export default class Operation implements I_Operation {
+export class Operation implements I_Operation {
   #command_name: string;
   timeout!: number;
   handler!: Handler;

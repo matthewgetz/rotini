@@ -5,6 +5,7 @@ import * as updates from './updates';
 import * as validations from './validations';
 
 export { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from './errors';
+export { DefaultIsValid, DefaultParse, IsValid, Parse, ParseProperties, Style, Type, Value, Values, Variant, } from './types';
 
 export default {
   ...comparisons,

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 
-import Utils, { ConfigurationError, } from './utils';
+import Utils, { ConfigurationError, } from '../utils';
 
 export type GetContent<T> = {
   data: T | undefined
@@ -19,7 +19,7 @@ export interface I_ConfigurationFile {
   file: string
 }
 
-export default class ConfigurationFile implements I_ConfigurationFile {
+export class ConfigurationFile implements I_ConfigurationFile {
   id!: string;
   directory!: string;
   file!: string;

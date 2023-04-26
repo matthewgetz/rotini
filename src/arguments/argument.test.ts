@@ -1,4 +1,4 @@
-import Argument from './argument';
+import { Argument, } from './argument';
 
 describe('Argument', () => {
   describe('name', () => {
@@ -370,8 +370,8 @@ describe('Argument', () => {
         variant: 'variadic',
         type: 'number',
         values: [ 1, 2, 3, 7, ],
-        isValid: (data: number): boolean => {
-          if (data > 3) {
+        isValid: (data: unknown): boolean => {
+          if (data as number > 3) {
             return false;
           }
           return true;

@@ -1,23 +1,23 @@
-import Utils, { ConfigurationError, ParseError, } from './utils';
+import Utils, { ConfigurationError, ParseError, Type, Variant, Values, IsValid, Parse, DefaultIsValid, DefaultParse, Value, ParseProperties, } from '../utils';
 
 export interface I_Argument {
   name: string
   description: string
-  variant?: 'value' | 'variadic'
-  type?: 'string' | 'number' | 'boolean'
-  values?: string[] | number[] | boolean[]
-  isValid?: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never)
-  parse?: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown
+  variant?: Variant
+  type?: Type
+  values?: Values
+  isValid?: IsValid
+  parse?: Parse
 }
 
-export default class Argument implements I_Argument {
+export class Argument implements I_Argument {
   name!: string;
   description!: string;
-  variant!: 'value' | 'variadic';
-  type!: 'string' | 'number' | 'boolean';
-  values!: string[] | number[] | boolean[];
-  isValid!: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never);
-  parse!: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown;
+  variant!: Variant;
+  type!: Type;
+  values!: Values;
+  isValid!: IsValid;
+  parse!: Parse;
 
   constructor (argument: I_Argument) {
     this
@@ -50,7 +50,7 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setVariant = (variant: 'value' | 'variadic' = 'value'): Argument | never => {
+  #setVariant = (variant: Variant = 'value'): Argument | never => {
     if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'value', 'variadic', ]))) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
@@ -60,7 +60,7 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setType = (type: 'string' | 'number' | 'boolean' = 'string'): Argument | never => {
+  #setType = (type: Type = 'string'): Argument | never => {
     if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', ]))) {
       throw new ConfigurationError(`Argument property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for argument "${this.name}".`);
     }
@@ -70,11 +70,20 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setValues = (values: string[] | number[] | boolean[] = []): Argument | never => {
-    const isNotArrayOfType = Object.freeze({ string: Utils.isNotArrayOfStrings, number: Utils.isNotArrayOfNumbers, boolean: Utils.isNotArrayOfBooleans, })[this.type];
+  #setValues = (values: Values = []): Argument | never => {
+    const isNotArrayOfType = Object.freeze({
+      string: Utils.isNotArrayOfStrings,
+      number: Utils.isNotArrayOfNumbers,
+      boolean: Utils.isNotArrayOfBooleans,
+      'string[]': Utils.isNotArrayOfStrings,
+      'number[]': Utils.isNotArrayOfNumbers,
+      'boolean[]': Utils.isNotArrayOfBooleans,
+    })[this.type];
+
+    const [ type, ] = this.type.split('[]');
 
     if (Utils.isNotArray(values) || isNotArrayOfType(values)) {
-      throw new ConfigurationError(`Argument property "values" must be of type "array" and can only contain indexes of type "${this.type}" for argument "${this.name}".`);
+      throw new ConfigurationError(`Argument property "values" must be of type "array" and can only contain indexes of type "${type}" for argument "${this.name}".`);
     }
 
     this.values = values;
@@ -82,12 +91,12 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): Argument | never => {
+  #setIsValid = (isValid: IsValid = DefaultIsValid): Argument | never => {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Argument property "isValid" must be of type "function" for argument "${this.name}".`);
     }
 
-    this.isValid = (value: string | number | boolean): boolean | never => {
+    this.isValid = (value: Value): boolean | never => {
       try {
         if (isValid(value as never) === false) {
           throw new ParseError(`Argument value "${value}" is invalid for argument "${this.name}".`);
@@ -101,14 +110,14 @@ export default class Argument implements I_Argument {
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): Argument | never => {
+  #setParse = (parse: Parse = DefaultParse): Argument | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Argument property "parse" must be of type "function" for argument "${this.name}".`);
     }
 
-    this.parse = ({ original_value, type_coerced_value, }: { original_value: string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }): unknown => {
+    this.parse = ({ value, coerced_value, }: ParseProperties): unknown => {
       try {
-        const parsed = parse({ original_value, type_coerced_value, });
+        const parsed = parse({ value, coerced_value, });
         return parsed;
       } catch (error) {
         throw new ParseError(`Argument value could not be parsed for argument "${this.name}".`);

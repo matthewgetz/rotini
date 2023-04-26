@@ -1,11 +1,9 @@
-import Program from './program-definition';
-import ProgramConfiguration from './program-configuration';
-import { PositionalFlag, } from './flag';
+import { Configuration, Definition, Parameter, } from './program';
+import { PositionalFlag, } from './flags';
 import { matchFlags, parseFlags, } from './flag-parser';
-import { Parameter, } from './parameters';
 import Utils, { ParseError, } from './utils';
 
-const parsePositionalFlag = async (parameters: Parameter[], positional_flags: PositionalFlag[], program_configuration: ProgramConfiguration, help: string): Promise<void> | never => {
+const parsePositionalFlag = async (parameters: Parameter[], positional_flags: PositionalFlag[], program_configuration: Configuration, help: string): Promise<void> | never => {
   const resolvedHelp = program_configuration.strict_usage ? help : undefined;
   const helpFlag = positional_flags.find(flag => flag.name === 'help');
 
@@ -44,7 +42,7 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
 
       const string_values = values.map(v => v.toString());
 
-      if (variant === 'value' && values.length > 0 && !values.includes(value as string)) {
+      if (variant === 'value' && values.length > 0 && !values.includes(value as never)) {
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, resolvedHelp);
       } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => string_values.includes(v))) {
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, resolvedHelp);
@@ -62,7 +60,7 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
   }
 };
 
-export const parse = async (program: Program, program_configuration: ProgramConfiguration, parameters: Parameter[]): Promise<Function> => {
+export const parse = async (program: Definition, program_configuration: Configuration, parameters: Parameter[]): Promise<Function> => {
   await parsePositionalFlag(parameters, program.positional_flags, program_configuration, program.help);
 
   const COMMANDS = program.parseCommands(parameters);

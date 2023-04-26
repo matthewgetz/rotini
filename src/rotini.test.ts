@@ -1,6 +1,5 @@
-import rotini from './rotini';
-import { I_ProgramConfiguration, } from './program-configuration';
-import { I_ProgramDefinition, } from './program-definition';
+import { rotini, } from './rotini';
+import { I_Configuration, I_Definition, } from './program';
 
 describe('rotini', () => {
   describe('run', () => {
@@ -8,7 +7,7 @@ describe('rotini', () => {
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
-      const configuration: I_ProgramConfiguration = {
+      const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
         check_for_new_npm_version: false,
@@ -24,7 +23,7 @@ describe('rotini', () => {
     });
 
     it('calls operation when program configuration is passed', async () => {
-      const definition: I_ProgramDefinition = {
+      const definition: I_Definition = {
         name: 'rotini',
         description: 'rotini cli example',
         version: '1.0.0',
@@ -39,7 +38,7 @@ describe('rotini', () => {
         ],
       };
 
-      const configuration: I_ProgramConfiguration = {
+      const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
         check_for_new_npm_version: false,
@@ -58,7 +57,7 @@ describe('rotini', () => {
     });
 
     it('calls operation when program configuration is not passed', async () => {
-      const definition: I_ProgramDefinition = {
+      const definition: I_Definition = {
         name: 'rotini',
         description: 'rotini cli example',
         version: '1.0.0',
@@ -90,7 +89,7 @@ describe('rotini', () => {
       vi.spyOn(console, 'error').mockImplementation(() => {});
       const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
-      const definition: I_ProgramDefinition = {
+      const definition: I_Definition = {
         name: 'rotini',
         description: 'rotini cli example',
         version: '1.0.0',
@@ -126,7 +125,7 @@ describe('rotini', () => {
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
-      const definition: I_ProgramDefinition = {
+      const definition: I_Definition = {
         name: 'rotini',
         description: 'rotini cli example',
         version: '1.0.0',
@@ -144,7 +143,7 @@ describe('rotini', () => {
         ],
       };
 
-      const configuration: I_ProgramConfiguration = {
+      const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
         check_for_new_npm_version: false,
@@ -158,7 +157,7 @@ describe('rotini', () => {
     });
 
     it('throws error', async () => {
-      const definition: I_ProgramDefinition = {
+      const definition: I_Definition = {
         name: 'rotini',
         description: 'rotini cli example',
         version: '1.0.0',
@@ -176,7 +175,7 @@ describe('rotini', () => {
         ],
       };
 
-      const configuration: I_ProgramConfiguration = {
+      const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
         check_for_new_npm_version: false,

@@ -1,26 +1,22 @@
-import Argument, { I_Argument, } from './argument';
-import Arguments from './arguments';
-import Commands from './commands';
-import Example, { I_Example, } from './example';
-import Examples from './examples';
-import Flag, { ForceFlag, HelpFlag, I_LocalFlag, } from './flag';
-import Flags from './flags';
-import Operation, { I_Operation, } from './operation';
-import Utils, { ConfigurationError, ParseError, } from './utils';
-import { makeAliasesSection, makeArgumentsSection, makeCommandsSection, makeExamplesSection, makeFlagsSection, } from './help';
-import Parameters, { Parameter, } from './parameters';
+import { Argument, Arguments, I_Argument, } from '../arguments';
+import { Commands, } from '../commands';
+import { Example, Examples, I_Example, } from '../examples';
+import { Flag, Flags, ForceFlag, HelpFlag, I_LocalFlag, } from '../flags';
+import { Operation, I_Operation, } from '../operation';
+import Utils, { ConfigurationError, ParseError, Variant, Values, Value, } from '../utils';
+import { Parameter, Parameters, } from '../program';
 
 type T_Result = {
   name: string
-  variant: 'value' | 'variadic'
-  values: (string | number | boolean)[]
+  variant: Variant
+  values: Values
 }
 
 type T_ParseCommandArgumentsReturn = {
   original_parameters: readonly Parameter[]
   parsed_parameters: (string | number | boolean)[]
   unparsed_parameters: Parameter[]
-  results: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+  results: { [key: string]: Value }
 }
 
 export interface I_Command {
@@ -41,7 +37,7 @@ interface I_CommandMetadata {
   isGeneratedUsage: boolean
 }
 
-export default class Command implements I_Command {
+export class Command implements I_Command {
   name!: string;
   description!: string;
   aliases!: string[];
@@ -105,7 +101,12 @@ export default class Command implements I_Command {
     }
 
     this.aliases = aliases;
-    this.#aliases = makeAliasesSection(this.aliases);
+    this.#aliases = (aliases.length > 0) ? [
+      '\n\n',
+      'ALIASES:',
+      '\n\n',
+      `  ${aliases.join(',')}`,
+    ].join('') : '';
 
     return this;
   };
@@ -144,51 +145,54 @@ export default class Command implements I_Command {
       arguments: args,
     }).get();
 
-    this.#arguments = makeArgumentsSection(this.arguments);
+    this.#arguments = this.#makeArgumentsSection();
 
     return this;
   };
 
   #setFlags = (flags: I_LocalFlag[] = []): Command | never => {
-    this.flags = new Flags({
+    const FLAGS = new Flags({
       entity: {
         type: 'Command',
         key: 'local_flags',
         name: this.name,
       },
       flags,
-    }).get();
+    });
 
-    this.#flags = makeFlagsSection('FLAGS', this.flags);
+    this.flags = FLAGS.get();
+    this.#flags = FLAGS.help;
 
     return this;
   };
 
   #setCommands = (commands: I_Command[] = []): Command | never => {
-    this.commands = new Commands({
+    const cmds = new Commands({
       entity: {
         type: 'Command',
         name: this.name,
       },
       usage: this.usage,
       commands,
-    }).get();
+    });
 
-    this.#commands = makeCommandsSection(this.commands);
+    this.commands = cmds.get();
+    this.#commands = cmds.help;
 
     return this;
   };
 
   #setExamples = (examples: I_Example[] = []): Command | never => {
-    this.examples = new Examples({
+    const EXAMPLES = new Examples({
       entity: {
         type: 'Program',
         name: this.name,
       },
       examples,
-    }).get();
+    });
 
-    this.#examples = makeExamplesSection(this.examples);
+    this.examples = EXAMPLES.get();
+    this.#examples = EXAMPLES.help;
 
     return this;
   };
@@ -307,18 +311,18 @@ export default class Command implements I_Command {
       }
 
       try {
-        typedParameter = arg.parse({ original_value: parameter, type_coerced_value: typedParameter, }) as string;
+        typedParameter = arg.parse({ value: parameter, coerced_value: typedParameter, }) as string;
       } catch (e) {
         throw new ParseError((e as Error).message);
       }
 
-      result.values.push(typedParameter);
+      result.values.push(typedParameter as never);
       params.parsed_parameters.push(parameter);
     };
 
     this.arguments.forEach((arg, index) => {
       const parameter = parameters[index]?.value;
-      const values: (string | number | boolean)[] = [];
+      const values: Values = [];
       const result = { name: arg.name, variant: arg.variant, values, };
 
       if (!parameter) {
@@ -345,7 +349,7 @@ export default class Command implements I_Command {
 
     params.adjustUnparsedParameters();
 
-    const mappedResults: { [key: string]: string | number | boolean | (string | number | boolean)[] } = {};
+    const mappedResults: { [key: string]: Value } = {};
     RESULTS.map((result: T_Result) => {
       mappedResults[result.name] = (result.variant === 'variadic') ? result.values : result.values[0];
     });
@@ -356,5 +360,49 @@ export default class Command implements I_Command {
       unparsed_parameters: params.unparsed_parameters,
       results: mappedResults,
     };
+  };
+
+  #makeArgumentsSection = (): string => {
+    const longestName = Math.max(...(this.arguments.map(arg => {
+      let values;
+
+      if (arg.variant === 'variadic' && arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}...`;
+      } else if (arg.variant === 'variadic') {
+        values = `=${arg.type}...`;
+      } else if (arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}`;
+      } else {
+        values = `=${arg.type}`;
+      }
+
+      return `${arg.name}${values}`.length;
+    })));
+
+    const formattedNames = this.arguments.map(arg => {
+      let values;
+
+      if (arg.variant === 'variadic' && arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}...`;
+      } else if (arg.variant === 'variadic') {
+        values = `=${arg.type}...`;
+      } else if (arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}`;
+      } else {
+        values = `=${arg.type}`;
+      }
+
+      const nameLength = `${arg.name}${values}`.length;
+      const numberOfSpaces = longestName - nameLength;
+      const spaces = ' '.repeat(numberOfSpaces);
+      return `  ${arg.name}${values}${spaces}      ${arg.description}`;
+    });
+
+    return formattedNames.length > 0 ? [
+      '\n\n',
+      'ARGUMENTS:',
+      '\n\n',
+      formattedNames.join('\n'),
+    ].join('') : '';
   };
 }
