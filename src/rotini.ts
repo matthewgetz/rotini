@@ -1,7 +1,7 @@
 import Program, { I_ProgramDefinition, } from './program-definition';
 import ProgramConfiguration, { I_ProgramConfiguration, } from './program-configuration';
 import { parse, } from './parser';
-import { ConfigurationError, OperationTimeoutError, ParseError, } from './utils';
+import { ConfigurationError, OperationTimeoutError, ParseError, OperationError, } from './utils';
 import { Parameter, createParameters, } from './parameters';
 import { OperationResult, } from './operation';
 
@@ -30,7 +30,7 @@ const rotini = (program: { definition: I_ProgramDefinition, configuration?: I_Pr
       const error = e as Error;
       if (error instanceof ParseError) {
         console.error(`Error: ${error.message}${error.help}`);
-      } else if (error instanceof OperationTimeoutError) {
+      } else if (error instanceof OperationError || error instanceof OperationTimeoutError) {
         console.error(`${error.name}: ${error.message}`);
       } else {
         throw error;
