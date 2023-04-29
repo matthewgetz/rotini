@@ -1,4 +1,4 @@
-import { I_Argument, } from './interfaces';
+import { I_Argument, I_Example, } from './interfaces';
 
 export type IsValid = (value: Value) => boolean | void | never;
 
@@ -117,6 +117,22 @@ export type PositionalFlagOperation =
   | ((value: boolean[]) => Promise<unknown> | unknown)
 
 export type ConfigFile = {
-    getContent: <T = object>() => GetContent<T>
-    setContent: (data: object) => SetContent
+  getContent: <T = object>() => GetContent<T>
+  setContent: (data: object) => SetContent
+}
+
+export type ExampleProperties = {
+  entity: {
+    type: 'Program' | 'Command'
+    name: string
   }
+  example: I_Example
+}
+
+export type ExamplesProperties = {
+  entity: {
+    type: 'Program' | 'Command'
+    name: string
+  }
+  examples: I_Example[]
+}

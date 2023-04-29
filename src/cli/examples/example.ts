@@ -1,14 +1,7 @@
 import { I_Example, } from '../interfaces';
+import { ExampleProperties, } from '../types';
 import { ConfigurationError, } from '../errors';
 import Utils from '../../utils';
-
-interface ExampleProperties {
-  entity: {
-    type: 'Program' | 'Command'
-    name: string
-  }
-  example: I_Example
-}
 
 export class Example implements I_Example {
   description!: string;
@@ -21,17 +14,17 @@ export class Example implements I_Example {
   }
 
   #setDescription = (properties: ExampleProperties): Example | never => {
-    if (Utils.isNotDefined(properties.example.description) || Utils.isNotString(properties.example.description)) {
+    if (Utils.isNotDefined(properties.example?.description) || Utils.isNotString(properties.example?.description)) {
       throw new ConfigurationError(`Example property "description" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
     }
 
-    this.description = properties.example.description;
+    this.description = `# ${properties.example.description}`;
 
     return this;
   };
 
   #setUsage = (properties: ExampleProperties): Example | never => {
-    if (Utils.isNotDefined(properties.example.usage) || Utils.isNotString(properties.example.usage)) {
+    if (Utils.isNotDefined(properties.example?.usage) || Utils.isNotString(properties.example?.usage)) {
       throw new ConfigurationError(`Example property "usage" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
     }
 

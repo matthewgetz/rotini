@@ -38,7 +38,7 @@ export class Examples {
       ? [
         '\n\n',
         'EXAMPLES:',
-        ...this.#examples.map(example => `\n\n  # ${example.description}\n  ${example.usage}`).join(''),
+        ...this.#examples.map(example => `\n\n  ${example.description}\n  ${example.usage}`).join(''),
       ].join('')
       : '';
   };
