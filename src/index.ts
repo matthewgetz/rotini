@@ -20,7 +20,7 @@ export {
   SetContent,
   ParseObject,
 
-  // errors
+  // classes
   ConfigurationError,
   ParseError,
   OperationError,
