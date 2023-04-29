@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, } from 'fs';
 
 import { I_ConfigurationFile, } from '../interfaces';
 import { GetContent, SetContent, } from '../types';
-import { ConfigurationError, } from '../errors';
+import { ConfigurationError, OperationError, } from '../errors';
 import Utils from '../../utils';
 
 export class ConfigurationFile implements I_ConfigurationFile {
@@ -72,14 +72,14 @@ export class ConfigurationFile implements I_ConfigurationFile {
     const file = this.file;
     const isJsonData = Utils.isJson(data);
 
-    if (!isJsonData) {
-      throw new ConfigurationError('Configuration file data is not JSON data.');
-    }
-
     let error;
     let hasError;
 
     try {
+      if (!isJsonData) {
+        throw new OperationError(`Configuration file "${directory}/${file}" data is not JSON.`);
+      }
+
       if (!existsSync(directory)) {
         mkdirSync(directory, { recursive: true, });
       }

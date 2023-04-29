@@ -1,20 +1,5 @@
 import * as Utils from './validations';
 
-vi.mock('readline', () => {
-  return {
-    createInterface: (): { setPrompt: Function, prompt: Function, on: Function, close: Function } => {
-      return {
-        setPrompt: (): void => {},
-        prompt: (): void => {},
-        close: (): void => {},
-        on: (event: string, callback: Function): void => {
-          callback(event);
-        },
-      };
-    },
-  };
-});
-
 describe('Utils', () => {
   describe('isAllowedStringValue', () => {
     const testCases = [

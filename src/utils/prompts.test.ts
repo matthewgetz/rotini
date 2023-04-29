@@ -4,9 +4,9 @@ vi.mock('readline', () => {
   return {
     createInterface: (): { setPrompt: Function, prompt: Function, on: Function, close: Function } => {
       return {
-        setPrompt: (): void => {},
-        prompt: (): void => {},
-        close: (): void => {},
+        setPrompt: vi.fn(),
+        prompt: vi.fn(),
+        close: vi.fn(),
         on: (event: string, callback: Function): void => {
           callback(event);
         },
