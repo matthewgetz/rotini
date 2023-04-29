@@ -1,4 +1,4 @@
-import Utils, { ConfigurationError, OperationError, ParseError, } from '.';
+import Utils from '.';
 
 vi.mock('readline', () => {
   return {
@@ -16,32 +16,6 @@ vi.mock('readline', () => {
 });
 
 describe('Utils', () => {
-  describe('ConfigurationError', () => {
-    it('returns configuration error', () => {
-      const error = new ConfigurationError('some error');
-      expect(error).toBeInstanceOf(ConfigurationError);
-    });
-  });
-
-  describe('OperationError', () => {
-    it('returns operation error', () => {
-      const error = new OperationError('some error');
-      expect(error).toBeInstanceOf(OperationError);
-    });
-  });
-
-  describe('ParserError', () => {
-    it('returns parser error', () => {
-      const error = new ParseError('some error');
-      expect(error).toBeInstanceOf(ParseError);
-    });
-
-    it('returns parser error with help', () => {
-      const error = new ParseError('some error', 'help');
-      expect(error).toBeInstanceOf(ParseError);
-    });
-  });
-
   describe('getDuplicateStrings', () => {
     const testCases = [
       {

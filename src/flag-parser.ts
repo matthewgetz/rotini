@@ -1,6 +1,7 @@
-import { Flag, } from './flags';
-import { Parameter, Parameters, } from './program';
-import Utils, { ParseError, } from './utils';
+import { Flag, } from './cli/flags';
+import { Parameter, Parameters, } from './cli/program';
+import { ParseError, } from './cli/errors';
+import Utils from './utils';
 
 type FlagResult = {
   values: string[] | number[] | boolean[]

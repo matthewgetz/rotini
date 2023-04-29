@@ -1,7 +1,8 @@
-import { Configuration, Definition, Parameter, } from './program';
-import { PositionalFlag, } from './flags';
+import { Configuration, Definition, Parameter, } from './cli/program';
+import { PositionalFlag, } from './cli/flags';
+import { ParseError, } from './cli/errors';
 import { matchFlags, parseFlags, } from './flag-parser';
-import Utils, { ParseError, } from './utils';
+import Utils from './utils';
 
 const parsePositionalFlag = async (parameters: Parameter[], positional_flags: PositionalFlag[], program_configuration: Configuration, help: string): Promise<void> | never => {
   const resolvedHelp = program_configuration.strict_usage ? help : undefined;

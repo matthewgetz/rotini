@@ -1,4 +1,4 @@
-import { ParseError, } from './errors';
+import { ParseError, } from '../cli/errors';
 import { isBooleanString, isDefined, isNumber, isTrueString, } from './validations';
 
 export const getDuplicateStrings = (array: string[]): { hasDuplicates: boolean, duplicates: string[] } => {

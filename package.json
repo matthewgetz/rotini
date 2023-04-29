@@ -11,6 +11,7 @@
     "lint": "eslint src --config ./node_modules/@rotini/configs/.eslintrc.js --no-inline-config --max-warnings 0",
     "test": "vitest --config ./node_modules/@rotini/configs/vitest.config.ts",
     "test:coverage": "npm run test -- --coverage",
+    "test:verbose": "npm run test -- --reporter verbose",
     "test:watch": "npm run test -- --coverage --watch"
   },
   "devDependencies": {

@@ -1,9 +1,28 @@
 #!/usr/bin/env node
-export { rotini, I_Configuration, I_Definition, } from './program';
-export { I_Argument, } from './arguments';
-export { I_Command, } from './commands';
-export { I_ConfigurationFile, GetContent, SetContent, } from './configuration-files';
-export { I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './flags';
-export { ParseObject, OperationResult, } from './operation';
-export { ConfigFile, } from './configuration-files';
-export { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from './utils';
+export {
+  // functions
+  rotini,
+
+  // interfaces
+  I_Argument as Argument,
+  I_Command as Command,
+  I_Configuration as Configuration,
+  I_ConfigurationFile as ConfigurationFile,
+  I_Definition as Definition,
+  I_Example as Example,
+  I_GlobalFlag as GlobalFlag,
+  I_LocalFlag as LocalFlag,
+  I_PositionalFlag as PositionalFlag,
+
+  // types
+  ConfigFile,
+  GetContent,
+  SetContent,
+  ParseObject,
+
+  // errors
+  ConfigurationError,
+  ParseError,
+  OperationError,
+  OperationTimeoutError,
+} from './cli';
