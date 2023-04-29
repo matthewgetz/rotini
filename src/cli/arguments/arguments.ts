@@ -18,7 +18,7 @@ export class Arguments {
 
   #setArguments = (properties: ArgumentsProperties): Arguments | never => {
     const { type, name, } = properties.entity;
-    const args = properties.arguments || [];
+    const args = properties.arguments;
     const lowercaseName = name.toLowerCase();
 
     if (Utils.isNotArray(args)) {
