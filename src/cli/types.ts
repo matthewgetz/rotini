@@ -47,22 +47,29 @@ export type ParseObject = {
   global_flags: {
     [key: string]: string | number | boolean | (string | number | boolean)[]
   }
+}
+
+type OperationProps = {
+  parsed: ParseObject
   getConfigurationFile: (id: string) => ConfigFile
 }
 
 type BeforeHandlerProps = {
   parsed: ParseObject
+  getConfigurationFile: (id: string) => ConfigFile
 }
 
  type HandlerProps = {
   parsed: ParseObject
   before_handler_result: unknown
+  getConfigurationFile: (id: string) => ConfigFile
 }
 
  type AfterHandlerProps = {
   parsed: ParseObject
   before_handler_result: unknown
   handler_result: unknown
+  getConfigurationFile: (id: string) => ConfigFile
 }
 
  type SuccessHandlerProps = {
@@ -70,10 +77,12 @@ type BeforeHandlerProps = {
   before_handler_result: unknown
   handler_result: unknown
   after_handler_result: unknown
+  getConfigurationFile: (id: string) => ConfigFile
 }
 
  type FailureHandlerProps = {
   parsed: ParseObject
+  getConfigurationFile: (id: string) => ConfigFile
 }
 
 export type OperationResult = {
@@ -95,7 +104,7 @@ export type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> |
 
 export type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined
 
-export type OperationHandler = ((props: ParseObject) => Promise<OperationResult> | never) | undefined
+export type OperationHandler = ((props: OperationProps) => Promise<OperationResult> | never) | undefined
 
 export type GetContent<T> = {
   data: T | undefined

@@ -378,7 +378,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
     }
   }
 
-  const operation = (): Promise<unknown> | unknown => COMMANDS.results[COMMANDS.results.length - 1].command.operation.operation!({ commands, global_flags, getConfigurationFile: program.getConfigurationFile, });
+  const operation = (): Promise<unknown> | unknown => COMMANDS.results[COMMANDS.results.length - 1].command.operation.operation!({ parsed: { commands, global_flags, }, getConfigurationFile: program.getConfigurationFile, });
 
   return operation;
 };
