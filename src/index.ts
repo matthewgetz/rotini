@@ -22,7 +22,7 @@ export {
 
   // classes
   ConfigurationError,
-  ParseError,
   OperationError,
   OperationTimeoutError,
+  ParseError,
 } from './cli';
