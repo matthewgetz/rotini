@@ -1,41 +1,93 @@
-import { Argument, } from './argument';
+import { Argument, SafeArgument, } from './argument';
 import { ConfigurationError, ParseError, } from '../errors';
 
 describe('Argument', () => {
+  it('returns default argument', () => {
+    const arg = new Argument({
+      name: 'id',
+      description: 'id description',
+    });
+
+    expect(arg.name).toBe('id');
+    expect(arg.description).toBe('id description');
+    expect(arg.variant).toBe('value');
+    expect(arg.type).toBe('string');
+    expect(arg.values).toStrictEqual([]);
+    expect(arg.isValid('')).toBe(true);
+    expect(arg.parse({ value: '123', coerced_value: 123, })).toBe(123);
+  });
+
+  it('returns argument', () => {
+    const arg = new Argument({
+      name: 'id',
+      description: 'id description',
+      variant: 'variadic',
+      type: 'number[]',
+      values: [ 1, 2, 3, 4, 5, ],
+      isValid: (value: number): boolean => {
+        if (value > 3) {
+          return true;
+        }
+        return false;
+      },
+      parse: ({ coerced_value, }): string => {
+        const value = {
+          1: 'one',
+          2: 'two',
+          3: 'three',
+          4: 'four',
+          5: 'five',
+        }[coerced_value];
+        return value;
+      },
+    });
+
+    expect(arg.name).toBe('id');
+    expect(arg.description).toBe('id description');
+    expect(arg.variant).toBe('variadic');
+    expect(arg.type).toBe('number[]');
+    expect(arg.values).toStrictEqual([ 1, 2, 3, 4, 5, ]);
+    expect(() => {arg.isValid(2);}).toThrowError('Argument value "2" is invalid for argument "id".');
+    expect(arg.isValid(5)).toBe(true);
+    expect(arg.parse({ value: '4', coerced_value: 4, })).toBe('four');
+  });
+});
+
+describe('SafeArgument', () => {
   describe('name', () => {
     const error = new ConfigurationError('Argument property "name" must be defined, of type "string", and cannot contain spaces.');
 
     it('throws error when argument is not passed object', () => {
       expect(() => {
         // @ts-expect-error no argument definition passed
-        new Argument();
+        new SafeArgument();
       }).toThrowError(error);
     });
 
     it('throws error when argument property "name" is missing', () => {
       expect(() => {
         // @ts-expect-error argument property "name" is missing
-        new Argument({});
+        new SafeArgument({});
       }).toThrowError(error);
     });
 
     it('throws error when argument property "name" is not string', () => {
       expect(() => {
         // @ts-expect-error argument property "name" is not string
-        new Argument({ name: 123, });
+        new SafeArgument({ name: 123, });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "name" contains spaces', () => {
       expect(() => {
         // @ts-expect-error argument property "name" contains spaces
-        new Argument({ name: 'some argument', });
+        new SafeArgument({ name: 'some argument', });
       }).toThrowError(error);
     });
 
     it('does not throw error', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', });
+        new SafeArgument({ name: 'id', description: 'id description', });
       }).not.toThrow();
     });
   });
@@ -46,20 +98,20 @@ describe('Argument', () => {
     it('throws error when argument property "description" is missing', () => {
       expect(() => {
         // @ts-expect-error argument property "description" is missing
-        new Argument({ name: 'id', });
+        new SafeArgument({ name: 'id', });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "description" is not string', () => {
       expect(() => {
         // @ts-expect-error argument property "description" is not string
-        new Argument({ name: 'id', description: 45, });
+        new SafeArgument({ name: 'id', description: 45, });
       }).toThrowError(error);
     });
 
     it('does not throw error', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'this description will not error', });
+        new SafeArgument({ name: 'id', description: 'this description will not error', });
       }).not.toThrow();
     });
   });
@@ -68,9 +120,9 @@ describe('Argument', () => {
     const error = new ConfigurationError('Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "id".');
 
     it('does not throw error when argument property "variant" is not defined; defaults argument property "variant" to "value"', () => {
-      let result: Argument;
+      let result: SafeArgument;
       expect(() => {
-        result = new Argument({ name: 'id', description: 'id description', });
+        result = new SafeArgument({ name: 'id', description: 'id description', });
       }).not.toThrow();
       expect(result!.variant).toBe('value');
     });
@@ -78,32 +130,32 @@ describe('Argument', () => {
     it('throws error when argument property "variant" is not string', () => {
       expect(() => {
         // @ts-expect-error argument property "variant" is not string
-        new Argument({ name: 'id', description: 'id description', variant: [ 'value', ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: [ 'value', ], });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "variant" is not allowed value', () => {
       expect(() => {
         // @ts-expect-error argument property "variant" is not allowed value
-        new Argument({ name: 'id', description: 'id description', variant: 'any string value', type: 'string', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'any string value', type: 'string', });
       }).toThrowError(error);
     });
 
     it('does not throw error when argument property "variant" is "boolean"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'boolean', type: 'boolean', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'boolean', type: 'boolean', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "variant" is "value"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "variant" is "variadic"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string[]', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string[]', });
       }).not.toThrow();
     });
   });
@@ -114,9 +166,9 @@ describe('Argument', () => {
     const variadic_error = new ConfigurationError('Argument property "type" must be set as "string[]", "number[]", or "boolean[]" when property "variant" is set as "variadic".');
 
     it('does not throw error when argument property "type" is not defined; defaults argument property "type" to "string"', () => {
-      let result: Argument;
+      let result: SafeArgument;
       expect(() => {
-        result = new Argument({ name: 'id', description: 'id description', });
+        result = new SafeArgument({ name: 'id', description: 'id description', });
       }).not.toThrow();
       expect(result!.type).toBe('string');
     });
@@ -124,62 +176,62 @@ describe('Argument', () => {
     it('throws error when argument property "type" is not string', () => {
       expect(() => {
         // @ts-expect-error argument property "type" is not string
-        new Argument({ name: 'id', description: 'id description', type: [ 'value', ], });
+        new SafeArgument({ name: 'id', description: 'id description', type: [ 'value', ], });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "type" is not allowed value', () => {
       expect(() => {
         // @ts-expect-error argument property "type" is not allowed value
-        new Argument({ name: 'id', description: 'id description', type: 'any string value', });
+        new SafeArgument({ name: 'id', description: 'id description', type: 'any string value', });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "type" is not set as "boolean" when property "variant" is set as "boolean"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'boolean', type: 'string', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'boolean', type: 'string', });
       }).toThrowError(boolean_error);
     });
 
     it('throws error when argument property "type" is not set as "string[]", "number[]", or "boolean[]" when property "variant" is set as "variadic"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string', });
       }).toThrowError(variadic_error);
     });
 
     it('does not throw error when argument property "type" is "string"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "type" is "number"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'number', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'number', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "type" is "boolean"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'boolean', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'boolean', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "type" is "string[]"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string[]', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string[]', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "type" is "number[]"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'number[]', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'number[]', });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "type" is "boolean[]"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'boolean[]', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'boolean[]', });
       }).not.toThrow();
     });
   });
@@ -190,75 +242,75 @@ describe('Argument', () => {
 
     it('does not throw error when property "values" is not defined', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', });
+        new SafeArgument({ name: 'id', description: 'id description', });
       }).not.toThrow();
     });
 
     it('throws error when argument property "values" is string', () => {
       expect(() => {
         // @ts-expect-error argument property "values" is string
-        new Argument({ name: 'id', description: 'id description', values: 'should be array', });
+        new SafeArgument({ name: 'id', description: 'id description', values: 'should be array', });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "values" is array of strings and property "type" is set as "number"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'number', values: [ 'first', 'second', 'third', ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'number', values: [ 'first', 'second', 'third', ], });
       }).toThrowError(number_error);
     });
 
     it('throws error when argument property "values" is array of numbers and property "type" is set as "string"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', values: [ 1, 2, 3, 4, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', values: [ 1, 2, 3, 4, ], });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "values" is array of booleans and property "type" is set as "string"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', values: [ true, false, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', values: [ true, false, ], });
       }).toThrowError(error);
     });
 
     it('throws error when argument property "values" is array of strings and numbers', () => {
       expect(() => {
         // @ts-expect-error argument property "values" is array of strings and numbers
-        new Argument({ name: 'id', description: 'id description', variant: 'value', values: [ 'string', 23, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', values: [ 'string', 23, ], });
       }).toThrowError(error);
     });
 
     it('does not throw error when argument property "values" is array of strings and property "type" is set as "string"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', values: [ 'first', 'second', 'third', ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', values: [ 'first', 'second', 'third', ], });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "values" is array of numbers and property "type" is set as "number"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'number', values: [ 1, 2, 3, 4, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'number', values: [ 1, 2, 3, 4, ], });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "values" is array of booleans and property "type" is set as "boolean"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'boolean', values: [ true, false, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'boolean', values: [ true, false, ], });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "values" is array of strings and property "type" is set as "string[]"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string[]', values: [ 'first', 'second', 'third', ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'string[]', values: [ 'first', 'second', 'third', ], });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "values" is array of numbers and property "type" is set as "number[]"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'number[]', values: [ 1, 2, 3, 4, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'number[]', values: [ 1, 2, 3, 4, ], });
       }).not.toThrow();
     });
 
     it('does not throw error when argument property "values" is array of booleans and property "type" is set as "boolean[]"', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'variadic', type: 'boolean[]', values: [ true, false, ], });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'variadic', type: 'boolean[]', values: [ true, false, ], });
       }).not.toThrow();
     });
   });
@@ -270,48 +322,48 @@ describe('Argument', () => {
 
     it('does not throw error when property "isValid" is not defined', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
       }).not.toThrow();
     });
 
     it('throws error when argument property "isValid" is not function', () => {
       expect(() => {
         // @ts-expect-error argument property "isValid" is not function
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: 'should be function', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: 'should be function', });
       }).toThrowError(error);
     });
 
     it('throws default error when "isValid" function returns false', () => {
       expect(() => {
-        const arg = new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (value: number): boolean => value > 3, });
+        const arg = new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (value: number): boolean => value > 3, });
         arg.isValid(1);
       }).toThrowError(is_valid_error);
     });
 
     it('throws default error when "isValid" function returns false', () => {
       expect(() => {
-        const arg = new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (value: number): boolean => value > 3, });
+        const arg = new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (value: number): boolean => value > 3, });
         arg.isValid(1);
       }).toThrowError(is_valid_error);
     });
 
     it('throws custom error when "isValid" function throws error', () => {
       expect(() => {
-        const arg = new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): never => { throw custom_error; }, });
+        const arg = new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): never => { throw custom_error; }, });
         arg.isValid('');
       }).toThrowError(custom_error);
     });
 
     it('does not throw error when return is void', () => {
       expect(() => {
-        const arg = new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): void => { }, });
+        const arg = new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): void => { }, });
         arg.isValid('');
       }).not.toThrow();
     });
 
     it('does not throw error when return is true', () => {
       expect(() => {
-        const arg = new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): boolean => true, });
+        const arg = new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): boolean => true, });
         arg.isValid('');
       }).not.toThrow();
     });
@@ -323,20 +375,20 @@ describe('Argument', () => {
 
     it('does not throw error when property "parse" is not defined', () => {
       expect(() => {
-        new Argument({ name: 'id', description: 'id description', });
+        new SafeArgument({ name: 'id', description: 'id description', });
       }).not.toThrow();
     });
 
     it('throws error when argument property "parse" is not function', () => {
       expect(() => {
         // @ts-expect-error argument property "parse" is not function
-        new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parse: 'should be function', });
+        new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parse: 'should be function', });
       }).toThrowError(error);
     });
 
     it('throws default error when argument property "parse" function throws an error', () => {
       expect(() => {
-        const arg = new Argument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parse: (): never => { throw new Error('could not parse value'); }, });
+        const arg = new SafeArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parse: (): never => { throw new Error('could not parse value'); }, });
         arg.parse({ value: '1', coerced_value: 1, });
       }).toThrowError(parse_error);
     });
@@ -344,7 +396,7 @@ describe('Argument', () => {
     it('does not throw error when parse function is able to parse the value', () => {
       let result: unknown;
       expect(() => {
-        const arg = new Argument({
+        const arg = new SafeArgument({
           name: 'id',
           description: 'id description',
           variant: 'value', type: 'string',
@@ -361,7 +413,7 @@ describe('Argument', () => {
 
   describe('class', () => {
     it('creates new argument correctly (defaults)', () => {
-      const arg = new Argument({
+      const arg = new SafeArgument({
         name: 'name',
         description: 'name description',
       });
@@ -376,7 +428,7 @@ describe('Argument', () => {
     });
 
     it('creates new argument correctly', () => {
-      const arg = new Argument({
+      const arg = new SafeArgument({
         name: 'name',
         description: 'name description',
         variant: 'variadic',

@@ -1,7 +1,7 @@
-import { I_Argument, I_Command, I_Example, I_LocalFlag, I_Operation, } from '../interfaces';
+import { I_Command, I_Example, I_Operation, } from '../interfaces';
 import { ConfigurationError, ParseError, } from '../errors';
-import { Argument, Arguments, } from '../arguments';
-import { Commands, } from './commands';
+import { Argument, Arguments, SafeArguments, } from '../arguments';
+import { SafeCommands, } from './commands';
 import { Example, Examples, } from '../examples';
 import { Flag, Flags, ForceFlag, HelpFlag, } from '../flags';
 import { Operation, } from '../operation';
@@ -27,166 +27,114 @@ interface I_CommandMetadata {
 }
 
 export class Command implements I_Command {
-  name!: string;
-  description!: string;
-  aliases!: string[];
-  deprecated!: boolean;
-  arguments!: Argument[];
-  flags!: (Flag | ForceFlag | HelpFlag)[];
-  commands!: Command[];
-  examples!: Example[];
-  operation!: Operation;
-  isForceCommand!: boolean;
-  usage!: string;
-  help!: string;
+  name: string;
+  description: string;
+  aliases: string[];
+  deprecated: boolean;
+  arguments: Argument[];
+  flags: (Flag | ForceFlag | HelpFlag)[];
+  commands: Command[];
+  examples: Example[];
+  operation: Operation;
+  isForceCommand: boolean;
+  usage: string;
+  help: string;
 
   // help sections
-  #name!: string;
-  #description!: string;
-  #aliases!: string;
-  #usage!: string;
-  #examples!: string;
-  #arguments!: string;
-  #commands!: string;
-  #flags!: string;
+  name_help: string;
+  description_help: string;
+  aliases_help: string;
+  usage_help: string;
+  examples_help: string;
+  arguments_help: string;
+  commands_help: string;
+  flags_help: string;
 
-  #isGeneratedUsage: boolean;
-
+  isGeneratedUsage: boolean;
   subcommand_identifiers!: string[];
 
   constructor (command: I_Command, metadata: I_CommandMetadata) {
-    this.#isGeneratedUsage = metadata.isGeneratedUsage;
+    this.isGeneratedUsage = metadata.isGeneratedUsage;
 
-    this
-      .#setName(command?.name)
-      .#setAliases(command.aliases)
-      .#setDeprecated(command.deprecated)
-      .#setDescription(command.description)
-      .#setArguments(command.arguments)
-      .#setFlags(command.flags)
-      .#setUsage(command.usage)
-      .#setCommands(command.commands)
-      .#setExamples(command.examples)
-      .#setIsForceCommand()
-      .#setHelp(command.help)
-      .#setOperation(command.operation)
-      .#setSubcommandIdentifiers();
-  }
+    this.name = command?.name;
+    this.name_help = this.name;
 
-  #setName = (name: string): Command | never => {
-    if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
-      throw new ConfigurationError('Command property "name" must be defined, of type "string", and cannot contain spaces.');
-    }
-
-    this.name = name;
-    this.#name = this.name;
-
-    return this;
-  };
-
-  #setAliases = (aliases: string[] = []): Command | never => {
-    if (Utils.isNotArray(aliases) || Utils.isNotArrayOfStrings(aliases) || aliases.filter(alias => Utils.stringContainsSpaces(alias)).length > 0) {
-      throw new ConfigurationError(`Command property "aliases" must be of type "array", can only contain indexes of type "string", and cannot contain indexes with spaces for command "${this.name}".`);
-    }
-
-    this.aliases = aliases;
-    this.#aliases = (aliases.length > 0) ? [
+    this.aliases = Utils.isArray(command?.aliases) ? command.aliases! : [];
+    this.aliases_help = (this.aliases.length > 0) ? [
       '\n\n',
       'ALIASES:',
       '\n\n',
-      `  ${aliases.join(',')}`,
+      `  ${this.aliases?.join(',')}`,
     ].join('') : '';
 
-    return this;
-  };
+    this.deprecated = command?.deprecated || false;
 
-  #setDeprecated = (deprecated = false): Command | never => {
-    if (Utils.isNotBoolean(deprecated)) {
-      throw new ConfigurationError(`Command property "deprecated" must be of type "boolean" for command "${this.name}".`);
-    }
-
-    this.deprecated = deprecated;
-
-    return this;
-  };
-
-  #setDescription = (description: string): Command | never => {
-    if (Utils.isNotDefined(description) || Utils.isNotString(description)) {
-      throw new ConfigurationError(`Command property "description" must be defined and of type "string" for command "${this.name}".`);
-    }
-
-    this.description = description;
-    this.#description = [
+    this.description = command?.description;
+    this.description_help = [
       '\n\n',
       `  ${this.description}`,
       this.deprecated === true ? `\n\n  This command has been deprecated and will be removed from a future release.${this.aliases.length > 0 ? `\n  Command aliases ${JSON.stringify(this.aliases)} can be used as a guard against future breaking changes.` : ''}` : '',
     ].join('');
 
-    return this;
-  };
-
-  #setArguments = (args: I_Argument[] = []): Command | never => {
-    this.arguments = new Arguments({
+    const ARGS = new Arguments({
       entity: {
         type: 'Command',
         name: this.name,
       },
-      arguments: args,
-    }).get();
+      arguments: command?.arguments || [],
+    });
 
-    this.#arguments = this.#makeArgumentsSection();
+    this.arguments = ARGS.arguments;
+    this.arguments_help = ARGS.help;
 
-    return this;
-  };
-
-  #setFlags = (flags: I_LocalFlag[] = []): Command | never => {
     const FLAGS = new Flags({
       entity: {
         type: 'Command',
         key: 'local_flags',
         name: this.name,
       },
-      flags,
+      flags: command?.flags || [],
     });
 
     this.flags = FLAGS.get();
-    this.#flags = FLAGS.help;
+    this.flags_help = FLAGS.help;
 
-    return this;
-  };
+    const u = this.#makeUsage();
+    this.usage = u.usage;
+    this.usage_help = u.usage_help;
 
-  #setCommands = (commands: I_Command[] = []): Command | never => {
-    const cmds = new Commands({
+    const cmds = new SafeCommands({
       entity: {
         type: 'Command',
         name: this.name,
       },
       usage: this.usage,
-      commands,
+      commands: command?.commands || [],
     });
 
-    this.commands = cmds.get();
-    this.#commands = cmds.help;
-
-    return this;
-  };
-
-  #setExamples = (examples: I_Example[] = []): Command | never => {
     const EXAMPLES = new Examples({
       entity: {
         type: 'Program',
         name: this.name,
       },
-      examples,
+      examples: command?.examples || [],
     });
 
     this.examples = EXAMPLES.get();
-    this.#examples = EXAMPLES.help;
+    this.examples_help = EXAMPLES.help;
 
-    return this;
-  };
+    this.commands = cmds.commands;
+    this.commands_help = cmds.help;
 
-  #setUsage = (usage?: string): Command => {
+    this.help = this.#makeHelp(command.help);
+
+    this.operation = new Operation(this.name, this.help, command.operation);
+
+    this.isForceCommand = this.#isForceCommand();
+    this.subcommand_identifiers = this.#makeSubcommandIdentifiers();
+  }
+
+  #makeUsage = (usage?: string): { usage: string, usage_help: string } => {
     let command_usage = `${usage} ${this.name}`;
 
     if (this.arguments.length > 1) {
@@ -198,7 +146,7 @@ export class Command implements I_Command {
     let resolvedUsage: string;
     let resolvedUsageHelp: string;
 
-    if (this.#isGeneratedUsage) {
+    if (this.isGeneratedUsage) {
       resolvedUsage = command_usage;
       resolvedUsageHelp = `  ${command_usage}${this.flags.length > 0 ? ' [flags]' : ''}`;
     } else {
@@ -206,104 +154,40 @@ export class Command implements I_Command {
       resolvedUsageHelp = `  ${usage}`;
     }
 
-    this.usage = resolvedUsage;
-    this.#usage = [
-      '\n\n',
-      'USAGE:',
-      '\n\n',
-      resolvedUsageHelp,
-    ].join('');
-
-    return this;
+    return {
+      usage: resolvedUsage,
+      usage_help: [
+        '\n\n',
+        'USAGE:',
+        '\n\n',
+        resolvedUsageHelp,
+      ].join(''),
+    };
   };
 
-  #setIsForceCommand = (): Command => {
-    const hasForceFlag = this.flags.some(flag => flag.name === 'force');
-
-    this.isForceCommand = hasForceFlag;
-
-    return this;
-  };
-
-  #setHelp = (help?: string): Command => {
-    if (Utils.isDefined(help) && Utils.isNotString(help)) {
-      throw new ConfigurationError(`Command property "help" must be of type "string".`);
-    }
-
-    this.help = help || [
-      this.#name,
-      this.#description,
-      this.#usage,
-      this.#examples,
-      this.#aliases,
-      this.#arguments,
-      this.#commands,
-      this.#flags,
+  #makeHelp = (help?: string): string => {
+    return help || [
+      this.name_help,
+      this.description_help,
+      this.usage_help,
+      this.examples_help,
+      this.aliases_help,
+      this.arguments_help,
+      this.commands_help,
+      this.flags_help,
       this.commands.length > 0 ? `\n\nUse "${this.usage} <command> --help" for more information about a given command.` : '',
     ].join('');
-
-    return this;
   };
 
-  #setOperation = (operation?: I_Operation): Command | never => {
-    if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
-      throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
-    }
-
-    this.operation = new Operation(this.name, this.help, operation);
-
-    return this;
+  #isForceCommand = (): boolean => {
+    const hasForceFlag = this.flags.some(flag => flag.name === 'force');
+    return hasForceFlag;
   };
 
-  #setSubcommandIdentifiers = (): Command => {
+  #makeSubcommandIdentifiers = (): string[] => {
     const potential_commands = this.commands.map(command => command.name);
     const potential_aliases = this.commands.map(command => command.aliases).flat();
-    this.subcommand_identifiers = [ ...potential_commands, ...potential_aliases, ];
-    return this;
-  };
-
-  #makeArgumentsSection = (): string => {
-    const longestName = Math.max(...(this.arguments.map(arg => {
-      let values;
-
-      if (arg.variant === 'variadic' && arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}...`;
-      } else if (arg.variant === 'variadic') {
-        values = `=${arg.type}...`;
-      } else if (arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}`;
-      } else {
-        values = `=${arg.type}`;
-      }
-
-      return `${arg.name}${values}`.length;
-    })));
-
-    const formattedNames = this.arguments.map(arg => {
-      let values;
-
-      if (arg.variant === 'variadic' && arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}...`;
-      } else if (arg.variant === 'variadic') {
-        values = `=${arg.type}...`;
-      } else if (arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}`;
-      } else {
-        values = `=${arg.type}`;
-      }
-
-      const nameLength = `${arg.name}${values}`.length;
-      const numberOfSpaces = longestName - nameLength;
-      const spaces = ' '.repeat(numberOfSpaces);
-      return `  ${arg.name}${values}${spaces}      ${arg.description}`;
-    });
-
-    return formattedNames.length > 0 ? [
-      '\n\n',
-      'ARGUMENTS:',
-      '\n\n',
-      formattedNames.join('\n'),
-    ].join('') : '';
+    return [ ...potential_commands, ...potential_aliases, ];
   };
 
   parseArguments = (parameters: Parameter[] = []): T_ParseCommandArgumentsReturn => {
@@ -390,5 +274,134 @@ export class Command implements I_Command {
       unparsed_parameters: params.unparsed_parameters,
       results: mappedResults,
     };
+  };
+}
+
+export class SafeCommand extends Command {
+  declare commands: SafeCommand[];
+
+  constructor (command: I_Command, metadata: I_CommandMetadata) {
+    super(command, metadata);
+    this
+      .#checkName()
+      .#checkAliases()
+      .#checkDeprecated()
+      .#checkDescription()
+      .#checkAndSetArguments()
+      .#checkAndSetFlags()
+      .#checkAndSetCommands()
+      .#checkAndSetExamples()
+      .#checkOperation()
+      .#checkHelp();
+  }
+
+  #checkName = (): SafeCommand | never => {
+    if (Utils.isNotDefined(this.name) || Utils.isNotString(this.name) || Utils.stringContainsSpaces(this.name)) {
+      throw new ConfigurationError('Command property "name" must be defined, of type "string", and cannot contain spaces.');
+    }
+
+    return this;
+  };
+
+  #checkAliases = (): SafeCommand | never => {
+    if (Utils.isNotArray(this.aliases) || Utils.isNotArrayOfStrings(this.aliases) || this.aliases.filter(alias => Utils.stringContainsSpaces(alias)).length > 0) {
+      throw new ConfigurationError(`Command property "aliases" must be of type "array", can only contain indexes of type "string", and cannot contain indexes with spaces for command "${this.name}".`);
+    }
+
+    return this;
+  };
+
+  #checkDeprecated = (): SafeCommand | never => {
+    if (Utils.isNotBoolean(this.deprecated)) {
+      throw new ConfigurationError(`Command property "deprecated" must be of type "boolean" for command "${this.name}".`);
+    }
+
+    return this;
+  };
+
+  #checkDescription = (): SafeCommand | never => {
+    if (Utils.isNotDefined(this.description) || Utils.isNotString(this.description)) {
+      throw new ConfigurationError(`Command property "description" must be defined and of type "string" for command "${this.name}".`);
+    }
+
+    return this;
+  };
+
+  #checkAndSetArguments = (): SafeCommand | never => {
+    const ARGUMENTS = new SafeArguments({
+      entity: {
+        type: 'Command',
+        name: this.name,
+      },
+      arguments: this.arguments,
+    });
+
+    this.arguments = ARGUMENTS.arguments;
+    this.arguments_help = ARGUMENTS.help;
+
+    return this;
+  };
+
+  #checkAndSetFlags = (): SafeCommand | never => {
+    const FLAGS = new Flags({
+      entity: {
+        type: 'Command',
+        key: 'local_flags',
+        name: this.name,
+      },
+      flags: this.flags,
+    });
+
+    this.flags = FLAGS.get();
+    this.flags_help = FLAGS.help;
+
+    return this;
+  };
+
+  #checkAndSetCommands = (commands: I_Command[] = []): SafeCommand | never => {
+    const cmds = new SafeCommands({
+      entity: {
+        type: 'Command',
+        name: this.name,
+      },
+      usage: this.usage,
+      commands,
+    });
+
+    this.commands = cmds.commands;
+    this.commands_help = cmds.help;
+
+    return this;
+  };
+
+  #checkAndSetExamples = (examples: I_Example[] = []): SafeCommand | never => {
+    const EXAMPLES = new Examples({
+      entity: {
+        type: 'Program',
+        name: this.name,
+      },
+      examples,
+    });
+
+    this.examples = EXAMPLES.get();
+    this.examples_help = EXAMPLES.help;
+
+    return this;
+  };
+
+  #checkOperation = (operation?: I_Operation): SafeCommand | never => {
+    if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
+      throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
+    }
+
+    return this;
+  };
+
+  #checkHelp = (): SafeCommand | never => {
+    if (Utils.isDefined(this.help) && Utils.isNotString(this.help)) {
+      throw new ConfigurationError(`Command property "help" must be of type "string" for command "${this.name}".`);
+    }
+
+    return this;
   };
 }

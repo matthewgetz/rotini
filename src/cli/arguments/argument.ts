@@ -3,6 +3,30 @@ import { ConfigurationError, ParseError, } from '../errors';
 import { DefaultIsValid, DefaultParse, IsValid, Parse, ParseProperties, Type, TYPES, Value, Values, Variant, VARIANTS, } from '../types';
 import Utils from '../../utils';
 
+const getIsValid = ({ name, isValid = DefaultIsValid, }: { name: string, isValid?: IsValid }) => {
+  return (value: Value): boolean | never => {
+    try {
+      if (isValid(value as never) === false) {
+        throw new ParseError(`Argument value "${value}" is invalid for argument "${name}".`);
+      }
+      return true;
+    } catch (error) {
+      throw new ParseError((error as Error).message);
+    }
+  };
+};
+
+const getParseFunction = ({ name, parse = DefaultParse, }: {name: string, parse?: (props: ParseProperties) => unknown}) => {
+  return ({ value, coerced_value, }: ParseProperties): unknown => {
+    try {
+      const parsed = parse({ value, coerced_value, });
+      return parsed;
+    } catch (error) {
+      throw new ParseError(`Argument value could not be parsed for argument "${name}".`);
+    }
+  };
+};
+
 export class Argument implements I_Argument {
   name!: string;
   description!: string;
@@ -13,6 +37,19 @@ export class Argument implements I_Argument {
   parse!: Parse;
 
   constructor (argument: I_Argument) {
+    this.name = argument?.name;
+    this.description = argument?.description;
+    this.variant = argument?.variant || 'value';
+    this.type = argument?.type || 'string';
+    this.values = argument?.values || [];
+    this.isValid = getIsValid({ name: this.name, isValid: argument?.isValid, });
+    this.parse = getParseFunction({ name: this.name, parse: argument?.parse, });
+  }
+}
+
+export class SafeArgument extends Argument {
+  constructor (argument: I_Argument) {
+    super(argument);
     this
       .#setName(argument?.name)
       .#setDescription(argument.description)
@@ -23,7 +60,7 @@ export class Argument implements I_Argument {
       .#setParse(argument.parse);
   }
 
-  #setName = (name: string): Argument | never => {
+  #setName = (name: string): SafeArgument | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Argument property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -33,7 +70,7 @@ export class Argument implements I_Argument {
     return this;
   };
 
-  #setDescription = (description: string): Argument | never => {
+  #setDescription = (description: string): SafeArgument | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description)) {
       throw new ConfigurationError(`Argument property "description" must be defined and of type "string" for argument "${this.name}".`);
     }
@@ -43,7 +80,7 @@ export class Argument implements I_Argument {
     return this;
   };
 
-  #setVariant = (variant: Variant = 'value'): Argument | never => {
+  #setVariant = (variant: Variant = 'value'): SafeArgument | never => {
     if (Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, VARIANTS)) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
@@ -53,7 +90,7 @@ export class Argument implements I_Argument {
     return this;
   };
 
-  #setType = (type: Type = 'string'): Argument | never => {
+  #setType = (type: Type = 'string'): SafeArgument | never => {
     if (Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, TYPES)) {
       throw new ConfigurationError(`Argument property "type" must be defined, of type "string", and set as "string", "number", "boolean", "string[]", "number[]", or "boolean[]" for argument "${this.name}".`);
     }
@@ -71,7 +108,7 @@ export class Argument implements I_Argument {
     return this;
   };
 
-  #setValues = (values: Values = []): Argument | never => {
+  #setValues = (values: Values = []): SafeArgument | never => {
     const isNotArrayOfType = Object.freeze({
       string: Utils.isNotArrayOfStrings,
       number: Utils.isNotArrayOfNumbers,
@@ -92,38 +129,22 @@ export class Argument implements I_Argument {
     return this;
   };
 
-  #setIsValid = (isValid: IsValid = DefaultIsValid): Argument | never => {
+  #setIsValid = (isValid: IsValid = DefaultIsValid): SafeArgument | never => {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Argument property "isValid" must be of type "function" for argument "${this.name}".`);
     }
 
-    this.isValid = (value: Value): boolean | never => {
-      try {
-        if (isValid(value as never) === false) {
-          throw new ParseError(`Argument value "${value}" is invalid for argument "${this.name}".`);
-        }
-        return true;
-      } catch (error) {
-        throw new ParseError((error as Error).message);
-      }
-    };
+    this.isValid = getIsValid({ name: this.name, isValid, });
 
     return this;
   };
 
-  #setParse = (parse: Parse = DefaultParse): Argument | never => {
+  #setParse = (parse: Parse = DefaultParse): SafeArgument | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Argument property "parse" must be of type "function" for argument "${this.name}".`);
     }
 
-    this.parse = ({ value, coerced_value, }: ParseProperties): unknown => {
-      try {
-        const parsed = parse({ value, coerced_value, });
-        return parsed;
-      } catch (error) {
-        throw new ParseError(`Argument value could not be parsed for argument "${this.name}".`);
-      }
-    };
+    this.parse = getParseFunction({ name: this.name, parse, });
 
     return this;
   };

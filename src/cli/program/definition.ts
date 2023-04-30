@@ -2,7 +2,7 @@ import { homedir, } from 'os';
 
 import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, I_PositionalFlag, } from '../interfaces';
 import { ConfigFile, } from '../types';
-import { Command, Commands, } from '../commands';
+import { Command, Commands, SafeCommands, } from '../commands';
 import { ConfigurationFile, ConfigurationFiles, } from '../configuration-files';
 import { Flags, GlobalFlag, PositionalFlag, } from '../flags';
 import { Example, Examples, } from '../examples';
@@ -128,7 +128,9 @@ export class Definition implements I_Definition {
   };
 
   #setCommands = (commands: I_Command[] = []): Definition | never => {
-    const cmds = new Commands({
+    const ProgramCommands = this.#configuration.strict_mode ? SafeCommands : Commands;
+
+    const cmds = new ProgramCommands({
       entity: {
         type: 'Program',
         name: this.name,
@@ -137,7 +139,7 @@ export class Definition implements I_Definition {
       commands,
     });
 
-    this.commands = cmds.get();
+    this.commands = cmds.commands;
     this.#commands = cmds.help;
 
     return this;

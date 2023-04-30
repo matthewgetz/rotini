@@ -1,4 +1,4 @@
-import { Arguments, } from './arguments';
+import { SafeArguments, } from './arguments';
 import { ConfigurationError, } from '../errors';
 import { ArgumentsProperties, } from '../types';
 
@@ -19,7 +19,7 @@ describe('Arguments', () => {
 
     expect(() => {
       // @ts-expect-error no argument definition passed
-      new Arguments(properties);
+      new SafeArguments(properties);
     }).toThrowError(error);
   });
 
@@ -42,7 +42,7 @@ describe('Arguments', () => {
     };
 
     expect(() => {
-      new Arguments(properties);
+      new SafeArguments(properties);
     }).toThrowError(duplicates_error);
   });
 
@@ -69,7 +69,7 @@ describe('Arguments', () => {
     };
 
     expect(() => {
-      new Arguments(properties);
+      new SafeArguments(properties);
     }).toThrowError(multiple_variadic_error);
   });
 
@@ -96,7 +96,7 @@ describe('Arguments', () => {
     };
 
     expect(() => {
-      new Arguments(properties);
+      new SafeArguments(properties);
     }).toThrowError(variadic_position_error);
   });
 
@@ -115,7 +115,7 @@ describe('Arguments', () => {
     };
 
     expect(() => {
-      new Arguments(properties);
+      new SafeArguments(properties);
     }).not.toThrow();
   });
 });

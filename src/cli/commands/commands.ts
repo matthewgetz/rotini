@@ -1,6 +1,6 @@
 import { I_Command, } from '../interfaces';
 import { ConfigurationError, } from '../errors';
-import { Command, } from './command';
+import { Command, SafeCommand, } from './command';
 import Utils from '../../utils';
 
 export interface CommandsProperties {
@@ -13,53 +13,28 @@ export interface CommandsProperties {
 }
 
 export class Commands {
-  #entity_type: string;
-  #entity_name: string;
-  #usage: string;
+  entity_type: string;
+  entity_name: string;
+  usage: string;
 
-  #commands!: Command[];
+  commands!: Command[];
   help!: string;
 
   constructor (properties: CommandsProperties) {
-    this.#entity_type = properties.entity.type;
-    this.#entity_name = properties.entity.name;
-    this.#usage = properties.usage;
+    this.entity_type = properties.entity.type;
+    this.entity_name = properties.entity.name;
+    this.usage = properties.usage;
 
-    this.#setCommands(properties.commands);
-    this.#ensureNoDuplicateCommandPropertyValues('name');
-    this.#ensureNoDuplicateCommandPropertyValues('aliases');
-    this.#makeCommandsSection();
+    const commands = Utils.isArray(properties.commands) ? properties.commands : [];
+    this.commands = commands.map((command: I_Command) => {
+      const usage = command.usage || this.usage;
+      return new Command({ ...command, usage, }, { isGeneratedUsage: usage === this.usage, });
+    });
+    this.help = this.#makeCommandsSection();
   }
 
-  get = (): Command[] => this.#commands;
-
-  #setCommands = (commands: I_Command[]): Commands | never => {
-    if (Utils.isNotArray(commands)) {
-      throw new ConfigurationError(`${this.#entity_type} property "commands" must be of type "array" for ${this.#entity_type.toLowerCase()} "${this.#entity_name}".`);
-    }
-
-    this.#commands = commands.map((command: I_Command) => {
-      const usage = command.usage || this.#usage;
-
-      return new Command({ ...command, usage, }, { isGeneratedUsage: usage === this.#usage, });
-    });
-
-    return this;
-  };
-
-  #ensureNoDuplicateCommandPropertyValues = (property: 'name' | 'aliases'): void | never => {
-    const commandProperties = this.#commands.map(command => command[property as keyof Command]).filter(value => Utils.isDefined(value));
-    const properties = (property === 'aliases') ? commandProperties.flat() : commandProperties;
-
-    const { duplicates, hasDuplicates, } = Utils.getDuplicateStrings(properties as string[]);
-
-    if (hasDuplicates) {
-      throw new ConfigurationError(`Duplicate command "${property}" found for ${this.#entity_type.toLowerCase()} "${this.#entity_name}": ${JSON.stringify(duplicates)}.`);
-    }
-  };
-
-  #makeCommandsSection = (): void => {
-    const commandNamesAndAliases = this.#commands.map(command => {
+  #makeCommandsSection = (): string => {
+    const commandNamesAndAliases = this.commands.map(command => {
       const name = command.name;
       const aliases = command.aliases?.join(',');
       const commandName = Utils.isDefined(aliases) ? `${name};${aliases}` : name;
@@ -78,7 +53,7 @@ export class Commands {
       return `${c.name}${spaces}      ${c.description}`;
     });
 
-    this.help = formattedNames.length > 0
+    return formattedNames.length > 0
       ? [
         '\n\n',
         'COMMANDS:',
@@ -86,5 +61,40 @@ export class Commands {
         formattedNames.join('\n'),
       ].join('')
       : '';
+  };
+}
+
+export class SafeCommands extends Commands {
+  declare commands: SafeCommand[];
+
+  constructor (properties: CommandsProperties) {
+    super(properties);
+    this.#setCommands(properties.commands);
+    this.#ensureNoDuplicateCommandPropertyValues('name');
+    this.#ensureNoDuplicateCommandPropertyValues('aliases');
+  }
+
+  #setCommands = (commands: I_Command[]): Commands | never => {
+    if (Utils.isNotArray(commands)) {
+      throw new ConfigurationError(`${this.entity_type} property "commands" must be of type "array" for ${this.entity_type.toLowerCase()} "${this.entity_name}".`);
+    }
+
+    this.commands = commands.map((command: I_Command) => {
+      const usage = command.usage || this.usage;
+      return new SafeCommand({ ...command, usage, }, { isGeneratedUsage: usage === this.usage, });
+    });
+
+    return this;
+  };
+
+  #ensureNoDuplicateCommandPropertyValues = (property: 'name' | 'aliases'): void | never => {
+    const commandProperties = this.commands.map(command => command[property as keyof Command]).filter(value => Utils.isDefined(value));
+    const properties = (property === 'aliases') ? commandProperties.flat() : commandProperties;
+
+    const { duplicates, hasDuplicates, } = Utils.getDuplicateStrings(properties as string[]);
+
+    if (hasDuplicates) {
+      throw new ConfigurationError(`Duplicate command "${property}" found for ${this.entity_type.toLowerCase()} "${this.entity_name}": ${JSON.stringify(duplicates)}.`);
+    }
   };
 }

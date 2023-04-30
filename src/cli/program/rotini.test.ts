@@ -10,6 +10,7 @@ describe('rotini', () => {
       const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
+        strict_mode: true,
         check_for_new_npm_version: false,
       };
 

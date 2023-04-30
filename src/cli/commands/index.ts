@@ -1,2 +1,2 @@
-export { Command, } from './command';
-export { Commands, } from './commands';
+export { Command, SafeCommand, } from './command';
+export { Commands, SafeCommands, } from './commands';
