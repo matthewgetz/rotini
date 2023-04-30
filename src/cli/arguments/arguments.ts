@@ -5,8 +5,8 @@ import { ArgumentsProperties, } from '../types';
 import Utils from '../../utils';
 
 export class Arguments {
-  arguments!: Argument[];
-  help!: string;
+  arguments: Argument[];
+  help: string;
 
   constructor (properties: ArgumentsProperties) {
     const args = Utils.isArray(properties.arguments) ? properties.arguments : [];
@@ -62,13 +62,13 @@ export class Arguments {
 export class SafeArguments extends Arguments {
   constructor (properties: ArgumentsProperties) {
     super(properties);
-    this.#setArguments(properties);
+    this.#checkArguments(properties);
     this.#ensureNoDuplicateArgumentNames(properties);
     this.#ensureOnlyOneVariadicArgument(properties);
     this.#ensureVariadicArgumentIsLastIfExists(properties);
   }
 
-  #setArguments = (properties: ArgumentsProperties): SafeArguments | never => {
+  #checkArguments = (properties: ArgumentsProperties): void | never => {
     const { type, name, } = properties.entity;
     const args = properties.arguments;
     const lowercaseName = name.toLowerCase();
@@ -76,10 +76,6 @@ export class SafeArguments extends Arguments {
     if (Utils.isNotArray(args)) {
       throw new ConfigurationError(`${type} property "arguments" must of type "array" for ${lowercaseName} "${name}".`);
     }
-
-    this.arguments = args.map((arg: I_Argument) => new Argument(arg));
-
-    return this;
   };
 
   #ensureNoDuplicateArgumentNames = (properties: ArgumentsProperties): void | never => {

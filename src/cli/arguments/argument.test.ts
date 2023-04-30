@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Argument, SafeArgument, } from './argument';
 import { ConfigurationError, ParseError, } from '../errors';
 

@@ -49,27 +49,29 @@ export type ParseObject = {
   }
 }
 
+export type GetConfigurationFile = (id: string) => ConfigFile
+
 type OperationProps = {
   parsed: ParseObject
-  getConfigurationFile: (id: string) => ConfigFile
+  getConfigurationFile: GetConfigurationFile
 }
 
 type BeforeHandlerProps = {
   parsed: ParseObject
-  getConfigurationFile: (id: string) => ConfigFile
+  getConfigurationFile: GetConfigurationFile
 }
 
  type HandlerProps = {
   parsed: ParseObject
   before_handler_result: unknown
-  getConfigurationFile: (id: string) => ConfigFile
+  getConfigurationFile: GetConfigurationFile
 }
 
  type AfterHandlerProps = {
   parsed: ParseObject
   before_handler_result: unknown
   handler_result: unknown
-  getConfigurationFile: (id: string) => ConfigFile
+  getConfigurationFile: GetConfigurationFile
 }
 
  type SuccessHandlerProps = {
@@ -77,12 +79,12 @@ type BeforeHandlerProps = {
   before_handler_result: unknown
   handler_result: unknown
   after_handler_result: unknown
-  getConfigurationFile: (id: string) => ConfigFile
+  getConfigurationFile: GetConfigurationFile
 }
 
  type FailureHandlerProps = {
   parsed: ParseObject
-  getConfigurationFile: (id: string) => ConfigFile
+  getConfigurationFile: GetConfigurationFile
 }
 
 export type OperationResult = {

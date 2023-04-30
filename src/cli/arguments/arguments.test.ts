@@ -33,6 +33,7 @@ describe('Arguments', () => {
         {
           name: 'id',
           description: 'id argument',
+          values: [ 'first', 'second', ],
         },
         {
           name: 'id',
@@ -58,6 +59,7 @@ describe('Arguments', () => {
           description: 'id argument',
           variant: 'variadic',
           type: 'string[]',
+          values: [ '1', '2', '3', ],
         },
         {
           name: 'name',
@@ -85,6 +87,7 @@ describe('Arguments', () => {
           description: 'id argument',
           variant: 'variadic',
           type: 'string[]',
+          values: [ '1', '2', '3', ],
         },
         {
           name: 'name',

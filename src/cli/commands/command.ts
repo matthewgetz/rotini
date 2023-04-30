@@ -284,7 +284,7 @@ export class SafeCommand extends Command {
     super(command, metadata);
     this
       .#checkName()
-      .#checkAliases()
+      .#checkAliases(command.aliases)
       .#checkDeprecated()
       .#checkDescription()
       .#checkAndSetArguments()
@@ -303,8 +303,8 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkAliases = (): SafeCommand | never => {
-    if (Utils.isNotArray(this.aliases) || Utils.isNotArrayOfStrings(this.aliases) || this.aliases.filter(alias => Utils.stringContainsSpaces(alias)).length > 0) {
+  #checkAliases = (aliases: string[] = []): SafeCommand | never => {
+    if (Utils.isNotArray(aliases) || Utils.isNotArrayOfStrings(aliases) || aliases.filter(alias => Utils.stringContainsSpaces(alias)).length > 0) {
       throw new ConfigurationError(`Command property "aliases" must be of type "array", can only contain indexes of type "string", and cannot contain indexes with spaces for command "${this.name}".`);
     }
 

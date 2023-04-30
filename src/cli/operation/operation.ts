@@ -1,5 +1,5 @@
 import { I_Operation, } from '../interfaces';
-import { AfterHandler, BeforeHandler, FailureHandler, Handler, OperationHandler, SuccessHandler, OperationResult, ParseObject, } from '../types';
+import { AfterHandler, BeforeHandler, FailureHandler, Handler, OperationHandler, SuccessHandler, OperationResult, } from '../types';
 import { ConfigurationError, OperationTimeoutError, } from '../errors';
 import Utils from '../../utils';
 
@@ -109,7 +109,7 @@ export class Operation implements I_Operation {
     if (this.handler) {
       const timeoutError = new OperationTimeoutError(`Command handler for command "${this.#command_name}" has timed out after ${this.timeout}ms.`);
 
-      operation = async (props: ParseObject): Promise<OperationResult> | never => {
+      operation = async ({ parsed, getConfigurationFile, }): Promise<OperationResult> | never => {
         let before_handler_result: unknown;
         let handler_result: unknown;
         let after_handler_result: unknown;
@@ -122,12 +122,12 @@ export class Operation implements I_Operation {
 
           try {
             handler_result = await Promise.race([
-              this.handler({ parsed: props, before_handler_result, }),
+              this.handler({ parsed, before_handler_result, getConfigurationFile, }),
               new Promise((_, reject) => timer = setTimeout(reject, this.timeout, timeoutError)),
             ]);
           } catch (error) {
             if (error instanceof OperationTimeoutError) {
-              handler_timeout_result = await this.onHandlerTimeout?.({ parsed: props, before_handler_result, });
+              handler_timeout_result = await this.onHandlerTimeout?.({ parsed, before_handler_result, getConfigurationFile, });
             }
             throw error;
           } finally {
@@ -136,13 +136,13 @@ export class Operation implements I_Operation {
         };
 
         try {
-          before_handler_result = await this.beforeHandler?.({ parsed: props, });
+          before_handler_result = await this.beforeHandler?.({ parsed, getConfigurationFile, });
           await handleWithTimeout();
-          after_handler_result = await this.afterHandler?.({ parsed: props, before_handler_result, handler_result, });
-          handler_success_result = await this.onHandlerSuccess?.({ parsed: props, before_handler_result, handler_result, after_handler_result, });
+          after_handler_result = await this.afterHandler?.({ parsed, before_handler_result, handler_result, getConfigurationFile, });
+          handler_success_result = await this.onHandlerSuccess?.({ parsed, before_handler_result, handler_result, after_handler_result, getConfigurationFile, });
         } catch (error) {
           if (!(error instanceof OperationTimeoutError)) {
-            handler_failure_result = await this.onHandlerFailure?.({ parsed: props, });
+            handler_failure_result = await this.onHandlerFailure?.({ parsed, getConfigurationFile, });
           }
           throw error;
         }
