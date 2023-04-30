@@ -17,6 +17,7 @@ export {
   I_GlobalFlag,
   I_LocalFlag,
   I_PositionalFlag,
+  I_Operation,
 } from './interfaces';
 
 export {

@@ -7,17 +7,21 @@ const FIVE_MINS_IN_MS = 300000;
 
 export class Operation implements I_Operation {
   #command_name: string;
+  #command_help: string;
+
   timeout!: number;
   handler!: Handler;
   beforeHandler!: BeforeHandler;
   afterHandler!: AfterHandler;
   onHandlerSuccess!: SuccessHandler;
   onHandlerFailure!: FailureHandler;
-  onHandlerTimeout!: Handler;
+  onHandlerTimeout!: Handler | undefined;
   operation!: OperationHandler;
 
-  constructor (command_name: string, operation: I_Operation = {}) {
+  constructor (command_name: string, command_help: string, operation: I_Operation = {}) {
     this.#command_name = command_name;
+    this.#command_help = command_help;
+
     this
       .#setTimeout(operation.timeout)
       .#setOnHandlerTimeout(operation.onHandlerTimeout)
@@ -54,7 +58,7 @@ export class Operation implements I_Operation {
       throw new ConfigurationError(`Operation property "handler" must be of type "function" for command "${this.#command_name}".`);
     }
 
-    this.handler = handler;
+    this.handler = handler || ((): void => console.info(this.#command_help));
 
     return this;
   };

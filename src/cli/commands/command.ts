@@ -186,19 +186,6 @@ export class Command implements I_Command {
     return this;
   };
 
-  #setOperation = (operation?: I_Operation): Command | never => {
-    if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
-      throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
-    }
-
-    const resolved_operation = operation || {};
-    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
-
-    this.operation = new Operation(this.name, resolved_operation);
-
-    return this;
-  };
-
   #setUsage = (usage?: string): Command => {
     let command_usage = `${usage} ${this.name}`;
 
@@ -258,11 +245,65 @@ export class Command implements I_Command {
     return this;
   };
 
+  #setOperation = (operation?: I_Operation): Command | never => {
+    if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
+      throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
+    }
+
+    this.operation = new Operation(this.name, this.help, operation);
+
+    return this;
+  };
+
   #setSubcommandIdentifiers = (): Command => {
     const potential_commands = this.commands.map(command => command.name);
     const potential_aliases = this.commands.map(command => command.aliases).flat();
     this.subcommand_identifiers = [ ...potential_commands, ...potential_aliases, ];
     return this;
+  };
+
+  #makeArgumentsSection = (): string => {
+    const longestName = Math.max(...(this.arguments.map(arg => {
+      let values;
+
+      if (arg.variant === 'variadic' && arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}...`;
+      } else if (arg.variant === 'variadic') {
+        values = `=${arg.type}...`;
+      } else if (arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}`;
+      } else {
+        values = `=${arg.type}`;
+      }
+
+      return `${arg.name}${values}`.length;
+    })));
+
+    const formattedNames = this.arguments.map(arg => {
+      let values;
+
+      if (arg.variant === 'variadic' && arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}...`;
+      } else if (arg.variant === 'variadic') {
+        values = `=${arg.type}...`;
+      } else if (arg.values.length > 0) {
+        values = `=${JSON.stringify(arg.values)}`;
+      } else {
+        values = `=${arg.type}`;
+      }
+
+      const nameLength = `${arg.name}${values}`.length;
+      const numberOfSpaces = longestName - nameLength;
+      const spaces = ' '.repeat(numberOfSpaces);
+      return `  ${arg.name}${values}${spaces}      ${arg.description}`;
+    });
+
+    return formattedNames.length > 0 ? [
+      '\n\n',
+      'ARGUMENTS:',
+      '\n\n',
+      formattedNames.join('\n'),
+    ].join('') : '';
   };
 
   parseArguments = (parameters: Parameter[] = []): T_ParseCommandArgumentsReturn => {
@@ -349,49 +390,5 @@ export class Command implements I_Command {
       unparsed_parameters: params.unparsed_parameters,
       results: mappedResults,
     };
-  };
-
-  #makeArgumentsSection = (): string => {
-    const longestName = Math.max(...(this.arguments.map(arg => {
-      let values;
-
-      if (arg.variant === 'variadic' && arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}...`;
-      } else if (arg.variant === 'variadic') {
-        values = `=${arg.type}...`;
-      } else if (arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}`;
-      } else {
-        values = `=${arg.type}`;
-      }
-
-      return `${arg.name}${values}`.length;
-    })));
-
-    const formattedNames = this.arguments.map(arg => {
-      let values;
-
-      if (arg.variant === 'variadic' && arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}...`;
-      } else if (arg.variant === 'variadic') {
-        values = `=${arg.type}...`;
-      } else if (arg.values.length > 0) {
-        values = `=${JSON.stringify(arg.values)}`;
-      } else {
-        values = `=${arg.type}`;
-      }
-
-      const nameLength = `${arg.name}${values}`.length;
-      const numberOfSpaces = longestName - nameLength;
-      const spaces = ' '.repeat(numberOfSpaces);
-      return `  ${arg.name}${values}${spaces}      ${arg.description}`;
-    });
-
-    return formattedNames.length > 0 ? [
-      '\n\n',
-      'ARGUMENTS:',
-      '\n\n',
-      formattedNames.join('\n'),
-    ].join('') : '';
   };
 }

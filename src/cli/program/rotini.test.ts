@@ -30,6 +30,7 @@ describe('rotini', () => {
         commands: [
           {
             name: 'hello-world',
+            aliases: [ 'hw', ],
             description: 'hello-world command',
             operation: {
               handler: (): string => 'Hello World!',

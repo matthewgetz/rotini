@@ -13,6 +13,7 @@ export {
   I_GlobalFlag as GlobalFlag,
   I_LocalFlag as LocalFlag,
   I_PositionalFlag as PositionalFlag,
+  I_Operation as Operation,
 
   // types
   ConfigFile,

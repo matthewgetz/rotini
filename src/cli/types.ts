@@ -87,7 +87,7 @@ export type OperationResult = {
 
 export type BeforeHandler = ((props: BeforeHandlerProps) => Promise<unknown> | unknown) | undefined
 
-export type Handler = ((props: HandlerProps) => Promise<unknown> | unknown) | undefined
+export type Handler = ((props: HandlerProps) => Promise<unknown> | unknown)
 
 export type AfterHandler = ((props: AfterHandlerProps) => Promise<unknown> | unknown) | undefined
 
