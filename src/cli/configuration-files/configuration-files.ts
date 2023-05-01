@@ -33,8 +33,6 @@ export class ConfigurationFiles {
 }
 
 export class StrictConfigurationFiles extends ConfigurationFiles {
-  declare configuration_files: ConfigurationFile[];
-
   constructor (configuration_files: I_ConfigurationFile[] = []) {
     super(configuration_files);
     this.#checkAndSetConfigurationFiles(configuration_files);

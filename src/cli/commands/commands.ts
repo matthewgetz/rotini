@@ -65,8 +65,6 @@ export class Commands {
 }
 
 export class StrictCommands extends Commands {
-  declare commands: StrictCommand[];
-
   constructor (properties: CommandsProperties) {
     super(properties);
     this.#setCommands(properties.commands);

@@ -2,10 +2,10 @@ import { homedir, } from 'os';
 
 import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, I_PositionalFlag, } from '../interfaces';
 import { ConfigFile, } from '../types';
-import { Command, Commands, StrictCommand, StrictCommands, } from '../commands';
+import { Command, Commands, StrictCommands, } from '../commands';
 import { ConfigurationFile, ConfigurationFiles, StrictConfigurationFiles, } from '../configuration-files';
 import { Flags, GlobalFlag, PositionalFlag, } from '../flags';
-import { Example, Examples, } from '../examples';
+import { Example, Examples, StrictExamples, } from '../examples';
 import { ConfigurationError, } from '../errors';
 import Utils from '../../utils';
 import { Configuration, } from './configuration';
@@ -260,7 +260,7 @@ export class Definition implements I_Definition {
       examples,
     });
 
-    this.examples = EXAMPLES.get();
+    this.examples = EXAMPLES.examples;
     this.examples_help = EXAMPLES.help;
 
     return this;
@@ -404,8 +404,6 @@ export class Definition implements I_Definition {
 }
 
 export class StrictDefinition extends Definition {
-  declare commands: StrictCommand[];
-
   constructor (program: I_Definition, configuration: Configuration) {
     super(program, configuration);
 
@@ -593,7 +591,7 @@ export class StrictDefinition extends Definition {
   };
 
   #checkAndSetExamples = (examples: I_Example[] = []): StrictDefinition | never => {
-    const EXAMPLES = new Examples({
+    const EXAMPLES = new StrictExamples({
       entity: {
         type: 'Program',
         name: this.name,
@@ -601,7 +599,7 @@ export class StrictDefinition extends Definition {
       examples,
     });
 
-    this.examples = EXAMPLES.get();
+    this.examples = EXAMPLES.examples;
 
     return this;
   };

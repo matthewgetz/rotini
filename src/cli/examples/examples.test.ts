@@ -1,9 +1,9 @@
 import { Example, } from './example';
-import { Examples, } from './examples';
+import { StrictExamples, } from './examples';
 import { ConfigurationError, } from '../errors';
 import { ExamplesProperties, } from '../types';
 
-describe('Example', () => {
+describe('StrictExamples', () => {
   const error = new ConfigurationError('Command property "examples" must be of type "array".');
 
   it('throws error when examples is not an array', () => {
@@ -16,7 +16,7 @@ describe('Example', () => {
     };
 
     expect(() => {
-      new Examples(properties);
+      new StrictExamples(properties);
     }).toThrowError(error);
   });
 
@@ -37,8 +37,8 @@ describe('Example', () => {
     let results: Example[];
     let help: string;
     expect(() => {
-      const examples = new Examples(properties);
-      results = examples.get();
+      const examples = new StrictExamples(properties);
+      results = examples.examples;
       help = examples.help;
     }).not.toThrow();
 
@@ -62,8 +62,8 @@ describe('Example', () => {
     let results: Example[];
     let help: string;
     expect(() => {
-      const examples = new Examples(properties);
-      results = examples.get();
+      const examples = new StrictExamples(properties);
+      results = examples.examples;
       help = examples.help;
     }).not.toThrow();
 

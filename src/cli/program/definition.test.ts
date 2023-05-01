@@ -507,7 +507,6 @@ describe('StrictDefinition', () => {
 
   describe('examples', () => {
     const arrayErrorMessage = 'Program property "examples" must be of type "array".';
-    const descriptionErrorMessage = 'Example property "description" must be defined and of type "string" for program "rotini".';
 
     it('throws error when program definition property "examples" is string', () => {
       expect(() => {
@@ -528,27 +527,6 @@ describe('StrictDefinition', () => {
         // @ts-expect-error program definition property "examples" is boolean
         new StrictDefinition({ name: 'rotini', description: 'program description', version: '1.0.0', examples: true, }, configuration);
       }).toThrowError(arrayErrorMessage);
-    });
-
-    it('throws error when program definition property "examples" is array of number', () => {
-      expect(() => {
-        // @ts-expect-error program definition property "examples" is array of numbers
-        new StrictDefinition({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ 1, 2, 3, ], }, configuration);
-      }).toThrowError(descriptionErrorMessage);
-    });
-
-    it('throws error when program definition property "examples" is array of boolean', () => {
-      expect(() => {
-        // @ts-expect-error program definition property "examples" is array of booleans
-        new StrictDefinition({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ true, false, ], }, configuration);
-      }).toThrowError(descriptionErrorMessage);
-    });
-
-    it('does not throw error when program definition property "examples" is array of strings', () => {
-      expect(() => {
-        // @ts-expect-error program definition property "examples" is object
-        new StrictDefinition({ name: 'rotini', description: 'program description', version: '1.0.0', examples: [ 'something', ], }, configuration);
-      }).toThrowError(descriptionErrorMessage);
     });
 
     it('does not throw error when program definition property "examples" is object', () => {

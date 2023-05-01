@@ -1,8 +1,8 @@
-import { Example, } from './example';
+import { StrictExample, } from './example';
 import { ConfigurationError, } from '../errors';
 import { ExampleProperties, } from '../types';
 
-describe('Example', () => {
+describe('StrictExample', () => {
   const description_error = new ConfigurationError('Example property "description" must be defined and of type "string" for command "get".');
   const usage_error = new ConfigurationError('Example property "usage" must be defined and of type "string" for command "get".');
 
@@ -16,7 +16,7 @@ describe('Example', () => {
     };
 
     expect(() => {
-      new Example(properties);
+      new StrictExample(properties);
     }).toThrowError(description_error);
   });
 
@@ -33,7 +33,7 @@ describe('Example', () => {
     };
 
     expect(() => {
-      new Example(properties);
+      new StrictExample(properties);
     }).toThrowError(usage_error);
   });
 
@@ -49,9 +49,9 @@ describe('Example', () => {
       },
     };
 
-    let result: Example;
+    let result: StrictExample;
     expect(() => {
-      result = new Example(properties);
+      result = new StrictExample(properties);
     }).not.toThrow();
     expect(result!.description).toBe('# example description');
     expect(result!.usage).toBe('command get usage');

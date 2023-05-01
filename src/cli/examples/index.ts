@@ -1,2 +1,2 @@
-export { Example, } from './example';
-export { Examples, } from './examples';
+export { Example, StrictExample, } from './example';
+export { Examples, StrictExamples, } from './examples';

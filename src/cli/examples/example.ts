@@ -14,21 +14,38 @@ export class Example implements I_Example {
   }
 
   #setDescription = (properties: ExampleProperties): Example | never => {
-    if (Utils.isNotDefined(properties.example?.description) || Utils.isNotString(properties.example?.description)) {
-      throw new ConfigurationError(`Example property "description" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
-    }
-
-    this.description = `# ${properties.example.description}`;
+    this.description = `# ${properties.example?.description}`;
 
     return this;
   };
 
   #setUsage = (properties: ExampleProperties): Example | never => {
+    this.usage = properties.example?.usage;
+
+    return this;
+  };
+}
+
+export class StrictExample extends Example {
+  constructor (properties: ExampleProperties) {
+    super(properties);
+    this
+      .#checkDescription(properties)
+      .#checkUsage(properties);
+  }
+
+  #checkDescription = (properties: ExampleProperties): StrictExample | never => {
+    if (Utils.isNotDefined(properties.example?.description) || Utils.isNotString(properties.example?.description)) {
+      throw new ConfigurationError(`Example property "description" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
+    }
+
+    return this;
+  };
+
+  #checkUsage = (properties: ExampleProperties): StrictExample | never => {
     if (Utils.isNotDefined(properties.example?.usage) || Utils.isNotString(properties.example?.usage)) {
       throw new ConfigurationError(`Example property "usage" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
     }
-
-    this.usage = properties.example.usage;
 
     return this;
   };

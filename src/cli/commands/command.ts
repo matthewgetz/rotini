@@ -120,7 +120,7 @@ export class Command implements I_Command {
       examples: command?.examples || [],
     });
 
-    this.examples = EXAMPLES.get();
+    this.examples = EXAMPLES.examples;
     this.examples_help = EXAMPLES.help;
 
     this.commands = cmds.commands;
@@ -278,8 +278,6 @@ export class Command implements I_Command {
 }
 
 export class StrictCommand extends Command {
-  declare commands: StrictCommand[];
-
   constructor (command: I_Command, metadata: I_CommandMetadata) {
     super(command, metadata);
     this
@@ -383,7 +381,7 @@ export class StrictCommand extends Command {
       examples,
     });
 
-    this.examples = EXAMPLES.get();
+    this.examples = EXAMPLES.examples;
     this.examples_help = EXAMPLES.help;
 
     return this;
