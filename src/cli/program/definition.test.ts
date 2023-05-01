@@ -5,7 +5,7 @@ describe('Program', () => {
   const configuration = new Configuration({
     strict_commands: true,
     strict_flags: true,
-    strict_mode: true,
+    strict_errors: true,
     check_for_new_npm_version: false,
   });
 

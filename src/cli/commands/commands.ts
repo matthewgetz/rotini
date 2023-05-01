@@ -1,6 +1,6 @@
 import { I_Command, } from '../interfaces';
 import { ConfigurationError, } from '../errors';
-import { Command, SafeCommand, } from './command';
+import { Command, StrictCommand, } from './command';
 import Utils from '../../utils';
 
 export interface CommandsProperties {
@@ -64,8 +64,8 @@ export class Commands {
   };
 }
 
-export class SafeCommands extends Commands {
-  declare commands: SafeCommand[];
+export class StrictCommands extends Commands {
+  declare commands: StrictCommand[];
 
   constructor (properties: CommandsProperties) {
     super(properties);
@@ -81,7 +81,7 @@ export class SafeCommands extends Commands {
 
     this.commands = commands.map((command: I_Command) => {
       const usage = command.usage || this.usage;
-      return new SafeCommand({ ...command, usage, }, { isGeneratedUsage: usage === this.usage, });
+      return new StrictCommand({ ...command, usage, }, { isGeneratedUsage: usage === this.usage, });
     });
 
     return this;

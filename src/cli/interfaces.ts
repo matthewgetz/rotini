@@ -32,7 +32,7 @@ export interface I_Configuration {
   strict_commands?: boolean
   strict_flags?: boolean
   strict_usage?: boolean
-  strict_mode?: boolean
+  strict_errors?: boolean
   check_for_new_npm_version?: boolean
 }
 

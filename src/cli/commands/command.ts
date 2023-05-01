@@ -1,7 +1,7 @@
 import { I_Command, I_Example, I_Operation, } from '../interfaces';
 import { ConfigurationError, ParseError, } from '../errors';
 import { Argument, Arguments, SafeArguments, } from '../arguments';
-import { SafeCommands, } from './commands';
+import { StrictCommands, } from './commands';
 import { Example, Examples, } from '../examples';
 import { Flag, Flags, ForceFlag, HelpFlag, } from '../flags';
 import { Operation, } from '../operation';
@@ -103,7 +103,7 @@ export class Command implements I_Command {
     this.usage = u.usage;
     this.usage_help = u.usage_help;
 
-    const cmds = new SafeCommands({
+    const cmds = new StrictCommands({
       entity: {
         type: 'Command',
         name: this.name,
@@ -277,8 +277,8 @@ export class Command implements I_Command {
   };
 }
 
-export class SafeCommand extends Command {
-  declare commands: SafeCommand[];
+export class StrictCommand extends Command {
+  declare commands: StrictCommand[];
 
   constructor (command: I_Command, metadata: I_CommandMetadata) {
     super(command, metadata);
@@ -295,7 +295,7 @@ export class SafeCommand extends Command {
       .#checkHelp();
   }
 
-  #checkName = (): SafeCommand | never => {
+  #checkName = (): StrictCommand | never => {
     if (Utils.isNotDefined(this.name) || Utils.isNotString(this.name) || Utils.stringContainsSpaces(this.name)) {
       throw new ConfigurationError('Command property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -303,7 +303,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkAliases = (aliases: string[] = []): SafeCommand | never => {
+  #checkAliases = (aliases: string[] = []): StrictCommand | never => {
     if (Utils.isNotArray(aliases) || Utils.isNotArrayOfStrings(aliases) || aliases.filter(alias => Utils.stringContainsSpaces(alias)).length > 0) {
       throw new ConfigurationError(`Command property "aliases" must be of type "array", can only contain indexes of type "string", and cannot contain indexes with spaces for command "${this.name}".`);
     }
@@ -311,7 +311,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkDeprecated = (): SafeCommand | never => {
+  #checkDeprecated = (): StrictCommand | never => {
     if (Utils.isNotBoolean(this.deprecated)) {
       throw new ConfigurationError(`Command property "deprecated" must be of type "boolean" for command "${this.name}".`);
     }
@@ -319,7 +319,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkDescription = (): SafeCommand | never => {
+  #checkDescription = (): StrictCommand | never => {
     if (Utils.isNotDefined(this.description) || Utils.isNotString(this.description)) {
       throw new ConfigurationError(`Command property "description" must be defined and of type "string" for command "${this.name}".`);
     }
@@ -327,7 +327,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkAndSetArguments = (): SafeCommand | never => {
+  #checkAndSetArguments = (): StrictCommand | never => {
     const ARGUMENTS = new SafeArguments({
       entity: {
         type: 'Command',
@@ -342,7 +342,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkAndSetFlags = (): SafeCommand | never => {
+  #checkAndSetFlags = (): StrictCommand | never => {
     const FLAGS = new Flags({
       entity: {
         type: 'Command',
@@ -358,8 +358,8 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkAndSetCommands = (commands: I_Command[] = []): SafeCommand | never => {
-    const cmds = new SafeCommands({
+  #checkAndSetCommands = (commands: I_Command[] = []): StrictCommand | never => {
+    const COMMANDS = new StrictCommands({
       entity: {
         type: 'Command',
         name: this.name,
@@ -368,13 +368,13 @@ export class SafeCommand extends Command {
       commands,
     });
 
-    this.commands = cmds.commands;
-    this.commands_help = cmds.help;
+    this.commands = COMMANDS.commands;
+    this.commands_help = COMMANDS.help;
 
     return this;
   };
 
-  #checkAndSetExamples = (examples: I_Example[] = []): SafeCommand | never => {
+  #checkAndSetExamples = (examples: I_Example[] = []): StrictCommand | never => {
     const EXAMPLES = new Examples({
       entity: {
         type: 'Program',
@@ -389,7 +389,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkOperation = (operation?: I_Operation): SafeCommand | never => {
+  #checkOperation = (operation?: I_Operation): StrictCommand | never => {
     if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
     }
@@ -397,7 +397,7 @@ export class SafeCommand extends Command {
     return this;
   };
 
-  #checkHelp = (): SafeCommand | never => {
+  #checkHelp = (): StrictCommand | never => {
     if (Utils.isDefined(this.help) && Utils.isNotString(this.help)) {
       throw new ConfigurationError(`Command property "help" must be of type "string" for command "${this.name}".`);
     }

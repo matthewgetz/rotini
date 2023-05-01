@@ -2,8 +2,8 @@ import { homedir, } from 'os';
 
 import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, I_PositionalFlag, } from '../interfaces';
 import { ConfigFile, } from '../types';
-import { Command, Commands, SafeCommands, } from '../commands';
-import { ConfigurationFile, ConfigurationFiles, } from '../configuration-files';
+import { Command, Commands, SafeCommand, SafeCommands, } from '../commands';
+import { ConfigurationFile, ConfigurationFiles, SafeConfigurationFiles, } from '../configuration-files';
 import { Flags, GlobalFlag, PositionalFlag, } from '../flags';
 import { Example, Examples, } from '../examples';
 import { ConfigurationError, } from '../errors';
@@ -43,21 +43,20 @@ export class Definition implements I_Definition {
   help!: string;
   getConfigurationFile!: (id: string) => ConfigFile;
 
-  // help sections
-  #name!: string;
-  #description!: string;
-  #version!: string;
-  #documentation!: string;
-  #usage!: string;
-  #examples!: string;
-  #commands!: string;
-  #positional_flags!: string;
-  #global_flags!: string;
+  name_help!: string;
+  description_help!: string;
+  version_help!: string;
+  documentation_help!: string;
+  usage_help!: string;
+  examples_help!: string;
+  commands_help!: string;
+  positional_flags_help!: string;
+  global_flags_help!: string;
 
-  #configuration: Configuration;
+  configuration: Configuration;
 
   constructor (program: I_Definition, configuration: Configuration) {
-    this.#configuration = configuration;
+    this.configuration = configuration;
     this.configuration_file = new ConfigurationFile({
       id: 'rotini',
       directory: `${homedir()}/.rotini`,
@@ -69,9 +68,9 @@ export class Definition implements I_Definition {
       .#setDescription(program.description)
       .#setVersion(program.version)
       .#setDocumentation(program.documentation)
+      .#setCommands(program.commands)
       .#setGlobalFlags(program.global_flags)
       .#setPositionalFlags(program.positional_flags)
-      .#setCommands(program.commands)
       .#setExamples(program.examples)
       .#setConfigurationFiles(program.configuration_files)
       .#setUsage(program.usage)
@@ -79,45 +78,29 @@ export class Definition implements I_Definition {
   }
 
   #setName = (name: string): Definition | never => {
-    if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
-      throw new ConfigurationError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
-    }
-
     this.name = name;
-    this.#name = this.name;
+    this.name_help = this.name;
 
     return this;
   };
 
   #setDescription = (description: string): Definition | never => {
-    if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
-      throw new ConfigurationError('Program property "description" must be defined and of type "string".');
-    }
-
     this.description = description;
-    this.#description = `\n\n  ${this.description}`;
+    this.description_help = `\n\n  ${this.description}`;
 
     return this;
   };
 
   #setVersion = (version: string): Definition | never => {
-    if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
-      throw new ConfigurationError('Program property "version" must be defined and of type "string".');
-    }
-
     this.version = version;
-    this.#version = this.version;
+    this.version_help = this.version;
 
     return this;
   };
 
   #setDocumentation = (documentation?: string): Definition | never => {
-    if (Utils.isDefined(documentation) && Utils.isNotString(documentation)) {
-      throw new ConfigurationError(`Program property "documentation" must be of type "string".`);
-    }
-
     this.documentation = documentation;
-    this.#documentation = this.documentation
+    this.documentation_help = this.documentation
       ? [
         '\n\n',
         `  Find more information at: ${this.documentation}`,
@@ -128,9 +111,7 @@ export class Definition implements I_Definition {
   };
 
   #setCommands = (commands: I_Command[] = []): Definition | never => {
-    const ProgramCommands = this.#configuration.strict_mode ? SafeCommands : Commands;
-
-    const cmds = new ProgramCommands({
+    const COMMANDS = new Commands({
       entity: {
         type: 'Program',
         name: this.name,
@@ -139,8 +120,8 @@ export class Definition implements I_Definition {
       commands,
     });
 
-    this.commands = cmds.commands;
-    this.#commands = cmds.help;
+    this.commands = COMMANDS.commands;
+    this.commands_help = COMMANDS.help;
 
     return this;
   };
@@ -156,7 +137,7 @@ export class Definition implements I_Definition {
     });
 
     this.global_flags = GLOBAL_FLAGS.get();
-    this.#global_flags = GLOBAL_FLAGS.help;
+    this.global_flags_help = GLOBAL_FLAGS.help;
 
     return this;
   };
@@ -210,7 +191,7 @@ export class Definition implements I_Definition {
       reservedPositionalFlags.update.type = 'boolean';
       reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
     } else {
-      if (this.#configuration.check_for_new_npm_version) {
+      if (this.configuration.check_for_new_npm_version) {
         positional_flags.push(new PositionalFlag({
           name: 'update',
           description: 'install the latest version of the program',
@@ -264,8 +245,8 @@ export class Definition implements I_Definition {
       flags: positional_flags,
     });
 
-    this.positional_flags = <PositionalFlag[]> POSITIONAL_FLAGS.get();
-    this.#positional_flags = POSITIONAL_FLAGS.help;
+    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.get();
+    this.positional_flags_help = POSITIONAL_FLAGS.help;
 
     return this;
   };
@@ -280,19 +261,15 @@ export class Definition implements I_Definition {
     });
 
     this.examples = EXAMPLES.get();
-    this.#examples = EXAMPLES.help;
+    this.examples_help = EXAMPLES.help;
 
     return this;
   };
 
   #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): Definition | never => {
-    if (Utils.isDefined(configuration_files) && Utils.isNotArray(configuration_files)) {
-      throw new ConfigurationError('Program property "configuration_files" must be of type "array".');
-    }
-
     const files = new ConfigurationFiles(configuration_files);
 
-    this.configuration_files = files.get();
+    this.configuration_files = files.configuration_files;
     this.getConfigurationFile = files.getConfigurationFile;
 
     return this;
@@ -339,7 +316,7 @@ export class Definition implements I_Definition {
       command_usage += ` [global flags]`;
     }
 
-    this.#usage = usage
+    this.usage_help = usage
       ? [
         '\n\n',
         'USAGE:',
@@ -364,15 +341,15 @@ export class Definition implements I_Definition {
     }
 
     this.help = help || [
-      `${this.#name} · ${this.#version}`,
-      this.#description,
-      this.#documentation,
-      this.#usage,
-      this.#examples,
-      this.#commands,
-      this.#positional_flags,
-      this.#global_flags,
-      this.commands.length > 0 ? `\n\nUse "${this.#name} <command> --help" for more information about a given command.` : '',
+      `${this.name_help} · ${this.version_help}`,
+      this.description_help,
+      this.documentation_help,
+      this.usage_help,
+      this.examples_help,
+      this.commands_help,
+      this.positional_flags_help,
+      this.global_flags_help,
+      this.commands.length > 0 ? `\n\nUse "${this.name} <command> --help" for more information about a given command.` : '',
     ].join('');
 
     return this;
@@ -426,9 +403,226 @@ export class Definition implements I_Definition {
   };
 }
 
+export class StrictDefinition extends Definition {
+  declare commands: SafeCommand[];
+
+  constructor (program: I_Definition, configuration: Configuration) {
+    super(program, configuration);
+
+    this
+      .#checkName(program?.name)
+      .#checkDescription(program.description)
+      .#checkVersion(program.version)
+      .#checkDocumentation(program.documentation)
+      .#checkAndSetCommands(program.commands)
+      .#checkAndSetGlobalFlags(program.global_flags)
+      .#checkAndSetPositionalFlags(program.positional_flags)
+      .#checkAndSetExamples(program.examples)
+      .#checkAndSetConfigurationFiles(program.configuration_files);
+  }
+
+  #checkName = (name: string): StrictDefinition | never => {
+    if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
+      throw new ConfigurationError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
+    }
+
+    return this;
+  };
+
+  #checkDescription = (description: string): StrictDefinition | never => {
+    if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
+      throw new ConfigurationError('Program property "description" must be defined and of type "string".');
+    }
+
+    return this;
+  };
+
+  #checkVersion = (version: string): StrictDefinition | never => {
+    if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
+      throw new ConfigurationError('Program property "version" must be defined and of type "string".');
+    }
+
+    return this;
+  };
+
+  #checkDocumentation = (documentation?: string): StrictDefinition | never => {
+    if (Utils.isDefined(documentation) && Utils.isNotString(documentation)) {
+      throw new ConfigurationError(`Program property "documentation" must be of type "string".`);
+    }
+
+    return this;
+  };
+
+  #checkAndSetCommands = (commands: I_Command[] = []): StrictDefinition | never => {
+    const COMMANDS = new SafeCommands({
+      entity: {
+        type: 'Program',
+        name: this.name,
+      },
+      usage: this.name,
+      commands,
+    });
+
+    this.commands = COMMANDS.commands;
+
+    return this;
+  };
+
+  #checkAndSetGlobalFlags = (global_flags: I_GlobalFlag[] = []): StrictDefinition | never => {
+    const GLOBAL_FLAGS = new Flags({
+      entity: {
+        type: 'Program',
+        key: 'global_flags',
+        name: this.name,
+      },
+      flags: global_flags,
+    });
+
+    this.global_flags = GLOBAL_FLAGS.get();
+
+    return this;
+  };
+
+  #checkAndSetPositionalFlags = (positional_flags: I_PositionalFlag[] = []): StrictDefinition | never => {
+    const versionOperation = (): void => console.info(this.version);
+    const helpOperation = (): void => console.info(this.help);
+    const updateOperation = async (): Promise<Promise<void>> => {
+      const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
+
+      let packageHasUpdate = false;
+      let latestVersion = '';
+      try {
+        const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
+        packageHasUpdate = result.hasUpdate;
+        latestVersion = result.latestVersion;
+      } catch (e) {
+        const programData = data?.[this.name] || {};
+        this.configuration_file.setContent({
+          ...data,
+          [this.name]: {
+            ...programData,
+            last_update_time: new Date().getTime(),
+          },
+        });
+      }
+
+      if (packageHasUpdate) {
+        const programData = data?.[this.name] || {};
+        this.configuration_file.setContent({
+          ...data,
+          [this.name]: {
+            ...programData,
+            last_update_time: new Date().getTime(),
+          },
+        });
+        await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
+      } else {
+        console.info(`Latest version of ${this.name} is installed.`);
+      }
+    };
+
+    const reservedPositionalFlags = {
+      update: positional_flags.find(flag => flag.name === 'update'),
+      version: positional_flags.find(flag => flag.name === 'version'),
+      help: positional_flags.find(flag => flag.name === 'help'),
+    };
+
+    if (reservedPositionalFlags?.update) {
+      reservedPositionalFlags.update.variant = 'boolean';
+      reservedPositionalFlags.update.type = 'boolean';
+      reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
+    } else {
+      if (this.configuration.check_for_new_npm_version) {
+        positional_flags.push(new PositionalFlag({
+          name: 'update',
+          description: 'install the latest version of the program',
+          variant: 'boolean',
+          type: 'boolean',
+          short_key: 'u',
+          long_key: 'update',
+          operation: updateOperation,
+        }));
+      }
+    }
+
+    if (reservedPositionalFlags?.version) {
+      reservedPositionalFlags.version.variant = 'boolean';
+      reservedPositionalFlags.version.type = 'boolean';
+      reservedPositionalFlags.version.operation = reservedPositionalFlags.version.operation || versionOperation;
+    } else {
+      positional_flags.push(new PositionalFlag({
+        name: 'version',
+        description: 'output the program version',
+        variant: 'boolean',
+        type: 'boolean',
+        short_key: 'v',
+        long_key: 'version',
+        operation: versionOperation,
+      }));
+    }
+
+    if (reservedPositionalFlags?.help) {
+      reservedPositionalFlags.help.variant = 'boolean';
+      reservedPositionalFlags.help.type = 'boolean';
+      reservedPositionalFlags.help.operation = reservedPositionalFlags.help.operation || helpOperation;
+    } else {
+      positional_flags.push(new PositionalFlag({
+        name: 'help',
+        description: 'output the program help',
+        variant: 'boolean',
+        type: 'boolean',
+        short_key: 'h',
+        long_key: 'help',
+        operation: helpOperation,
+      }));
+    }
+
+    const POSITIONAL_FLAGS = new Flags({
+      entity: {
+        type: 'Program',
+        key: 'positional_flags',
+        name: this.name,
+      },
+      flags: positional_flags,
+    });
+
+    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.get();
+    this.positional_flags_help = POSITIONAL_FLAGS.help;
+
+    return this;
+  };
+
+  #checkAndSetExamples = (examples: I_Example[] = []): StrictDefinition | never => {
+    const EXAMPLES = new Examples({
+      entity: {
+        type: 'Program',
+        name: this.name,
+      },
+      examples,
+    });
+
+    this.examples = EXAMPLES.get();
+
+    return this;
+  };
+
+  #checkAndSetConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): StrictDefinition | never => {
+    const files = new SafeConfigurationFiles(configuration_files);
+
+    this.configuration_files = files.configuration_files;
+    this.getConfigurationFile = files.getConfigurationFile;
+
+    return this;
+  };
+}
+
 export const getDefinition = (definition: I_Definition, configuration: Configuration): Definition => {
   try {
-    const DEFINITION = new Definition(definition, configuration);
+    console.time('rotini');
+    const Program = configuration.strict_errors ? StrictDefinition : Definition;
+    const DEFINITION = new Program(definition, configuration);
+    console.timeEnd('rotini');
+    console.timeLog('rotini');
     return DEFINITION;
   } catch (e) {
     const error = e as ConfigurationError;

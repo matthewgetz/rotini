@@ -18,30 +18,18 @@ export class ConfigurationFile implements I_ConfigurationFile {
   }
 
   #setId = (id: string): ConfigurationFile | never => {
-    if (Utils.isNotDefined(id) || Utils.isNotString(id) || Utils.stringContainsSpaces(id)) {
-      throw new ConfigurationError('Configuration property "id" must be defined, of type string, and cannot contain spaces.');
-    }
-
     this.id = id;
 
     return this;
   };
 
   #setDirectory = (directory: string): ConfigurationFile | never => {
-    if (Utils.isNotDefined(directory) || Utils.isNotString(directory)) {
-      throw new ConfigurationError('Configuration property "directory" must be defined and of type "string".');
-    }
-
     this.directory = directory;
 
     return this;
   };
 
   #setFile = (file: string): ConfigurationFile | never => {
-    if (Utils.isNotDefined(file) || Utils.isNotString(file)) {
-      throw new ConfigurationError('Configuration property "file" must be defined and of type "string".');
-    }
-
     this.file = file;
 
     return this;
@@ -92,5 +80,39 @@ export class ConfigurationFile implements I_ConfigurationFile {
     }
 
     return { error, hasError, };
+  };
+}
+
+export class StrictConfigurationFile extends ConfigurationFile {
+  constructor (configuration: I_ConfigurationFile) {
+    super(configuration);
+    this
+      .#checkId(configuration.id)
+      .#checkDirectory(configuration.directory)
+      .#checkFile(configuration.file);
+  }
+
+  #checkId = (id: string): StrictConfigurationFile | never => {
+    if (Utils.isNotDefined(id) || Utils.isNotString(id) || Utils.stringContainsSpaces(id)) {
+      throw new ConfigurationError('Configuration property "id" must be defined, of type string, and cannot contain spaces.');
+    }
+
+    return this;
+  };
+
+  #checkDirectory = (directory: string): StrictConfigurationFile | never => {
+    if (Utils.isNotDefined(directory) || Utils.isNotString(directory)) {
+      throw new ConfigurationError('Configuration property "directory" must be defined and of type "string".');
+    }
+
+    return this;
+  };
+
+  #checkFile = (file: string): StrictConfigurationFile | never => {
+    if (Utils.isNotDefined(file) || Utils.isNotString(file)) {
+      throw new ConfigurationError('Configuration property "file" must be defined and of type "string".');
+    }
+
+    return this;
   };
 }

@@ -73,26 +73,26 @@ describe('ProgramConfiguration', () => {
     });
   });
 
-  describe('strict_mode', () => {
-    const expectedErrorMessage = 'Program configuration property "strict_mode" must be of type "boolean".';
+  describe('strict_errors', () => {
+    const expectedErrorMessage = 'Program configuration property "strict_errors" must be of type "boolean".';
 
-    it('throws error when "strict_mode" is string', () => {
+    it('throws error when "strict_errors" is string', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "strict_mode" is string
-        new Configuration({ strict_mode: 'yes', });
+        // @ts-expect-error program configuration property "strict_errors" is string
+        new Configuration({ strict_errors: 'yes', });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when "strict_mode" is number', () => {
+    it('throws error when "strict_errors" is number', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "strict_mode" is number
-        new Configuration({ strict_mode: 0, });
+        // @ts-expect-error program configuration property "strict_errors" is number
+        new Configuration({ strict_errors: 0, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('does not throw when "strict_mode" is boolean', () => {
+    it('does not throw when "strict_errors" is boolean', () => {
       expect(() => {
-        new Configuration({ strict_mode: true, });
+        new Configuration({ strict_errors: true, });
       }).not.toThrow();
     });
   });

@@ -59,7 +59,7 @@ export class Arguments {
   };
 }
 
-export class SafeArguments extends Arguments {
+export class StrictArguments extends Arguments {
   constructor (properties: ArgumentsProperties) {
     super(properties);
     this.#checkArguments(properties);

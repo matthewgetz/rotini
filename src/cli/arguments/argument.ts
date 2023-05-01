@@ -47,7 +47,7 @@ export class Argument implements I_Argument {
   }
 }
 
-export class SafeArgument extends Argument {
+export class StrictArgument extends Argument {
   constructor (argument: I_Argument) {
     super(argument);
     this
@@ -60,7 +60,7 @@ export class SafeArgument extends Argument {
       .#setParse(argument.parse);
   }
 
-  #setName = (name: string): SafeArgument | never => {
+  #setName = (name: string): StrictArgument | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Argument property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -70,7 +70,7 @@ export class SafeArgument extends Argument {
     return this;
   };
 
-  #setDescription = (description: string): SafeArgument | never => {
+  #setDescription = (description: string): StrictArgument | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description)) {
       throw new ConfigurationError(`Argument property "description" must be defined and of type "string" for argument "${this.name}".`);
     }
@@ -80,7 +80,7 @@ export class SafeArgument extends Argument {
     return this;
   };
 
-  #setVariant = (variant: Variant = 'value'): SafeArgument | never => {
+  #setVariant = (variant: Variant = 'value'): StrictArgument | never => {
     if (Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, VARIANTS)) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
@@ -90,7 +90,7 @@ export class SafeArgument extends Argument {
     return this;
   };
 
-  #setType = (type: Type = 'string'): SafeArgument | never => {
+  #setType = (type: Type = 'string'): StrictArgument | never => {
     if (Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, TYPES)) {
       throw new ConfigurationError(`Argument property "type" must be defined, of type "string", and set as "string", "number", "boolean", "string[]", "number[]", or "boolean[]" for argument "${this.name}".`);
     }
@@ -108,7 +108,7 @@ export class SafeArgument extends Argument {
     return this;
   };
 
-  #setValues = (values: Values = []): SafeArgument | never => {
+  #setValues = (values: Values = []): StrictArgument | never => {
     const isNotArrayOfType = Object.freeze({
       string: Utils.isNotArrayOfStrings,
       number: Utils.isNotArrayOfNumbers,
@@ -129,7 +129,7 @@ export class SafeArgument extends Argument {
     return this;
   };
 
-  #setIsValid = (isValid: IsValid = DefaultIsValid): SafeArgument | never => {
+  #setIsValid = (isValid: IsValid = DefaultIsValid): StrictArgument | never => {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Argument property "isValid" must be of type "function" for argument "${this.name}".`);
     }
@@ -139,7 +139,7 @@ export class SafeArgument extends Argument {
     return this;
   };
 
-  #setParse = (parse: Parse = DefaultParse): SafeArgument | never => {
+  #setParse = (parse: Parse = DefaultParse): StrictArgument | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Argument property "parse" must be of type "function" for argument "${this.name}".`);
     }

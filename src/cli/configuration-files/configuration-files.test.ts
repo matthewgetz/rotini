@@ -16,7 +16,7 @@ describe('ConfigurationFiles', () => {
       },
     ]);
 
-    const configuration_files = configs.get();
+    const configuration_files = configs.configuration_files;
     const { getContent: firstGetContent, setContent: firstSetContent, } = configs.getConfigurationFile('rotini');
     const { getContent: secondGetContent, setContent: secondSetContent, } = configs.getConfigurationFile('test');
 

@@ -1,2 +1,2 @@
-export { Argument, SafeArgument, } from './argument';
-export { Arguments, SafeArguments, } from './arguments';
+export { Argument, StrictArgument as SafeArgument, } from './argument';
+export { Arguments, StrictArguments as SafeArguments, } from './arguments';

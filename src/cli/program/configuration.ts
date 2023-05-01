@@ -6,7 +6,7 @@ export class Configuration {
   strict_commands!: boolean;
   strict_flags!: boolean;
   strict_usage!: boolean;
-  strict_mode!: boolean;
+  strict_errors!: boolean;
   check_for_new_npm_version!: boolean;
 
   constructor (configuration: I_Configuration = {}) {
@@ -14,7 +14,7 @@ export class Configuration {
       .#setStrictCommands(configuration.strict_commands)
       .#setStrictFlags(configuration.strict_flags)
       .#setStrictUsage(configuration.strict_usage)
-      .#setStrictMode(configuration.strict_mode)
+      .#setStrictErrors(configuration.strict_errors)
       .#setCheckForNpmUpdate(configuration.check_for_new_npm_version);
   }
 
@@ -48,12 +48,12 @@ export class Configuration {
     return this;
   };
 
-  #setStrictMode = (strict_mode = false): Configuration | never => {
-    if (Utils.isNotBoolean(strict_mode)) {
-      throw new ConfigurationError('Program configuration property "strict_mode" must be of type "boolean".');
+  #setStrictErrors = (strict_errors = false): Configuration | never => {
+    if (Utils.isNotBoolean(strict_errors)) {
+      throw new ConfigurationError('Program configuration property "strict_errors" must be of type "boolean".');
     }
 
-    this.strict_mode = strict_mode;
+    this.strict_errors = strict_errors;
 
     return this;
   };
