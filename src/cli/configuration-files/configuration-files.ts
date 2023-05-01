@@ -12,7 +12,8 @@ export class ConfigurationFiles {
   }
 
   #setConfigurationFiles = (configuration_files: I_ConfigurationFile[]): void | never => {
-    this.configuration_files = configuration_files.map((configuration: I_ConfigurationFile) => new ConfigurationFile(configuration));
+    const config_files = Utils.isArray(configuration_files) ? configuration_files : [];
+    this.configuration_files = config_files.map((configuration: I_ConfigurationFile) => new ConfigurationFile(configuration));
   };
 
   getConfigurationFile = (id: string): ConfigFile | never => {

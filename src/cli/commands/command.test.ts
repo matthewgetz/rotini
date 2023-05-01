@@ -1,6 +1,6 @@
 import { StrictCommand, } from './command';
 
-describe('SafeCommand', () => {
+describe('StrictCommand', () => {
   describe('name', () => {
     const expectedErrorMessage = 'Command property "name" must be defined, of type "string", and cannot contain spaces.';
 
@@ -201,11 +201,11 @@ describe('SafeCommand', () => {
   });
 
   // describe('class', () => {
-  //   it.todo('creates new SafeCommand correctly (defaults)', () => {
+  //   it.todo('creates new StrictCommand correctly (defaults)', () => {
   //     //
   //   });
 
-  //   it.todo('creates new SafeCommand correctly', () => {
+  //   it.todo('creates new StrictCommand correctly', () => {
   //     //
   //   });
   // });

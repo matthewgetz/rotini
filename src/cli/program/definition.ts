@@ -2,8 +2,8 @@ import { homedir, } from 'os';
 
 import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, I_PositionalFlag, } from '../interfaces';
 import { ConfigFile, } from '../types';
-import { Command, Commands, SafeCommand, SafeCommands, } from '../commands';
-import { ConfigurationFile, ConfigurationFiles, SafeConfigurationFiles, } from '../configuration-files';
+import { Command, Commands, StrictCommand, StrictCommands, } from '../commands';
+import { ConfigurationFile, ConfigurationFiles, StrictConfigurationFiles, } from '../configuration-files';
 import { Flags, GlobalFlag, PositionalFlag, } from '../flags';
 import { Example, Examples, } from '../examples';
 import { ConfigurationError, } from '../errors';
@@ -65,16 +65,16 @@ export class Definition implements I_Definition {
 
     this
       .#setName(program?.name)
-      .#setDescription(program.description)
-      .#setVersion(program.version)
-      .#setDocumentation(program.documentation)
-      .#setCommands(program.commands)
-      .#setGlobalFlags(program.global_flags)
-      .#setPositionalFlags(program.positional_flags)
-      .#setExamples(program.examples)
-      .#setConfigurationFiles(program.configuration_files)
-      .#setUsage(program.usage)
-      .#setHelp(program.help);
+      .#setDescription(program?.description)
+      .#setVersion(program?.version)
+      .#setDocumentation(program?.documentation)
+      .#setCommands(program?.commands)
+      .#setGlobalFlags(program?.global_flags)
+      .#setPositionalFlags(program?.positional_flags)
+      .#setExamples(program?.examples)
+      .#setConfigurationFiles(program?.configuration_files)
+      .#setUsage(program?.usage)
+      .#setHelp(program?.help);
   }
 
   #setName = (name: string): Definition | never => {
@@ -404,7 +404,7 @@ export class Definition implements I_Definition {
 }
 
 export class StrictDefinition extends Definition {
-  declare commands: SafeCommand[];
+  declare commands: StrictCommand[];
 
   constructor (program: I_Definition, configuration: Configuration) {
     super(program, configuration);
@@ -454,7 +454,7 @@ export class StrictDefinition extends Definition {
   };
 
   #checkAndSetCommands = (commands: I_Command[] = []): StrictDefinition | never => {
-    const COMMANDS = new SafeCommands({
+    const COMMANDS = new StrictCommands({
       entity: {
         type: 'Program',
         name: this.name,
@@ -607,7 +607,7 @@ export class StrictDefinition extends Definition {
   };
 
   #checkAndSetConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): StrictDefinition | never => {
-    const files = new SafeConfigurationFiles(configuration_files);
+    const files = new StrictConfigurationFiles(configuration_files);
 
     this.configuration_files = files.configuration_files;
     this.getConfigurationFile = files.getConfigurationFile;
@@ -618,11 +618,8 @@ export class StrictDefinition extends Definition {
 
 export const getDefinition = (definition: I_Definition, configuration: Configuration): Definition => {
   try {
-    console.time('rotini');
     const Program = configuration.strict_errors ? StrictDefinition : Definition;
     const DEFINITION = new Program(definition, configuration);
-    console.timeEnd('rotini');
-    console.timeLog('rotini');
     return DEFINITION;
   } catch (e) {
     const error = e as ConfigurationError;

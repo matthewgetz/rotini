@@ -1,6 +1,6 @@
 import { I_Command, I_Example, I_Operation, } from '../interfaces';
 import { ConfigurationError, ParseError, } from '../errors';
-import { Argument, Arguments, SafeArguments, } from '../arguments';
+import { Argument, Arguments, StrictArguments, } from '../arguments';
 import { StrictCommands, } from './commands';
 import { Example, Examples, } from '../examples';
 import { Flag, Flags, ForceFlag, HelpFlag, } from '../flags';
@@ -328,7 +328,7 @@ export class StrictCommand extends Command {
   };
 
   #checkAndSetArguments = (): StrictCommand | never => {
-    const ARGUMENTS = new SafeArguments({
+    const ARGUMENTS = new StrictArguments({
       entity: {
         type: 'Command',
         name: this.name,

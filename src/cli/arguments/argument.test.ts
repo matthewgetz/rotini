@@ -54,7 +54,7 @@ describe('Argument', () => {
   });
 });
 
-describe('SafeArgument', () => {
+describe('StrictArgument', () => {
   describe('name', () => {
     const error = new ConfigurationError('Argument property "name" must be defined, of type "string", and cannot contain spaces.');
 

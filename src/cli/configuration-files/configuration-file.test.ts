@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { OperationError, } from '../errors';
-import { ConfigurationFile, } from './configuration-file';
+import { StrictConfigurationFile, } from './configuration-file';
 
 vi.mock('fs', () => {
   return {
@@ -17,32 +17,32 @@ describe('Configuration', () => {
     it('throws when configuration property "id" is undefined', () => {
       expect(() => {
         // @ts-expect-error configuration properties "directory" and "file" are undefined
-        new ConfigurationFile({});
+        new StrictConfigurationFile({});
       }).toThrowError('Configuration property "id" must be defined, of type string, and cannot contain spaces.');
     });
 
     it('throws when configuration property "directory" is unset', () => {
       expect(() => {
         // @ts-expect-error configuration properties "directory" and "file" are undefined
-        new ConfigurationFile({ id: 'test', });
+        new StrictConfigurationFile({ id: 'test', });
       }).toThrowError('Configuration property "directory" must be defined and of type "string".');
     });
 
     it('throws when configuration property "file" is unset', () => {
       expect(() => {
         // @ts-expect-error configuration properties "directory" and "file" are undefined
-        new ConfigurationFile({ id: 'test', directory: '.rotini', });
+        new StrictConfigurationFile({ id: 'test', directory: '.rotini', });
       }).toThrowError('Configuration property "file" must be defined and of type "string".');
     });
 
     it('does not throw', () => {
       expect(() => {
-        new ConfigurationFile({ id: 'test', directory: '.rotini', file: 'config.json', });
+        new StrictConfigurationFile({ id: 'test', directory: '.rotini', file: 'config.json', });
       }).not.toThrow();
     });
 
     it('sets the file content', () => {
-      const config = new ConfigurationFile({ id: 'test', directory: '.rotini', file: 'config.json', });
+      const config = new StrictConfigurationFile({ id: 'test', directory: '.rotini', file: 'config.json', });
       const error = new Error('write error');
       const json_error = new OperationError('Configuration file ".rotini/config.json" data is not JSON.');
 
@@ -80,7 +80,7 @@ describe('Configuration', () => {
     });
 
     it('gets the file content', () => {
-      const config = new ConfigurationFile({ id: 'test', directory: '.rotini', file: 'config.json', });
+      const config = new StrictConfigurationFile({ id: 'test', directory: '.rotini', file: 'config.json', });
       const error = new Error('read failure');
 
       const mockReadFileSync = vi.spyOn(fs, 'readFileSync')

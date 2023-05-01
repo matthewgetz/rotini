@@ -1,9 +1,9 @@
 import { ConfigurationError, } from '../errors';
-import { ConfigurationFiles, } from './configuration-files';
+import { StrictConfigurationFiles, } from './configuration-files';
 
 describe('ConfigurationFiles', () => {
   it('returns configuration files', () => {
-    const configs = new ConfigurationFiles([
+    const configs = new StrictConfigurationFiles([
       {
         id: 'rotini',
         directory: './configs',
@@ -45,7 +45,7 @@ describe('ConfigurationFiles', () => {
     const error = new ConfigurationError('Duplicate configuration file ids found: ["rotini"].');
 
     expect(() => {
-      new ConfigurationFiles([
+      new StrictConfigurationFiles([
         {
           id: 'rotini',
           directory: './configs',
@@ -63,7 +63,7 @@ describe('ConfigurationFiles', () => {
   it('throws when unknown id passed', () => {
     const error = new ConfigurationError('Unknown configuration file id "bad id".');
 
-    const configs = new ConfigurationFiles([
+    const configs = new StrictConfigurationFiles([
       {
         id: 'rotini',
         directory: './configs',
