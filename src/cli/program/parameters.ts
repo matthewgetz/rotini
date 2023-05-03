@@ -1,9 +1,5 @@
+import { Parameter, } from '../types';
 import Utils from '../../utils';
-
-export type Parameter = {
-  id: number
-  value: string
-}
 
 export class Parameters {
   original_parameters: readonly Parameter[];

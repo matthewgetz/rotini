@@ -10,8 +10,8 @@ describe('rotini', () => {
       const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
-        strict_errors: true,
-        check_for_new_npm_version: false,
+        strict_mode: true,
+        check_for_npm_update: false,
       };
 
       // @ts-expect-error no program definition
@@ -43,7 +43,7 @@ describe('rotini', () => {
       const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
-        check_for_new_npm_version: false,
+        check_for_npm_update: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
@@ -148,7 +148,7 @@ describe('rotini', () => {
       const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
-        check_for_new_npm_version: false,
+        check_for_npm_update: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello', ], });
@@ -180,7 +180,7 @@ describe('rotini', () => {
       const configuration: I_Configuration = {
         strict_commands: true,
         strict_flags: true,
-        check_for_new_npm_version: false,
+        check_for_npm_update: false,
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });

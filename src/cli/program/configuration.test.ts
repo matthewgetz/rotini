@@ -1,4 +1,4 @@
-import { Configuration, } from './configuration';
+import { StrictConfiguration, } from './configuration';
 
 describe('ProgramConfiguration', () => {
   describe('strict_commands', () => {
@@ -7,20 +7,20 @@ describe('ProgramConfiguration', () => {
     it('throws error when "strict_commands" is string', () => {
       expect(() => {
         // @ts-expect-error program configuration property "strict_commands" is string
-        new Configuration({ strict_commands: 'yes', });
+        new StrictConfiguration({ strict_commands: 'yes', });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when "strict_commands" is number', () => {
       expect(() => {
         // @ts-expect-error program configuration property "strict_commands" is number
-        new Configuration({ strict_commands: 1, });
+        new StrictConfiguration({ strict_commands: 1, });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('does not throw when "strict_commands" is boolean', () => {
       expect(() => {
-        new Configuration({ strict_commands: true, });
+        new StrictConfiguration({ strict_commands: true, });
       }).not.toThrow();
     });
   });
@@ -31,20 +31,20 @@ describe('ProgramConfiguration', () => {
     it('throws error when "strict_flags" is string', () => {
       expect(() => {
         // @ts-expect-error program configuration property "strict_flags" is string
-        new Configuration({ strict_flags: 'nah', });
+        new StrictConfiguration({ strict_flags: 'nah', });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when "strict_flags" is number', () => {
       expect(() => {
         // @ts-expect-error program configuration property "strict_flags" is number
-        new Configuration({ strict_flags: 0, });
+        new StrictConfiguration({ strict_flags: 0, });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('does not throw when "strict_flags" is boolean', () => {
       expect(() => {
-        new Configuration({ strict_flags: false, });
+        new StrictConfiguration({ strict_flags: false, });
       }).not.toThrow();
     });
   });
@@ -55,68 +55,68 @@ describe('ProgramConfiguration', () => {
     it('throws error when "strict_usage" is string', () => {
       expect(() => {
         // @ts-expect-error program configuration property "strict_usage" is string
-        new Configuration({ strict_usage: 'yes', });
+        new StrictConfiguration({ strict_usage: 'yes', });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('throws error when "strict_usage" is number', () => {
       expect(() => {
         // @ts-expect-error program configuration property "strict_usage" is number
-        new Configuration({ strict_usage: 0, });
+        new StrictConfiguration({ strict_usage: 0, });
       }).toThrowError(expectedErrorMessage);
     });
 
     it('does not throw when "strict_usage" is boolean', () => {
       expect(() => {
-        new Configuration({ strict_usage: true, });
+        new StrictConfiguration({ strict_usage: true, });
       }).not.toThrow();
     });
   });
 
-  describe('strict_errors', () => {
-    const expectedErrorMessage = 'Program configuration property "strict_errors" must be of type "boolean".';
+  describe('strict_mode', () => {
+    const expectedErrorMessage = 'Program configuration property "strict_mode" must be of type "boolean".';
 
-    it('throws error when "strict_errors" is string', () => {
+    it('throws error when "strict_mode" is string', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "strict_errors" is string
-        new Configuration({ strict_errors: 'yes', });
+        // @ts-expect-error program configuration property "strict_mode" is string
+        new StrictConfiguration({ strict_mode: 'yes', });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when "strict_errors" is number', () => {
+    it('throws error when "strict_mode" is number', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "strict_errors" is number
-        new Configuration({ strict_errors: 0, });
+        // @ts-expect-error program configuration property "strict_mode" is number
+        new StrictConfiguration({ strict_mode: 0, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('does not throw when "strict_errors" is boolean', () => {
+    it('does not throw when "strict_mode" is boolean', () => {
       expect(() => {
-        new Configuration({ strict_errors: true, });
+        new StrictConfiguration({ strict_mode: true, });
       }).not.toThrow();
     });
   });
 
-  describe('check_for_new_npm_version', () => {
-    const expectedErrorMessage = 'Program configuration property "check_for_new_npm_version" must be of type "boolean".';
+  describe('check_for_npm_update', () => {
+    const expectedErrorMessage = 'Program configuration property "check_for_npm_update" must be of type "boolean".';
 
-    it('throws error when "check_for_new_npm_version" is string', () => {
+    it('throws error when "check_for_npm_update" is string', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "check_for_new_npm_version" is string
-        new Configuration({ check_for_new_npm_version: 'no', });
+        // @ts-expect-error program configuration property "check_for_npm_update" is string
+        new StrictConfiguration({ check_for_npm_update: 'no', });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when "check_for_new_npm_version" is number', () => {
+    it('throws error when "check_for_npm_update" is number', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "check_for_new_npm_version" is number
-        new Configuration({ check_for_new_npm_version: 1, });
+        // @ts-expect-error program configuration property "check_for_npm_update" is number
+        new StrictConfiguration({ check_for_npm_update: 1, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('does not throw when "check_for_new_npm_version" is boolean', () => {
+    it('does not throw when "check_for_npm_update" is boolean', () => {
       expect(() => {
-        new Configuration({ check_for_new_npm_version: false, });
+        new StrictConfiguration({ check_for_npm_update: false, });
       }).not.toThrow();
     });
   });

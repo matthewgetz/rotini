@@ -1,7 +1,7 @@
 import { homedir, } from 'os';
 
 import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, I_PositionalFlag, } from '../interfaces';
-import { ConfigFile, } from '../types';
+import { ConfigFile, Parameter, } from '../types';
 import { Command, Commands, StrictCommands, } from '../commands';
 import { ConfigurationFile, ConfigurationFiles, StrictConfigurationFiles, } from '../configuration-files';
 import { Flags, GlobalFlag, PositionalFlag, } from '../flags';
@@ -9,7 +9,7 @@ import { Example, Examples, StrictExamples, } from '../examples';
 import { ConfigurationError, } from '../errors';
 import Utils from '../../utils';
 import { Configuration, } from './configuration';
-import { Parameter, Parameters, } from './parameters';
+import { Parameters, } from './parameters';
 
 export type T_ParseResult = {
   id: number
@@ -191,7 +191,7 @@ export class Definition implements I_Definition {
       reservedPositionalFlags.update.type = 'boolean';
       reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
     } else {
-      if (this.configuration.check_for_new_npm_version) {
+      if (this.configuration.check_for_npm_update) {
         positional_flags.push(new PositionalFlag({
           name: 'update',
           description: 'install the latest version of the program',
@@ -530,7 +530,7 @@ export class StrictDefinition extends Definition {
       reservedPositionalFlags.update.type = 'boolean';
       reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
     } else {
-      if (this.configuration.check_for_new_npm_version) {
+      if (this.configuration.check_for_npm_update) {
         positional_flags.push(new PositionalFlag({
           name: 'update',
           description: 'install the latest version of the program',
@@ -616,7 +616,7 @@ export class StrictDefinition extends Definition {
 
 export const getDefinition = (definition: I_Definition, configuration: Configuration): Definition => {
   try {
-    const Program = configuration.strict_errors ? StrictDefinition : Definition;
+    const Program = configuration.strict_mode ? StrictDefinition : Definition;
     const DEFINITION = new Program(definition, configuration);
     return DEFINITION;
   } catch (e) {

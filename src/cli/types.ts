@@ -147,3 +147,8 @@ export type ExamplesProperties = {
   }
   examples: I_Example[]
 }
+
+export type Parameter = {
+  id: number
+  value: string
+};

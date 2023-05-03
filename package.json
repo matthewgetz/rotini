@@ -15,7 +15,7 @@
     "test:watch": "npm run test -- --coverage --watch"
   },
   "devDependencies": {
-    "@rotini/configs": "^1.0.6"
+    "@rotini/configs": "^1.0.8"
   },
   "eslintConfig": {
     "extends": "./node_modules/@rotini/configs/.eslintrc.js"

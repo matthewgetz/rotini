@@ -1,10 +1,10 @@
 import { I_Configuration, I_Definition, } from '../interfaces';
-import { OperationResult, } from '../types';
-import { Configuration, } from './configuration';
+import { OperationResult, Parameter, } from '../types';
+import { Configuration, getConfiguration, } from './configuration';
 import { Definition, getDefinition, } from './definition';
 import { Flag, PositionalFlag, } from '../flags';
 import { OperationTimeoutError, ParseError, OperationError, } from '../errors';
-import { Parameter, Parameters, getParameters, } from './parameters';
+import { Parameters, getParameters, } from './parameters';
 import Utils from '../../utils';
 
 type FlagResult = {
@@ -268,7 +268,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
     throw new ParseError(`${unknownParameters}${didYouMean}`, help);
   }
 
-  if (program_configuration.check_for_new_npm_version && Utils.isNotTrueString(process.env.CI!)) {
+  if (program_configuration.check_for_npm_update && Utils.isNotTrueString(process.env.CI!)) {
     const { data, } = program.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
     const last_update_check_ms = new Date(data?.[program.name]?.last_update_time).getTime();
     const last_update_not_set = Utils.isNotDefined(last_update_check_ms) || isNaN(last_update_check_ms);
@@ -384,7 +384,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
 };
 
 export const rotini = (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): { run: () => Promise<OperationResult> | never } => {
-  const configuration = new Configuration(program.configuration);
+  const configuration = getConfiguration(program.configuration);
   const definition = getDefinition(program.definition, configuration);
   const parameters = getParameters(program.parameters);
 

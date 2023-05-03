@@ -6,8 +6,8 @@ import { Example, Examples, } from '../examples';
 import { Flag, Flags, ForceFlag, HelpFlag, } from '../flags';
 import { Operation, } from '../operation';
 import Utils from '../../utils';
-import { Parameter, Parameters, } from '../program';
-import { Variant, Value, Values, } from '../types';
+import { Parameters, } from '../program';
+import { Parameter, Variant, Value, Values, } from '../types';
 
 type T_Result = {
   name: string
