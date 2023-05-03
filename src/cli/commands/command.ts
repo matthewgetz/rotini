@@ -1,7 +1,7 @@
 import { I_Command, I_Example, I_Operation, } from '../interfaces';
 import { ConfigurationError, ParseError, } from '../errors';
 import { Argument, Arguments, StrictArguments, } from '../arguments';
-import { StrictCommands, } from './commands';
+import { Commands, StrictCommands, } from './commands';
 import { Example, Examples, } from '../examples';
 import { Flag, Flags, ForceFlag, HelpFlag, } from '../flags';
 import { Operation, } from '../operation';
@@ -99,11 +99,11 @@ export class Command implements I_Command {
     this.flags = FLAGS.get();
     this.flags_help = FLAGS.help;
 
-    const u = this.#makeUsage();
+    const u = this.#makeUsage(command.usage);
     this.usage = u.usage;
     this.usage_help = u.usage_help;
 
-    const cmds = new StrictCommands({
+    const cmds = new Commands({
       entity: {
         type: 'Command',
         name: this.name,
@@ -287,9 +287,9 @@ export class StrictCommand extends Command {
       .#checkDescription()
       .#checkAndSetArguments()
       .#checkAndSetFlags()
-      .#checkAndSetCommands()
-      .#checkAndSetExamples()
-      .#checkOperation()
+      .#checkAndSetCommands(command.commands)
+      .#checkAndSetExamples(command.examples)
+      .#checkOperation(command.operation)
       .#checkHelp();
   }
 

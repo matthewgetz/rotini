@@ -72,7 +72,7 @@ export class StrictCommands extends Commands {
     this.#ensureNoDuplicateCommandPropertyValues('aliases');
   }
 
-  #setCommands = (commands: I_Command[]): Commands | never => {
+  #setCommands = (commands: I_Command[]): StrictCommands | never => {
     if (Utils.isNotArray(commands)) {
       throw new ConfigurationError(`${this.entity_type} property "commands" must be of type "array" for ${this.entity_type.toLowerCase()} "${this.entity_name}".`);
     }
