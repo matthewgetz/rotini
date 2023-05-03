@@ -37,14 +37,57 @@ export class Argument implements I_Argument {
   parse!: Parse;
 
   constructor (argument: I_Argument) {
-    this.name = argument?.name;
-    this.description = argument?.description;
-    this.variant = argument?.variant || 'value';
-    this.type = argument?.type || 'string';
-    this.values = argument?.values || [];
-    this.isValid = getIsValid({ name: this.name, isValid: argument?.isValid, });
-    this.parse = getParseFunction({ name: this.name, parse: argument?.parse, });
+    this
+      .#setName(argument?.name)
+      .#setDescription(argument?.description)
+      .#setVariant(argument?.variant)
+      .#setType(argument?.type)
+      .#setValues(argument?.values)
+      .#setIsValid(argument?.isValid)
+      .#setParse(argument?.parse);
   }
+
+  #setName = (name: string): Argument | never => {
+    this.name = name;
+
+    return this;
+  };
+
+  #setDescription = (description: string): Argument | never => {
+    this.description = description;
+
+    return this;
+  };
+
+  #setVariant = (variant: Variant = 'value'): Argument | never => {
+    this.variant = variant;
+
+    return this;
+  };
+
+  #setType = (type: Type = 'string'): Argument | never => {
+    this.type = type;
+
+    return this;
+  };
+
+  #setValues = (values: Values = []): Argument | never => {
+    this.values = values;
+
+    return this;
+  };
+
+  #setIsValid = (isValid: IsValid = DefaultIsValid): Argument | never => {
+    this.isValid = getIsValid({ name: this.name, isValid, });
+
+    return this;
+  };
+
+  #setParse = (parse: Parse = DefaultParse): Argument | never => {
+    this.parse = getParseFunction({ name: this.name, parse, });
+
+    return this;
+  };
 }
 
 export class StrictArgument extends Argument {

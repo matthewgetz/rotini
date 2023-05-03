@@ -5,6 +5,7 @@ import { Definition, getDefinition, } from './definition';
 import { Flag, PositionalFlag, } from '../flags';
 import { OperationTimeoutError, ParseError, OperationError, } from '../errors';
 import { Parameters, getParameters, } from './parameters';
+import { Timing, } from '../timing';
 import Utils from '../../utils';
 
 type FlagResult = {
@@ -27,6 +28,14 @@ export type T_ParseFlagsReturn = {
   unparsed_parameters: Parameter[]
   errors: Error[]
   results: T_ParseResult[]
+}
+
+export type Results = {
+  results: OperationResult
+  metadata: {
+    build: number
+    parse: number
+  }
 }
 
 export const parseFlags = (parameters: Parameter[] = []): T_ParseFlagsReturn => {
@@ -383,16 +392,29 @@ const parse = async (program: Definition, program_configuration: Configuration, 
   return operation;
 };
 
-export const rotini = (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): { run: () => Promise<OperationResult> | never } => {
+export const rotini = (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): { run: () => Promise<Results> | never } => {
+  const build_time = new Timing();
+  const parse_time = new Timing();
+
+  build_time.start();
   const configuration = getConfiguration(program.configuration);
   const definition = getDefinition(program.definition, configuration);
   const parameters = getParameters(program.parameters);
+  build_time.end();
 
-  const run = async (): Promise<OperationResult> | never => {
+  const run = async (): Promise<Results> | never => {
     try {
+      parse_time.start();
       const operation = await parse(definition, configuration, parameters);
-      const result = await operation() as OperationResult;
-      return result;
+      parse_time.end();
+      const results = await operation() as OperationResult;
+      return {
+        results,
+        metadata: {
+          build: build_time.elapsed(),
+          parse: parse_time.elapsed(),
+        },
+      };
     } catch (e) {
       const error = e as Error;
       if (error instanceof ParseError) {

@@ -47,8 +47,8 @@ describe('rotini', () => {
       };
 
       const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
-      const result = await program.run();
-      expect(result).toEqual({
+      const { results, } = await program.run();
+      expect(results).toEqual({
         after_handler_result: undefined,
         before_handler_result: undefined,
         handler_failure_result: undefined,
@@ -75,8 +75,8 @@ describe('rotini', () => {
       };
 
       const program = rotini({ definition, parameters: [ 'hello-world', ], });
-      const result = await program.run();
-      expect(result).toEqual({
+      const { results, } = await program.run();
+      expect(results).toEqual({
         after_handler_result: undefined,
         before_handler_result: undefined,
         handler_failure_result: undefined,
