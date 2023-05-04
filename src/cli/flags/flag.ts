@@ -33,6 +33,122 @@ export class Flag implements I_Flag {
   }
 
   #setName = (name: string): Flag | never => {
+    this.name = name;
+
+    return this;
+  };
+
+  #setDescription = (description: string): Flag | never => {
+    this.description = description;
+
+    return this;
+  };
+
+  #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): Flag | never => {
+    this.variant = variant;
+
+    return this;
+  };
+
+  #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
+    this.type = type;
+
+    return this;
+  };
+
+  #setStyle = (style: 'positional' | 'global' | 'local'): Flag | never => {
+    this.style = style;
+
+    return this;
+  };
+
+  #setShortFlag = (short_key?: string): Flag | never => {
+    this.short_key = short_key;
+
+    return this;
+  };
+
+  #setLongFlag = (long_key?: string): Flag | never => {
+    this.long_key = long_key;
+
+    return this;
+  };
+
+  #setFlags = (short_key?: string, long_key?: string): Flag | never => {
+    this.#setShortFlag(short_key);
+    this.#setLongFlag(long_key);
+
+    return this;
+  };
+
+  #setValues = (values: Values = []): Flag | never => {
+    this.values = values;
+
+    return this;
+  };
+
+  #setDefault = (default_value?: Value): Flag | never => {
+    this.default = default_value;
+
+    return this;
+  };
+
+  #setRequired = (required = false): Flag | never => {
+    this.required = required;
+
+    return this;
+  };
+
+  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): Flag | never => {
+    this.isValid = (value: Value): boolean | never => {
+      try {
+        if (isValid(value as never) === false) {
+          const flags = [];
+          if (Utils.isDefined(this.short_key)) flags.push(`-${this.short_key}`);
+          if (Utils.isDefined(this.long_key)) flags.push(`--${this.long_key}`);
+          throw new ParseError(`Flag value "${value}" is invalid for ${this.style} flag "${this.name}" (${flags.join(',')}).`);
+        }
+        return true;
+      } catch (error) {
+        throw new ParseError((error as Error).message);
+      }
+    };
+
+    return this;
+  };
+
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): Flag | never => {
+    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }): unknown => {
+      try {
+        const parsed = parse({ original_value, type_coerced_value, });
+        return parsed;
+      } catch (error) {
+        throw new ParseError(`Flag value could not be parsed for ${this.style} flag "${this.name}".`);
+      }
+    };
+
+    return this;
+  };
+}
+
+export class StrictFlag extends Flag {
+  constructor (flag: I_Flag) {
+    super(flag);
+    this
+      .#setName(flag?.name)
+      .#setDescription(flag?.description)
+      .#setStyle(flag?.style)
+      .#setVariant(flag?.variant)
+      .#setType(flag?.type)
+      .#setFlags(flag?.short_key, flag?.long_key)
+      .#setValues(flag?.values)
+      .#setDefault(flag?.default)
+      .#setRequired(flag?.required)
+      .#setIsValid(flag?.isValid)
+      .#setParse(flag?.parse);
+  }
+
+  #setName = (name: string): StrictFlag | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Flag property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -42,7 +158,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setDescription = (description: string): Flag | never => {
+  #setDescription = (description: string): StrictFlag | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description)) {
       throw new ConfigurationError(`Flag property "description" must be defined and of type "string" for ${this.style} flag "${this.name}".`);
     }
@@ -52,7 +168,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): Flag | never => {
+  #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): StrictFlag | never => {
     if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'boolean', 'value', 'variadic', ]))) {
       throw new ConfigurationError(`Flag property "variant" must be defined, of type "string", and set as "boolean" or "value" for ${this.style} flag "${this.name}".`);
     }
@@ -62,7 +178,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
+  #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): StrictFlag | never => {
     if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', 'string[]', 'number[]', 'boolean[]', ]))) {
       throw new ConfigurationError(`Flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for ${this.style} flag "${this.name}".`);
     }
@@ -76,7 +192,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setStyle = (style: 'positional' | 'global' | 'local'): Flag | never => {
+  #setStyle = (style: 'positional' | 'global' | 'local'): StrictFlag | never => {
     if (Utils.isNotDefined(style) || Utils.isNotString(style) || Utils.isNotAllowedStringValue(style, Object.freeze([ 'positional', 'global', 'local', ]))) {
       throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for ${this.style} flag "${this.name}".`);
     }
@@ -86,7 +202,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setShortFlag = (short_key?: string): Flag | never => {
+  #setShortFlag = (short_key?: string): StrictFlag | never => {
     if (Utils.isDefined(short_key) && (Utils.isNotString(short_key) || Utils.stringContainsSpaces(short_key!))) {
       throw new ConfigurationError(`Flag property "short_key" must be of type "string" and cannot contain spaces for ${this.style} flag "${this.name}".`);
     }
@@ -96,7 +212,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setLongFlag = (long_key?: string): Flag | never => {
+  #setLongFlag = (long_key?: string): StrictFlag | never => {
     if (Utils.isDefined(long_key) && (Utils.isNotString(long_key) || Utils.stringContainsSpaces(long_key!))) {
       throw new ConfigurationError(`Flag property "long_key" must be of type "string" and cannot contain spaces for ${this.style} flag "${this.name}".`);
     }
@@ -106,7 +222,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setFlags = (short_key?: string, long_key?: string): Flag | never => {
+  #setFlags = (short_key?: string, long_key?: string): StrictFlag | never => {
     this.#setShortFlag(short_key);
     this.#setLongFlag(long_key);
 
@@ -117,7 +233,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setValues = (values: Values = []): Flag | never => {
+  #setValues = (values: Values = []): StrictFlag | never => {
     const isNotArrayOfType = Object.freeze({
       string: Utils.isNotArrayOfStrings,
       'string[]': Utils.isNotArrayOfStrings,
@@ -137,7 +253,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setDefault = (default_value?: Value): Flag | never => {
+  #setDefault = (default_value?: Value): StrictFlag | never => {
     if (Utils.isDefined(default_value) && this.variant === 'boolean' && Utils.isNotBoolean(default_value)) {
       throw new ConfigurationError(`Flag property "default" must be of type "boolean" for ${this.style} flag "${this.name}" when flag property "variant" is set to "boolean".`);
     }
@@ -173,7 +289,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setRequired = (required = false): Flag | never => {
+  #setRequired = (required = false): StrictFlag | never => {
     if (Utils.isDefined(required) && Utils.isNotBoolean(required)) {
       throw new ConfigurationError(`Flag property "required" must be of type "boolean" for ${this.style} flag "${this.name}".`);
     }
@@ -183,7 +299,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): Flag | never => {
+  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): StrictFlag | never => {
     if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
       throw new ConfigurationError(`Flag property "isValid" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
@@ -205,7 +321,7 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): Flag | never => {
+  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): StrictFlag | never => {
     if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
       throw new ConfigurationError(`Flag property "parse" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
@@ -229,6 +345,12 @@ export class GlobalFlag extends Flag {
   }
 }
 
+export class StrictGlobalFlag extends StrictFlag {
+  constructor (flag: I_GlobalFlag) {
+    super({ ...flag, style: 'global', });
+  }
+}
+
 export class PositionalFlag extends Flag {
   operation!: PositionalFlagOperation;
 
@@ -238,6 +360,21 @@ export class PositionalFlag extends Flag {
   }
 
   #setOperation = (operation: PositionalFlagOperation = ((): void => { })): PositionalFlag | never => {
+    this.operation = operation;
+
+    return this;
+  };
+}
+
+export class StrictPositionalFlag extends StrictFlag {
+  operation!: PositionalFlagOperation;
+
+  constructor (flag: I_PositionalFlag) {
+    super({ ...flag, style: 'positional', });
+    this.#setOperation(flag.operation);
+  }
+
+  #setOperation = (operation: PositionalFlagOperation = ((): void => { })): StrictPositionalFlag | never => {
     if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
       throw new ConfigurationError(`Flag property "operation" must be of type "function" for ${this.style} flag ${this.name}`);
     }
@@ -249,6 +386,12 @@ export class PositionalFlag extends Flag {
 }
 
 export class LocalFlag extends Flag {
+  constructor (flag: I_LocalFlag) {
+    super({ ...flag, style: 'local', });
+  }
+}
+
+export class StrictLocalFlag extends StrictFlag {
   constructor (flag: I_LocalFlag) {
     super({ ...flag, style: 'local', });
   }
@@ -267,7 +410,33 @@ export class HelpFlag extends Flag {
   }
 }
 
+export class StrictHelpFlag extends StrictFlag {
+  constructor (flag: I_GenericFlag) {
+    super({
+      ...flag,
+      type: 'boolean',
+      variant: 'boolean',
+      style: 'local',
+      values: [],
+      isValid: (): boolean => true,
+    });
+  }
+}
+
 export class ForceFlag extends Flag {
+  constructor (flag: I_GenericFlag) {
+    super({
+      ...flag,
+      type: 'boolean',
+      variant: 'boolean',
+      style: 'local',
+      values: [],
+      isValid: (): boolean => true,
+    });
+  }
+}
+
+export class StrictForceFlag extends StrictFlag {
   constructor (flag: I_GenericFlag) {
     super({
       ...flag,

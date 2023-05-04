@@ -62,13 +62,13 @@ export class Arguments {
 export class StrictArguments extends Arguments {
   constructor (properties: ArgumentsProperties) {
     super(properties);
-    this.#checkArguments(properties);
+    this.#ensureArgumentsIsArray(properties);
     this.#ensureNoDuplicateArgumentNames(properties);
     this.#ensureOnlyOneVariadicArgument(properties);
     this.#ensureVariadicArgumentIsLastIfExists(properties);
   }
 
-  #checkArguments = (properties: ArgumentsProperties): void | never => {
+  #ensureArgumentsIsArray = (properties: ArgumentsProperties): void | never => {
     const { type, name, } = properties.entity;
     const args = properties.arguments;
     const lowercaseName = name.toLowerCase();

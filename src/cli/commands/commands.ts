@@ -28,7 +28,7 @@ export class Commands {
     const commands = Utils.isArray(properties.commands) ? properties.commands : [];
     this.commands = commands.map((command: I_Command) => {
       const usage = command.usage || this.usage;
-      return new Command({ ...command, usage, }, { isGeneratedUsage: usage === this.usage, });
+      return new Command({ ...command, usage, }, { is_generated_usage: usage === this.usage, });
     });
     this.help = this.#makeCommandsSection();
   }
@@ -79,7 +79,7 @@ export class StrictCommands extends Commands {
 
     this.commands = commands.map((command: I_Command) => {
       const usage = command.usage || this.usage;
-      return new StrictCommand({ ...command, usage, }, { isGeneratedUsage: usage === this.usage, });
+      return new StrictCommand({ ...command, usage, }, { is_generated_usage: usage === this.usage, });
     });
 
     return this;

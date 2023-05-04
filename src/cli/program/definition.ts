@@ -4,7 +4,7 @@ import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, 
 import { ConfigFile, Parameter, } from '../types';
 import { Command, Commands, StrictCommands, } from '../commands';
 import { ConfigurationFile, ConfigurationFiles, StrictConfigurationFiles, } from '../configuration-files';
-import { Flags, GlobalFlag, PositionalFlag, } from '../flags';
+import { Flags, GlobalFlag, PositionalFlag, StrictFlags, } from '../flags';
 import { Example, Examples, StrictExamples, } from '../examples';
 import { ConfigurationError, } from '../errors';
 import Utils from '../../utils';
@@ -136,7 +136,7 @@ export class Definition implements I_Definition {
       flags: global_flags,
     });
 
-    this.global_flags = GLOBAL_FLAGS.get();
+    this.global_flags = GLOBAL_FLAGS.flags;
     this.global_flags_help = GLOBAL_FLAGS.help;
 
     return this;
@@ -245,7 +245,7 @@ export class Definition implements I_Definition {
       flags: positional_flags,
     });
 
-    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.get();
+    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.flags;
     this.positional_flags_help = POSITIONAL_FLAGS.help;
 
     return this;
@@ -467,7 +467,7 @@ export class StrictDefinition extends Definition {
   };
 
   #checkAndSetGlobalFlags = (global_flags: I_GlobalFlag[] = []): StrictDefinition | never => {
-    const GLOBAL_FLAGS = new Flags({
+    const GLOBAL_FLAGS = new StrictFlags({
       entity: {
         type: 'Program',
         key: 'global_flags',
@@ -476,7 +476,7 @@ export class StrictDefinition extends Definition {
       flags: global_flags,
     });
 
-    this.global_flags = GLOBAL_FLAGS.get();
+    this.global_flags = GLOBAL_FLAGS.flags;
 
     return this;
   };
@@ -575,7 +575,7 @@ export class StrictDefinition extends Definition {
       }));
     }
 
-    const POSITIONAL_FLAGS = new Flags({
+    const POSITIONAL_FLAGS = new StrictFlags({
       entity: {
         type: 'Program',
         key: 'positional_flags',
@@ -584,7 +584,7 @@ export class StrictDefinition extends Definition {
       flags: positional_flags,
     });
 
-    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.get();
+    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.flags;
     this.positional_flags_help = POSITIONAL_FLAGS.help;
 
     return this;

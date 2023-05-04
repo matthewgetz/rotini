@@ -1,13 +1,13 @@
-import { I_Command, I_Example, I_Operation, } from '../interfaces';
-import { ConfigurationError, ParseError, } from '../errors';
 import { Argument, Arguments, StrictArguments, } from '../arguments';
 import { Commands, StrictCommands, } from './commands';
-import { Example, Examples, } from '../examples';
-import { Flag, Flags, ForceFlag, HelpFlag, } from '../flags';
+import { Example, Examples, StrictExamples, } from '../examples';
+import { ConfigurationError, ParseError, } from '../errors';
+import { Flag, Flags, StrictFlags, } from '../flags';
 import { Operation, } from '../operation';
-import Utils from '../../utils';
 import { Parameters, } from '../program';
+import { I_Argument, I_Command, I_Example, I_Operation, I_LocalFlag, } from '../interfaces';
 import { Parameter, Variant, Value, Values, } from '../types';
+import Utils from '../../utils';
 
 type T_Result = {
   name: string
@@ -23,43 +23,62 @@ type T_ParseCommandArgumentsReturn = {
 }
 
 interface I_CommandMetadata {
-  isGeneratedUsage: boolean
+  is_generated_usage: boolean
 }
 
 export class Command implements I_Command {
-  name: string;
-  description: string;
-  aliases: string[];
-  deprecated: boolean;
-  arguments: Argument[];
-  flags: (Flag | ForceFlag | HelpFlag)[];
-  commands: Command[];
-  examples: Example[];
-  operation: Operation;
-  isForceCommand: boolean;
-  usage: string;
-  help: string;
+  name!: string;
+  description!: string;
+  aliases!: string[];
+  deprecated!: boolean;
+  arguments!: Argument[];
+  flags!: Flag[];
+  commands!: Command[];
+  examples!: Example[];
+  operation!: Operation;
+  is_force_command!: boolean;
+  usage!: string;
+  help!: string;
 
-  // help sections
-  name_help: string;
-  description_help: string;
-  aliases_help: string;
-  usage_help: string;
-  examples_help: string;
-  arguments_help: string;
-  commands_help: string;
-  flags_help: string;
+  name_help!: string;
+  description_help!: string;
+  aliases_help!: string;
+  usage_help!: string;
+  examples_help!: string;
+  arguments_help!: string;
+  commands_help!: string;
+  flags_help!: string;
 
-  isGeneratedUsage: boolean;
+  is_generated_usage: boolean;
   subcommand_identifiers!: string[];
 
   constructor (command: I_Command, metadata: I_CommandMetadata) {
-    this.isGeneratedUsage = metadata.isGeneratedUsage;
+    this.is_generated_usage = metadata.is_generated_usage;
+    this
+      .#setName(command?.name)
+      .#setAliases(command?.aliases)
+      .#setDeprecated(command?.deprecated)
+      .#setDescription(command?.description)
+      .#setArguments(command?.arguments)
+      .#setFlags(command?.flags)
+      .#setUsage(command?.usage)
+      .#setCommands(command?.commands)
+      .#setExamples(command?.examples)
+      .#setHelp(command?.help)
+      .#setOperation(command?.operation)
+      .#setIsForceCommand()
+      .#setSubcommandIdentifiers();
+  }
 
-    this.name = command?.name;
+  #setName = (name: string): Command | never => {
+    this.name = name;
     this.name_help = this.name;
 
-    this.aliases = Utils.isArray(command?.aliases) ? command.aliases! : [];
+    return this;
+  };
+
+  #setAliases = (aliases: string[] = []): Command | never => {
+    this.aliases = Utils.isArray(aliases) ? aliases : [];
     this.aliases_help = (this.aliases.length > 0) ? [
       '\n\n',
       'ALIASES:',
@@ -67,86 +86,118 @@ export class Command implements I_Command {
       `  ${this.aliases?.join(',')}`,
     ].join('') : '';
 
-    this.deprecated = command?.deprecated || false;
+    return this;
+  };
 
-    this.description = command?.description;
+  #setDeprecated = (deprecated = false): Command | never => {
+    this.deprecated = deprecated;
+
+    return this;
+  };
+
+  #setDescription = (description: string): Command | never => {
+    this.description = description;
     this.description_help = [
       '\n\n',
       `  ${this.description}`,
       this.deprecated === true ? `\n\n  This command has been deprecated and will be removed from a future release.${this.aliases.length > 0 ? `\n  Command aliases ${JSON.stringify(this.aliases)} can be used as a guard against future breaking changes.` : ''}` : '',
     ].join('');
 
+    return this;
+  };
+
+  #setArguments = (args: I_Argument[] = []): Command | never => {
     const ARGS = new Arguments({
       entity: {
         type: 'Command',
         name: this.name,
       },
-      arguments: command?.arguments || [],
+      arguments: args,
     });
 
     this.arguments = ARGS.arguments;
     this.arguments_help = ARGS.help;
 
+    return this;
+  };
+
+  #setFlags = (flags: I_LocalFlag[] = []): Command | never => {
     const FLAGS = new Flags({
       entity: {
         type: 'Command',
         key: 'local_flags',
         name: this.name,
       },
-      flags: command?.flags || [],
+      flags,
     });
 
-    this.flags = FLAGS.get();
+    this.flags = FLAGS.flags;
     this.flags_help = FLAGS.help;
 
-    const u = this.#makeUsage(command.usage);
-    this.usage = u.usage;
-    this.usage_help = u.usage_help;
+    return this;
+  };
 
-    const cmds = new Commands({
+  #setCommands = (commands: I_Command[] = []): Command | never => {
+    const COMMANDS = new Commands({
       entity: {
         type: 'Command',
         name: this.name,
       },
       usage: this.usage,
-      commands: command?.commands || [],
+      commands,
     });
 
+    this.commands = COMMANDS.commands;
+    this.commands_help = COMMANDS.help;
+
+    return this;
+  };
+
+  #setExamples = (examples: I_Example[] = []): Command | never => {
     const EXAMPLES = new Examples({
       entity: {
         type: 'Program',
         name: this.name,
       },
-      examples: command?.examples || [],
+      examples,
     });
 
     this.examples = EXAMPLES.examples;
     this.examples_help = EXAMPLES.help;
 
-    this.commands = cmds.commands;
-    this.commands_help = cmds.help;
+    return this;
+  };
 
-    this.help = this.#makeHelp(command.help);
+  #setOperation = (operation?: I_Operation): Command | never => {
+    const resolved_operation = operation || {};
+    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
 
-    this.operation = new Operation(this.name, this.help, command.operation);
+    this.operation = new Operation(this.name, this.help, resolved_operation);
 
-    this.isForceCommand = this.#isForceCommand();
-    this.subcommand_identifiers = this.#makeSubcommandIdentifiers();
-  }
+    return this;
+  };
 
-  #makeUsage = (usage?: string): { usage: string, usage_help: string } => {
+  #setUsage = (usage?: string): Command => {
     let command_usage = `${usage} ${this.name}`;
 
-    if (this.arguments.length > 1) {
-      command_usage += ` [<argument>]`;
-    } else if (this.arguments.length > 0) {
-      command_usage += ` <argument>`;
+    if (this.arguments.length > 0) {
+      const args = this.arguments.map(arg => {
+        if (arg.variant === 'variadic') {
+          return `<${arg.name}...>`;
+        } else if (arg.variant === 'value') {
+          return `<${arg.name}>`;
+        } else {
+          return '<boolean>';
+        }
+      });
+
+      command_usage += ` ${args.join(' ')}`;
     }
 
     let resolvedUsage: string;
     let resolvedUsageHelp: string;
 
-    if (this.isGeneratedUsage) {
+    if (this.is_generated_usage) {
       resolvedUsage = command_usage;
       resolvedUsageHelp = `  ${command_usage}${this.flags.length > 0 ? ' [flags]' : ''}`;
     } else {
@@ -154,19 +205,19 @@ export class Command implements I_Command {
       resolvedUsageHelp = `  ${usage}`;
     }
 
-    return {
-      usage: resolvedUsage,
-      usage_help: [
-        '\n\n',
-        'USAGE:',
-        '\n\n',
-        resolvedUsageHelp,
-      ].join(''),
-    };
+    this.usage = resolvedUsage;
+    this.usage_help = [
+      '\n\n',
+      'USAGE:',
+      '\n\n',
+      resolvedUsageHelp,
+    ].join('');
+
+    return this;
   };
 
-  #makeHelp = (help?: string): string => {
-    return help || [
+  #setHelp = (help?: string): Command => {
+    this.help = help || [
       this.name_help,
       this.description_help,
       this.usage_help,
@@ -177,17 +228,25 @@ export class Command implements I_Command {
       this.flags_help,
       this.commands.length > 0 ? `\n\nUse "${this.usage} <command> --help" for more information about a given command.` : '',
     ].join('');
+
+    return this;
   };
 
-  #isForceCommand = (): boolean => {
-    const hasForceFlag = this.flags.some(flag => flag.name === 'force');
-    return hasForceFlag;
+  #setIsForceCommand = (): Command => {
+    const is_force_command = this.flags.some(flag => flag.name === 'force');
+
+    this.is_force_command = is_force_command;
+
+    return this;
   };
 
-  #makeSubcommandIdentifiers = (): string[] => {
+  #setSubcommandIdentifiers = (): Command => {
     const potential_commands = this.commands.map(command => command.name);
     const potential_aliases = this.commands.map(command => command.aliases).flat();
-    return [ ...potential_commands, ...potential_aliases, ];
+
+    this.subcommand_identifiers = [ ...potential_commands, ...potential_aliases, ];
+
+    return this;
   };
 
   parseArguments = (parameters: Parameter[] = []): T_ParseCommandArgumentsReturn => {
@@ -281,82 +340,105 @@ export class StrictCommand extends Command {
   constructor (command: I_Command, metadata: I_CommandMetadata) {
     super(command, metadata);
     this
-      .#checkName()
-      .#checkAliases(command.aliases)
-      .#checkDeprecated()
-      .#checkDescription()
-      .#checkAndSetArguments()
-      .#checkAndSetFlags()
-      .#checkAndSetCommands(command.commands)
-      .#checkAndSetExamples(command.examples)
-      .#checkOperation(command.operation)
-      .#checkHelp();
+      .#setName(command?.name)
+      .#setAliases(command.aliases)
+      .#setDeprecated(command.deprecated)
+      .#setDescription(command.description)
+      .#setArguments(command.arguments)
+      .#setFlags(command.flags)
+      .#setUsage(command.usage)
+      .#setCommands(command.commands)
+      .#setExamples(command.examples)
+      .#setHelp(command.help)
+      .#setOperation(command.operation)
+      .#setIsForceCommand()
+      .#setSubcommandIdentifiers();
   }
 
-  #checkName = (): StrictCommand | never => {
+  #setName = (name: string): StrictCommand | never => {
     if (Utils.isNotDefined(this.name) || Utils.isNotString(this.name) || Utils.stringContainsSpaces(this.name)) {
       throw new ConfigurationError('Command property "name" must be defined, of type "string", and cannot contain spaces.');
     }
 
+    this.name = name;
+    this.name_help = this.name;
+
     return this;
   };
 
-  #checkAliases = (aliases: string[] = []): StrictCommand | never => {
+  #setAliases = (aliases: string[] = []): StrictCommand | never => {
     if (Utils.isNotArray(aliases) || Utils.isNotArrayOfStrings(aliases) || aliases.filter(alias => Utils.stringContainsSpaces(alias)).length > 0) {
       throw new ConfigurationError(`Command property "aliases" must be of type "array", can only contain indexes of type "string", and cannot contain indexes with spaces for command "${this.name}".`);
     }
 
+    this.aliases = aliases;
+    this.aliases_help = (this.aliases.length > 0) ? [
+      '\n\n',
+      'ALIASES:',
+      '\n\n',
+      `  ${this.aliases?.join(',')}`,
+    ].join('') : '';
+
     return this;
   };
 
-  #checkDeprecated = (): StrictCommand | never => {
+  #setDeprecated = (deprecated = false): StrictCommand | never => {
     if (Utils.isNotBoolean(this.deprecated)) {
       throw new ConfigurationError(`Command property "deprecated" must be of type "boolean" for command "${this.name}".`);
     }
 
+    this.deprecated = deprecated;
+
     return this;
   };
 
-  #checkDescription = (): StrictCommand | never => {
+  #setDescription = (description: string): StrictCommand | never => {
     if (Utils.isNotDefined(this.description) || Utils.isNotString(this.description)) {
       throw new ConfigurationError(`Command property "description" must be defined and of type "string" for command "${this.name}".`);
     }
 
+    this.description = description;
+    this.description_help = [
+      '\n\n',
+      `  ${this.description}`,
+      this.deprecated === true ? `\n\n  This command has been deprecated and will be removed from a future release.${this.aliases.length > 0 ? `\n  Command aliases ${JSON.stringify(this.aliases)} can be used as a guard against future breaking changes.` : ''}` : '',
+    ].join('');
+
     return this;
   };
 
-  #checkAndSetArguments = (): StrictCommand | never => {
-    const ARGUMENTS = new StrictArguments({
+  #setArguments = (args: I_Argument[] = []): StrictCommand | never => {
+    const ARGS = new StrictArguments({
       entity: {
         type: 'Command',
         name: this.name,
       },
-      arguments: this.arguments,
+      arguments: args,
     });
 
-    this.arguments = ARGUMENTS.arguments;
-    this.arguments_help = ARGUMENTS.help;
+    this.arguments = ARGS.arguments;
+    this.arguments_help = ARGS.help;
 
     return this;
   };
 
-  #checkAndSetFlags = (): StrictCommand | never => {
-    const FLAGS = new Flags({
+  #setFlags = (flags: I_LocalFlag[] = []): StrictCommand | never => {
+    const FLAGS = new StrictFlags({
       entity: {
         type: 'Command',
         key: 'local_flags',
         name: this.name,
       },
-      flags: this.flags,
+      flags,
     });
 
-    this.flags = FLAGS.get();
+    this.flags = FLAGS.flags;
     this.flags_help = FLAGS.help;
 
     return this;
   };
 
-  #checkAndSetCommands = (commands: I_Command[] = []): StrictCommand | never => {
+  #setCommands = (commands: I_Command[] = []): StrictCommand | never => {
     const COMMANDS = new StrictCommands({
       entity: {
         type: 'Command',
@@ -372,8 +454,8 @@ export class StrictCommand extends Command {
     return this;
   };
 
-  #checkAndSetExamples = (examples: I_Example[] = []): StrictCommand | never => {
-    const EXAMPLES = new Examples({
+  #setExamples = (examples: I_Example[] = []): StrictCommand | never => {
+    const EXAMPLES = new StrictExamples({
       entity: {
         type: 'Program',
         name: this.name,
@@ -387,18 +469,91 @@ export class StrictCommand extends Command {
     return this;
   };
 
-  #checkOperation = (operation?: I_Operation): StrictCommand | never => {
+  #setOperation = (operation?: I_Operation): StrictCommand | never => {
     if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
     }
 
+    const resolved_operation = operation || {};
+    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
+
+    this.operation = new Operation(this.name, this.help, resolved_operation);
+
     return this;
   };
 
-  #checkHelp = (): StrictCommand | never => {
+  #setUsage = (usage?: string): StrictCommand => {
+    let command_usage = `${usage} ${this.name}`;
+
+    if (this.arguments.length > 0) {
+      const args = this.arguments.map(arg => {
+        if (arg.variant === 'variadic') {
+          return `<${arg.name}...>`;
+        } else if (arg.variant === 'value') {
+          return `<${arg.name}>`;
+        } else {
+          return '<boolean>';
+        }
+      });
+
+      command_usage += ` ${args.join(' ')}`;
+    }
+
+    let resolvedUsage: string;
+    let resolvedUsageHelp: string;
+
+    if (this.is_generated_usage) {
+      resolvedUsage = command_usage;
+      resolvedUsageHelp = `  ${command_usage}${this.flags.length > 0 ? ' [flags]' : ''}`;
+    } else {
+      resolvedUsage = usage!;
+      resolvedUsageHelp = `  ${usage}`;
+    }
+
+    this.usage = resolvedUsage;
+    this.usage_help = [
+      '\n\n',
+      'USAGE:',
+      '\n\n',
+      resolvedUsageHelp,
+    ].join('');
+
+    return this;
+  };
+
+  #setHelp = (help?: string): StrictCommand => {
     if (Utils.isDefined(this.help) && Utils.isNotString(this.help)) {
       throw new ConfigurationError(`Command property "help" must be of type "string" for command "${this.name}".`);
     }
+
+    this.help = help || [
+      this.name_help,
+      this.description_help,
+      this.usage_help,
+      this.examples_help,
+      this.aliases_help,
+      this.arguments_help,
+      this.commands_help,
+      this.flags_help,
+      this.commands.length > 0 ? `\n\nUse "${this.usage} <command> --help" for more information about a given command.` : '',
+    ].join('');
+
+    return this;
+  };
+
+  #setIsForceCommand = (): StrictCommand => {
+    const is_force_command = this.flags.some(flag => flag.name === 'force');
+
+    this.is_force_command = is_force_command;
+
+    return this;
+  };
+
+  #setSubcommandIdentifiers = (): StrictCommand => {
+    const potential_commands = this.commands.map(command => command.name);
+    const potential_aliases = this.commands.map(command => command.aliases).flat();
+
+    this.subcommand_identifiers = [ ...potential_commands, ...potential_aliases, ];
 
     return this;
   };

@@ -302,7 +302,7 @@ describe('StrictDefinition', () => {
     it('throws error when program definition property flags is not array', () => {
       expect(() => {
         // @ts-expect-error program definition property flags is object
-        new StrictDefinition({ name: 'rotini', description: 'program description', version: '1.0.0', global_flags: {}, });
+        new StrictDefinition({ name: 'rotini', description: 'program description', version: '1.0.0', global_flags: {}, }, configuration);
       }).toThrowError(expectedErrorMessage);
     });
 

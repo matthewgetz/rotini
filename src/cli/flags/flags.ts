@@ -1,6 +1,6 @@
 import { I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from '../interfaces';
 import { ConfigurationError, } from '../errors';
-import { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, } from './flag';
+import { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, StrictForceFlag, StrictGlobalFlag, StrictHelpFlag, StrictLocalFlag, StrictPositionalFlag, } from './flag';
 import Utils from '../../utils';
 
 type Properties = {
@@ -13,25 +13,17 @@ type Properties = {
 }
 
 export class Flags {
-  #flags!: GlobalFlag[] | LocalFlag[] | PositionalFlag[];
-
+  flags!: GlobalFlag[] | LocalFlag[] | PositionalFlag[];
   help!: string;
 
   constructor (properties: Properties) {
     this.#setFlags(properties);
-    this.#ensureNoDuplicateFlagProperties(properties);
-    this.#makeFlagsSection(properties);
+    this.#setFlagsHelp(properties);
   }
 
-  get = (): GlobalFlag[] | LocalFlag[] | PositionalFlag[] => this.#flags;
-
   #setFlags = (properties: Properties): Flags | never => {
-    const { type, key, name, } = properties.entity;
-    const flags = properties.flags || [];
-
-    if (Utils.isNotArray(flags)) {
-      throw new ConfigurationError(`${type} property "${key}" must of type "array" for ${type.toLowerCase()} "${name}".`);
-    }
+    const { type, key, } = properties.entity;
+    const flags = Utils.isArray(properties.flags) ? properties.flags : [];
 
     const SpecialFlags: { [key: string]: typeof HelpFlag } = {
       force: ForceFlag,
@@ -44,7 +36,7 @@ export class Flags {
       positional_flags: PositionalFlag,
     };
 
-    this.#flags = flags.map((flag) => {
+    this.flags = flags.map((flag) => {
       if (key === 'local_flags') {
         const Flag = SpecialFlags[flag.name] || Flags[key];
         return new Flag(flag);
@@ -57,10 +49,10 @@ export class Flags {
       }
     });
 
-    const helpFlag = this.#flags.find(flag => flag.name === 'help');
+    const helpFlag = this.flags.find(flag => flag.name === 'help');
 
     if (!helpFlag && key === 'local_flags') {
-      this.#flags.push(new HelpFlag({
+      this.flags.push(new HelpFlag({
         name: 'help',
         description: `output the ${type.toLowerCase()} help`,
         short_key: 'h',
@@ -73,7 +65,7 @@ export class Flags {
     return this;
   };
 
-  #makeFlagsSection = (properties: Properties): void => {
+  #setFlagsHelp = (properties: Properties): void => {
     const HEADINGS = {
       local_flags: 'FLAGS',
       global_flags: 'GLOBAL FLAGS',
@@ -83,7 +75,7 @@ export class Flags {
     const heading = properties.entity.key;
     const HEADING = HEADINGS[heading];
 
-    const flagInfo = this.#flags.map(flag => {
+    const flagInfo = this.flags.map(flag => {
       let description = flag.description;
       if (Utils.isDefined(flag.default)) {
         description += Utils.isArray(flag.default)
@@ -133,6 +125,62 @@ export class Flags {
       ].join('')
       : '';
   };
+}
+
+export class StrictFlags extends Flags {
+  constructor (properties: Properties) {
+    super(properties);
+    this.#setFlags(properties);
+    this.#ensureNoDuplicateFlagProperties(properties);
+  }
+
+  #setFlags = (properties: Properties): Flags | never => {
+    const { type, key, name, } = properties.entity;
+    const flags = properties.flags || [];
+
+    if (Utils.isNotArray(flags)) {
+      throw new ConfigurationError(`${type} property "${key}" must of type "array" for ${type.toLowerCase()} "${name}".`);
+    }
+
+    const SpecialFlags: { [key: string]: typeof HelpFlag } = {
+      force: StrictForceFlag,
+      help: StrictHelpFlag,
+    };
+
+    const Flags = {
+      local_flags: StrictLocalFlag,
+      global_flags: StrictGlobalFlag,
+      positional_flags: StrictPositionalFlag,
+    };
+
+    this.flags = flags.map((flag) => {
+      if (key === 'local_flags') {
+        const StrictFlag = SpecialFlags[flag.name] || Flags[key];
+        return new StrictFlag(flag);
+      } else if (key === 'global_flags') {
+        const globalFlag = flag as StrictGlobalFlag;
+        return new StrictGlobalFlag(globalFlag);
+      } else {
+        const positionalFlag = flag as StrictPositionalFlag;
+        return new StrictPositionalFlag(positionalFlag);
+      }
+    });
+
+    const helpFlag = this.flags.find(flag => flag.name === 'help');
+
+    if (!helpFlag && key === 'local_flags') {
+      this.flags.push(new StrictHelpFlag({
+        name: 'help',
+        description: `output the ${type.toLowerCase()} help`,
+        short_key: 'h',
+        long_key: 'help',
+        type: 'boolean',
+        variant: 'boolean',
+      }));
+    }
+
+    return this;
+  };
 
   #ensureNoDuplicateFlagProperties = (properties: Properties): void | never => {
     const { type, key, name, } = properties.entity;
@@ -142,7 +190,7 @@ export class Flags {
     const flagShortNames: string[] = [];
     const flagLongNames: string[] = [];
 
-    this.#flags.forEach(flag => {
+    this.flags.forEach(flag => {
       flagNames.push(flag.name);
       const short_key = flag.short_key;
       const long_key = flag.long_key;

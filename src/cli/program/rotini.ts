@@ -380,7 +380,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
     throw ERRORS[0];
   }
 
-  if (COMMAND.isForceCommand && command.flags.force !== true) {
+  if (COMMAND.is_force_command && command.flags.force !== true) {
     const result = await Utils.promptForYesOrNo('Are you sure you want to continue?');
     if (result !== true) {
       process.exit(0);
