@@ -1,5 +1,5 @@
 {
-  "name": "rfe",
+  "name": "hello-world",
   "type": "module",
   "bin": {
     "rfe": "./index.js"

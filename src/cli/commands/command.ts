@@ -61,8 +61,8 @@ export class Command implements I_Command {
       .#setDescription(command?.description)
       .#setArguments(command?.arguments)
       .#setFlags(command?.flags)
-      .#setUsage(command?.usage)
       .#setCommands(command?.commands)
+      .#setUsage(command?.usage)
       .#setExamples(command?.examples)
       .#setHelp(command?.help)
       .#setOperation(command?.operation)
@@ -192,6 +192,10 @@ export class Command implements I_Command {
       });
 
       command_usage += ` ${args.join(' ')}`;
+    }
+
+    if (this.commands.length > 0) {
+      command_usage += ' <command>';
     }
 
     let resolvedUsage: string;
@@ -346,8 +350,8 @@ export class StrictCommand extends Command {
       .#setDescription(command.description)
       .#setArguments(command.arguments)
       .#setFlags(command.flags)
-      .#setUsage(command.usage)
       .#setCommands(command.commands)
+      .#setUsage(command.usage)
       .#setExamples(command.examples)
       .#setHelp(command.help)
       .#setOperation(command.operation)
@@ -497,6 +501,10 @@ export class StrictCommand extends Command {
       });
 
       command_usage += ` ${args.join(' ')}`;
+    }
+
+    if (this.commands.length > 0) {
+      command_usage += ' <command>';
     }
 
     let resolvedUsage: string;

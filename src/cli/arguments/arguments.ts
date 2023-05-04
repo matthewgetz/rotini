@@ -1,4 +1,4 @@
-import { Argument, } from './argument';
+import { Argument, StrictArgument, } from './argument';
 import { I_Argument, } from '../interfaces';
 import { ConfigurationError, } from '../errors';
 import { ArgumentsProperties, } from '../types';
@@ -62,13 +62,13 @@ export class Arguments {
 export class StrictArguments extends Arguments {
   constructor (properties: ArgumentsProperties) {
     super(properties);
-    this.#ensureArgumentsIsArray(properties);
+    this.#setArguments(properties);
     this.#ensureNoDuplicateArgumentNames(properties);
     this.#ensureOnlyOneVariadicArgument(properties);
     this.#ensureVariadicArgumentIsLastIfExists(properties);
   }
 
-  #ensureArgumentsIsArray = (properties: ArgumentsProperties): void | never => {
+  #setArguments = (properties: ArgumentsProperties): void | never => {
     const { type, name, } = properties.entity;
     const args = properties.arguments;
     const lowercaseName = name.toLowerCase();
@@ -76,6 +76,8 @@ export class StrictArguments extends Arguments {
     if (Utils.isNotArray(args)) {
       throw new ConfigurationError(`${type} property "arguments" must of type "array" for ${lowercaseName} "${name}".`);
     }
+
+    this.arguments = args.map((arg: I_Argument) => new StrictArgument(arg));
   };
 
   #ensureNoDuplicateArgumentNames = (properties: ArgumentsProperties): void | never => {
