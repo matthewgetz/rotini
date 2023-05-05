@@ -318,7 +318,8 @@ describe('StrictArgument', () => {
 
   describe('validator', () => {
     const error = new ConfigurationError('Argument property "validator" must be of type "function" for argument "id".');
-    const is_valid_error = new ParseError('Argument value "1" is invalid for argument "id".');
+    const is_valid_value_error = new ParseError('Argument value "1" is invalid for argument "id".');
+    const is_valid_values_error = new ParseError('Argument value "["apple","orange","grape"]" is invalid for argument "id".');
     const custom_error = new Error('this is a custom error');
 
     it('does not throw error when property "validator" is not defined', () => {
@@ -338,14 +339,14 @@ describe('StrictArgument', () => {
       expect(() => {
         const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (value: number): boolean => value > 3, });
         arg.validator(1);
-      }).toThrowError(is_valid_error);
+      }).toThrowError(is_valid_value_error);
     });
 
     it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (value: number): boolean => value > 3, });
-        arg.validator(1);
-      }).toThrowError(is_valid_error);
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string[]', validator: (values: string[]): boolean => values.length > 4, });
+        arg.validator([ 'apple', 'orange', 'grape', ]);
+      }).toThrowError(is_valid_values_error);
     });
 
     it('throws custom error when "validator" function throws error', () => {
@@ -372,7 +373,8 @@ describe('StrictArgument', () => {
 
   describe('parse', () => {
     const error = new ConfigurationError('Argument property "parser" must be of type "function" for argument "id".');
-    const parse_error = new ConfigurationError('Argument value "1" could not be parsed for argument "id".');
+    const parse_value_error = new ConfigurationError('Argument value "1" could not be parsed for argument "id".');
+    const parse_values_error = new ConfigurationError('Argument value "["apple","grape"]" could not be parsed for argument "id".');
 
     it('does not throw error when property "parser" is not defined', () => {
       expect(() => {
@@ -391,7 +393,14 @@ describe('StrictArgument', () => {
       expect(() => {
         const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parser: (): never => { throw new Error('could not parse value'); }, });
         arg.parser({ value: '1', coerced_value: 1, });
-      }).toThrowError(parse_error);
+      }).toThrowError(parse_value_error);
+    });
+
+    it('throws default error when argument property "parser" function throws an error', () => {
+      expect(() => {
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parser: (): never => { throw new Error('could not parse value'); }, });
+        arg.parser({ value: [ 'apple', 'grape', ], coerced_value: 1, });
+      }).toThrowError(parse_values_error);
     });
 
     it('does not throw error when parse function is able to parse the value', () => {
