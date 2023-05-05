@@ -3,12 +3,12 @@ import {
   BeforeHandler,
   FailureHandler,
   Handler,
-  SuccessHandler,
+  Parser,
   PositionalFlagOperation,
-  IsValid,
-  Parse,
   Style,
+  SuccessHandler,
   Type,
+  Validator,
   Value,
   Values,
   Variant,
@@ -42,8 +42,8 @@ export interface I_Argument {
   variant?: Variant
   type?: Type
   values?: Values
-  isValid?: IsValid
-  parse?: Parse
+  validator?: Validator
+  parser?: Parser
 }
 
 export interface I_Command {
@@ -51,13 +51,17 @@ export interface I_Command {
   description: string
   aliases?: string[]
   deprecated?: boolean
+  usage?: string
   arguments?: I_Argument[]
   flags?: I_LocalFlag[]
   commands?: I_Command[]
   examples?: I_Example[]
   operation?: I_Operation
-  usage?: string
   help?: string
+}
+
+export interface I_CommandMetadata {
+  is_generated_usage: boolean
 }
 
 export interface I_GenericFlag {
@@ -69,8 +73,8 @@ export interface I_GenericFlag {
   long_key?: string
   values?: Values
   default?: Value
-  isValid?: IsValid
-  parse?: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown
+  validator?: Validator
+  parser?: Parser
 }
 
 export interface I_Flag extends I_GenericFlag {
@@ -103,8 +107,8 @@ export interface I_Example {
 
 export interface I_Operation {
   timeout?: number
-  handler?: Handler
   beforeHandler?: BeforeHandler
+  handler?: Handler
   afterHandler?: AfterHandler
   onHandlerSuccess?: SuccessHandler
   onHandlerFailure?: FailureHandler

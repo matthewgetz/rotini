@@ -5,16 +5,24 @@ import { ArgumentsProperties, } from '../types';
 import Utils from '../../utils';
 
 export class Arguments {
-  arguments: Argument[];
-  help: string;
+  arguments!: Argument[];
+  help!: string;
 
   constructor (properties: ArgumentsProperties) {
-    const args = Utils.isArray(properties.arguments) ? properties.arguments : [];
-    this.arguments = args.map((arg: I_Argument) => new Argument(arg));
-    this.help = this.#makeArgumentsSection();
+    this
+      .#setArguments(properties)
+      .#setHelp();
   }
 
-  #makeArgumentsSection = (): string => {
+  #setArguments = (properties: ArgumentsProperties): Arguments => {
+    const args = Utils.isArray(properties.arguments) ? properties.arguments : [];
+
+    this.arguments = args.map((arg: I_Argument) => new Argument(arg));
+
+    return this;
+  };
+
+  #setHelp = (): Arguments => {
     const longestName = Math.max(...(this.arguments.map(arg => {
       let values;
 
@@ -50,37 +58,42 @@ export class Arguments {
       return `  ${arg.name}${values}${spaces}      ${arg.description}`;
     });
 
-    return formattedNames.length > 0 ? [
+    this.help = formattedNames.length > 0 ? [
       '\n\n',
       'ARGUMENTS:',
       '\n\n',
       formattedNames.join('\n'),
     ].join('') : '';
+
+    return this;
   };
 }
 
 export class StrictArguments extends Arguments {
   constructor (properties: ArgumentsProperties) {
     super(properties);
-    this.#setArguments(properties);
-    this.#ensureNoDuplicateArgumentNames(properties);
-    this.#ensureOnlyOneVariadicArgument(properties);
-    this.#ensureVariadicArgumentIsLastIfExists(properties);
+    this
+      .#setArguments(properties)
+      .#ensureNoDuplicateArgumentNames(properties)
+      .#ensureOnlyOneVariadicArgument(properties)
+      .#ensureVariadicArgumentIsLastIfExists(properties);
   }
 
-  #setArguments = (properties: ArgumentsProperties): void | never => {
+  #setArguments = (properties: ArgumentsProperties): StrictArguments | never => {
     const { type, name, } = properties.entity;
     const args = properties.arguments;
-    const lowercaseName = name.toLowerCase();
+    const lowercase_name = name.toLowerCase();
 
     if (Utils.isNotArray(args)) {
-      throw new ConfigurationError(`${type} property "arguments" must of type "array" for ${lowercaseName} "${name}".`);
+      throw new ConfigurationError(`${type} property "arguments" must of type "array" for ${lowercase_name} "${name}".`);
     }
 
     this.arguments = args.map((arg: I_Argument) => new StrictArgument(arg));
+
+    return this;
   };
 
-  #ensureNoDuplicateArgumentNames = (properties: ArgumentsProperties): void | never => {
+  #ensureNoDuplicateArgumentNames = (properties: ArgumentsProperties): StrictArguments | never => {
     const { type, name, } = properties.entity;
     const lowercaseType = type.toLowerCase();
 
@@ -91,9 +104,11 @@ export class StrictArguments extends Arguments {
     if (hasDuplicates) {
       throw new ConfigurationError(`Duplicate argument names found: ${JSON.stringify(duplicates)} for ${lowercaseType} "${name}".`);
     }
+
+    return this;
   };
 
-  #ensureOnlyOneVariadicArgument = (properties: ArgumentsProperties): void | never => {
+  #ensureOnlyOneVariadicArgument = (properties: ArgumentsProperties): StrictArguments | never => {
     const { type, name, } = properties.entity;
     const lowercaseType = type.toLowerCase();
 
@@ -102,9 +117,11 @@ export class StrictArguments extends Arguments {
     if (variadicArguments.length > 1) {
       throw new ConfigurationError(`Multiple variadic ${lowercaseType} arguments found for ${lowercaseType} "${name}"; only one "variadic" type argument is allowed per ${lowercaseType}.`);
     }
+
+    return this;
   };
 
-  #ensureVariadicArgumentIsLastIfExists = (properties: ArgumentsProperties): void | never => {
+  #ensureVariadicArgumentIsLastIfExists = (properties: ArgumentsProperties): StrictArguments | never => {
     const { type, name, } = properties.entity;
     const lowercaseType = type.toLowerCase();
 
@@ -117,5 +134,7 @@ export class StrictArguments extends Arguments {
         variadicArgSeen = true;
       }
     });
+
+    return this;
   };
 }

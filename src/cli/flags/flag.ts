@@ -1,6 +1,7 @@
 import { I_Flag, I_GenericFlag, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from '../interfaces';
-import { Type, Value, Values, Variant, IsValid, Style, PositionalFlagOperation, } from '../types';
-import { ConfigurationError, ParseError, } from '../errors';
+import { DefaultValidator, DefaultParser, Type, Validator, Value, Values, Variant, Style, Parser, PositionalFlagOperation, } from '../types';
+import { ConfigurationError, } from '../errors';
+import { getParserFunction, getValidatorFunction, } from '../shared';
 import Utils from '../../utils';
 
 export class Flag implements I_Flag {
@@ -14,8 +15,8 @@ export class Flag implements I_Flag {
   values!: Values;
   default?: Value;
   required!: boolean;
-  isValid!: IsValid;
-  parse!: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown;
+  validator!: Validator;
+  parser!: Parser;
 
   constructor (flag: I_Flag) {
     this
@@ -28,8 +29,8 @@ export class Flag implements I_Flag {
       .#setValues(flag.values)
       .#setDefault(flag.default)
       .#setRequired(flag.required)
-      .#setIsValid(flag.isValid)
-      .#setParse(flag.parse);
+      .#setValidator(flag.validator)
+      .#setParser(flag.parser);
   }
 
   #setName = (name: string): Flag | never => {
@@ -99,33 +100,14 @@ export class Flag implements I_Flag {
     return this;
   };
 
-  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): Flag | never => {
-    this.isValid = (value: Value): boolean | never => {
-      try {
-        if (isValid(value as never) === false) {
-          const flags = [];
-          if (Utils.isDefined(this.short_key)) flags.push(`-${this.short_key}`);
-          if (Utils.isDefined(this.long_key)) flags.push(`--${this.long_key}`);
-          throw new ParseError(`Flag value "${value}" is invalid for ${this.style} flag "${this.name}" (${flags.join(',')}).`);
-        }
-        return true;
-      } catch (error) {
-        throw new ParseError((error as Error).message);
-      }
-    };
+  #setValidator = (validator: Validator = DefaultValidator): Flag | never => {
+    this.validator = getValidatorFunction({ name: this.name, entity: 'Flag', validator, });
 
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): Flag | never => {
-    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }): unknown => {
-      try {
-        const parsed = parse({ original_value, type_coerced_value, });
-        return parsed;
-      } catch (error) {
-        throw new ParseError(`Flag value could not be parsed for ${this.style} flag "${this.name}".`);
-      }
-    };
+  #setParser = (parser: Parser = DefaultParser): Flag | never => {
+    this.parser = getParserFunction({ name: this.name, entity: 'Flag', parser, });
 
     return this;
   };
@@ -144,8 +126,8 @@ export class StrictFlag extends Flag {
       .#setValues(flag?.values)
       .#setDefault(flag?.default)
       .#setRequired(flag?.required)
-      .#setIsValid(flag?.isValid)
-      .#setParse(flag?.parse);
+      .#setValidator(flag?.validator)
+      .#setParser(flag?.parser);
   }
 
   #setName = (name: string): StrictFlag | never => {
@@ -299,41 +281,18 @@ export class StrictFlag extends Flag {
     return this;
   };
 
-  #setIsValid = (isValid: ((value: string) => boolean | void | never) | ((value: number) => boolean | void | never) | ((value: boolean) => boolean | void | never) = ((): boolean => true)): StrictFlag | never => {
-    if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
-      throw new ConfigurationError(`Flag property "isValid" must be of type "function" for ${this.style} flag "${this.name}".`);
+  #setValidator = (validator: Validator = DefaultValidator): StrictFlag | never => {
+    if (Utils.isDefined(validator) && Utils.isNotFunction(validator)) {
+      throw new ConfigurationError(`Flag property "validator" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
-
-    this.isValid = (value: Value): boolean | never => {
-      try {
-        if (isValid(value as never) === false) {
-          const flags = [];
-          if (Utils.isDefined(this.short_key)) flags.push(`-${this.short_key}`);
-          if (Utils.isDefined(this.long_key)) flags.push(`--${this.long_key}`);
-          throw new ParseError(`Flag value "${value}" is invalid for ${this.style} flag "${this.name}" (${flags.join(',')}).`);
-        }
-        return true;
-      } catch (error) {
-        throw new ParseError((error as Error).message);
-      }
-    };
 
     return this;
   };
 
-  #setParse = (parse: ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }) => unknown = (({ type_coerced_value, }): string | number | boolean | string[] | number[] | boolean[] => type_coerced_value)): StrictFlag | never => {
-    if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
-      throw new ConfigurationError(`Flag property "parse" must be of type "function" for ${this.style} flag "${this.name}".`);
+  #setParser = (parser: Parser = DefaultParser): StrictFlag | never => {
+    if (Utils.isDefined(parser) && Utils.isNotFunction(parser)) {
+      throw new ConfigurationError(`Flag property "parser" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
-
-    this.parse = ({ original_value, type_coerced_value, }: { original_value: boolean | string | string[], type_coerced_value: string | number | boolean | string[] | number[] | boolean[] }): unknown => {
-      try {
-        const parsed = parse({ original_value, type_coerced_value, });
-        return parsed;
-      } catch (error) {
-        throw new ParseError(`Flag value could not be parsed for ${this.style} flag "${this.name}".`);
-      }
-    };
 
     return this;
   };
@@ -405,7 +364,10 @@ export class HelpFlag extends Flag {
       variant: 'boolean',
       style: 'local',
       values: [],
-      isValid: (): boolean => true,
+      required: false,
+      default: undefined,
+      validator: DefaultValidator,
+      parser: DefaultParser,
     });
   }
 }
@@ -418,7 +380,10 @@ export class StrictHelpFlag extends StrictFlag {
       variant: 'boolean',
       style: 'local',
       values: [],
-      isValid: (): boolean => true,
+      required: false,
+      default: undefined,
+      validator: DefaultValidator,
+      parser: DefaultParser,
     });
   }
 }
@@ -431,7 +396,10 @@ export class ForceFlag extends Flag {
       variant: 'boolean',
       style: 'local',
       values: [],
-      isValid: (): boolean => true,
+      required: false,
+      default: undefined,
+      validator: DefaultValidator,
+      parser: DefaultParser,
     });
   }
 }
@@ -444,7 +412,10 @@ export class StrictForceFlag extends StrictFlag {
       variant: 'boolean',
       style: 'local',
       values: [],
-      isValid: (): boolean => true,
+      required: false,
+      default: undefined,
+      validator: DefaultValidator,
+      parser: DefaultParser,
     });
   }
 }

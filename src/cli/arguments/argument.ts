@@ -1,31 +1,8 @@
 import { I_Argument, } from '../interfaces';
-import { ConfigurationError, ParseError, } from '../errors';
-import { DefaultIsValid, DefaultParse, IsValid, Parse, ParseProperties, Type, TYPES, Value, Values, Variant, VARIANTS, } from '../types';
+import { ConfigurationError, } from '../errors';
+import { getParserFunction, getValidatorFunction, } from '../shared';
+import { DefaultParser, DefaultValidator, Parser, Type, TYPES, Validator, Values, Variant, VARIANTS, } from '../types';
 import Utils from '../../utils';
-
-const getIsValid = ({ name, isValid = DefaultIsValid, }: { name: string, isValid?: IsValid }) => {
-  return (value: Value): boolean | never => {
-    try {
-      if (isValid(value as never) === false) {
-        throw new ParseError(`Argument value "${value}" is invalid for argument "${name}".`);
-      }
-      return true;
-    } catch (error) {
-      throw new ParseError((error as Error).message);
-    }
-  };
-};
-
-const getParseFunction = ({ name, parse = DefaultParse, }: {name: string, parse?: (props: ParseProperties) => unknown}) => {
-  return ({ value, coerced_value, }: ParseProperties): unknown => {
-    try {
-      const parsed = parse({ value, coerced_value, });
-      return parsed;
-    } catch (error) {
-      throw new ParseError(`Argument value could not be parsed for argument "${name}".`);
-    }
-  };
-};
 
 export class Argument implements I_Argument {
   name!: string;
@@ -33,8 +10,8 @@ export class Argument implements I_Argument {
   variant!: Variant;
   type!: Type;
   values!: Values;
-  isValid!: IsValid;
-  parse!: Parse;
+  validator!: Validator;
+  parser!: Parser;
 
   constructor (argument: I_Argument) {
     this
@@ -43,8 +20,8 @@ export class Argument implements I_Argument {
       .#setVariant(argument?.variant)
       .#setType(argument?.type)
       .#setValues(argument?.values)
-      .#setIsValid(argument?.isValid)
-      .#setParse(argument?.parse);
+      .#setValidator(argument?.validator)
+      .#setParser(argument?.parser);
   }
 
   #setName = (name: string): Argument | never => {
@@ -77,14 +54,14 @@ export class Argument implements I_Argument {
     return this;
   };
 
-  #setIsValid = (isValid: IsValid = DefaultIsValid): Argument | never => {
-    this.isValid = getIsValid({ name: this.name, isValid, });
+  #setValidator = (validator: Validator = DefaultValidator): Argument | never => {
+    this.validator = getValidatorFunction({ name: this.name, entity: 'Argument', validator, });
 
     return this;
   };
 
-  #setParse = (parse: Parse = DefaultParse): Argument | never => {
-    this.parse = getParseFunction({ name: this.name, parse, });
+  #setParser = (parser: Parser = DefaultParser): Argument | never => {
+    this.parser = getParserFunction({ name: this.name, entity: 'Argument', parser, });
 
     return this;
   };
@@ -99,16 +76,14 @@ export class StrictArgument extends Argument {
       .#setVariant(argument.variant)
       .#setType(argument.type)
       .#setValues(argument.values)
-      .#setIsValid(argument.isValid)
-      .#setParse(argument.parse);
+      .#setValidator(argument.validator)
+      .#setParser(argument.parser);
   }
 
   #setName = (name: string): StrictArgument | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Argument property "name" must be defined, of type "string", and cannot contain spaces.');
     }
-
-    this.name = name;
 
     return this;
   };
@@ -118,8 +93,6 @@ export class StrictArgument extends Argument {
       throw new ConfigurationError(`Argument property "description" must be defined and of type "string" for argument "${this.name}".`);
     }
 
-    this.description = description;
-
     return this;
   };
 
@@ -127,8 +100,6 @@ export class StrictArgument extends Argument {
     if (Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, VARIANTS)) {
       throw new ConfigurationError(`Argument property "variant" must be defined, of type "string", and set as "value" or "variadic" for argument "${this.name}".`);
     }
-
-    this.variant = variant;
 
     return this;
   };
@@ -145,8 +116,6 @@ export class StrictArgument extends Argument {
     if (this.variant === 'variadic' && !type.includes('[]')) {
       throw new ConfigurationError('Argument property "type" must be set as "string[]", "number[]", or "boolean[]" when property "variant" is set as "variadic".');
     }
-
-    this.type = type;
 
     return this;
   };
@@ -167,27 +136,21 @@ export class StrictArgument extends Argument {
       throw new ConfigurationError(`Argument property "values" must be of type "array" and can only contain indexes of type "${type}" for argument "${this.name}".`);
     }
 
-    this.values = values;
+    return this;
+  };
+
+  #setValidator = (validator: Validator = DefaultValidator): StrictArgument | never => {
+    if (Utils.isDefined(validator) && Utils.isNotFunction(validator)) {
+      throw new ConfigurationError(`Argument property "validator" must be of type "function" for argument "${this.name}".`);
+    }
 
     return this;
   };
 
-  #setIsValid = (isValid: IsValid = DefaultIsValid): StrictArgument | never => {
-    if (Utils.isDefined(isValid) && Utils.isNotFunction(isValid)) {
-      throw new ConfigurationError(`Argument property "isValid" must be of type "function" for argument "${this.name}".`);
+  #setParser = (parser: Parser = DefaultParser): StrictArgument | never => {
+    if (Utils.isDefined(parser) && Utils.isNotFunction(parser)) {
+      throw new ConfigurationError(`Argument property "parser" must be of type "function" for argument "${this.name}".`);
     }
-
-    this.isValid = getIsValid({ name: this.name, isValid, });
-
-    return this;
-  };
-
-  #setParse = (parse: Parse = DefaultParse): StrictArgument | never => {
-    if (Utils.isDefined(parse) && Utils.isNotFunction(parse)) {
-      throw new ConfigurationError(`Argument property "parse" must be of type "function" for argument "${this.name}".`);
-    }
-
-    this.parse = getParseFunction({ name: this.name, parse, });
 
     return this;
   };

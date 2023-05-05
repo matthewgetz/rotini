@@ -18,7 +18,7 @@ export class Flags {
 
   constructor (properties: Properties) {
     this.#setFlags(properties);
-    this.#setFlagsHelp(properties);
+    this.#setHelp(properties);
   }
 
   #setFlags = (properties: Properties): Flags | never => {
@@ -65,7 +65,7 @@ export class Flags {
     return this;
   };
 
-  #setFlagsHelp = (properties: Properties): void => {
+  #setHelp = (properties: Properties): void => {
     const HEADINGS = {
       local_flags: 'FLAGS',
       global_flags: 'GLOBAL FLAGS',
@@ -130,11 +130,12 @@ export class Flags {
 export class StrictFlags extends Flags {
   constructor (properties: Properties) {
     super(properties);
-    this.#setFlags(properties);
-    this.#ensureNoDuplicateFlagProperties(properties);
+    this
+      .#setFlags(properties)
+      .#ensureNoDuplicateFlagProperties(properties);
   }
 
-  #setFlags = (properties: Properties): Flags | never => {
+  #setFlags = (properties: Properties): StrictFlags | never => {
     const { type, key, name, } = properties.entity;
     const flags = properties.flags || [];
 
@@ -182,7 +183,7 @@ export class StrictFlags extends Flags {
     return this;
   };
 
-  #ensureNoDuplicateFlagProperties = (properties: Properties): void | never => {
+  #ensureNoDuplicateFlagProperties = (properties: Properties): StrictFlags | never => {
     const { type, key, name, } = properties.entity;
     const flag_type = key.split('_')[0];
 
@@ -213,5 +214,7 @@ export class StrictFlags extends Flags {
     if (hasLongNameDuplicates) {
       throw new ConfigurationError(`Duplicate long_keys found: ${JSON.stringify(longNameDuplicates)} for ${type.toLowerCase()} "${name}" ${flag_type} flag.`);
     }
+
+    return this;
   };
 }

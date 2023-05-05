@@ -1,6 +1,6 @@
 import { I_Argument, I_Example, } from './interfaces';
 
-export type IsValid = (value: Value) => boolean | void | never;
+export type Validator = (value: Value) => boolean | void | never;
 
 export type Values = string[] | number[] | boolean[];
 
@@ -12,7 +12,7 @@ export type Value = string | number | boolean | string[] | number[] | boolean[];
 export const VARIANTS = [ 'boolean', 'value', 'variadic', ] as const;
 export type Variant = typeof VARIANTS[number];
 
-export const STYLES = [ 'positional', 'global', 'local', ] as const;
+export const STYLES = [ 'global', 'local', 'positional', ] as const;
 export type Style = typeof STYLES[number];
 
 export type ParseProperties = {
@@ -20,11 +20,11 @@ export type ParseProperties = {
   coerced_value: Value
 };
 
-export type Parse = (properties: ParseProperties) => unknown;
+export type Parser = (properties: ParseProperties) => unknown;
 
-export const DefaultParse = (properties: ParseProperties): Value => properties.coerced_value;
+export const DefaultParser = (properties: ParseProperties): Value => properties.coerced_value;
 
-export const DefaultIsValid = (): boolean => true;
+export const DefaultValidator = (): boolean => true;
 
 export type ArgumentsProperties = {
   entity: {

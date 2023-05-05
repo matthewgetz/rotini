@@ -30,11 +30,11 @@ export class StrictExample extends Example {
   constructor (properties: ExampleProperties) {
     super(properties);
     this
-      .#checkDescription(properties)
-      .#checkUsage(properties);
+      .#setDescription(properties)
+      .#setUsage(properties);
   }
 
-  #checkDescription = (properties: ExampleProperties): StrictExample | never => {
+  #setDescription = (properties: ExampleProperties): StrictExample | never => {
     if (Utils.isNotDefined(properties.example?.description) || Utils.isNotString(properties.example?.description)) {
       throw new ConfigurationError(`Example property "description" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
     }
@@ -42,7 +42,7 @@ export class StrictExample extends Example {
     return this;
   };
 
-  #checkUsage = (properties: ExampleProperties): StrictExample | never => {
+  #setUsage = (properties: ExampleProperties): StrictExample | never => {
     if (Utils.isNotDefined(properties.example?.usage) || Utils.isNotString(properties.example?.usage)) {
       throw new ConfigurationError(`Example property "usage" must be defined and of type "string" for ${properties.entity.type.toLowerCase()} "${properties.entity.name}".`);
     }

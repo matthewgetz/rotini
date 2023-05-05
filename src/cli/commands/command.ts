@@ -5,7 +5,7 @@ import { ConfigurationError, ParseError, } from '../errors';
 import { Flag, Flags, StrictFlags, } from '../flags';
 import { Operation, } from '../operation';
 import { Parameters, } from '../program';
-import { I_Argument, I_Command, I_Example, I_Operation, I_LocalFlag, } from '../interfaces';
+import { I_Argument, I_Command, I_CommandMetadata, I_Example, I_Operation, I_LocalFlag, } from '../interfaces';
 import { Parameter, Variant, Value, Values, } from '../types';
 import Utils from '../../utils';
 
@@ -20,10 +20,6 @@ type T_ParseCommandArgumentsReturn = {
   parsed_parameters: (string | number | boolean)[]
   unparsed_parameters: Parameter[]
   results: { [key: string]: Value }
-}
-
-interface I_CommandMetadata {
-  is_generated_usage: boolean
 }
 
 export class Command implements I_Command {
@@ -153,30 +149,6 @@ export class Command implements I_Command {
     return this;
   };
 
-  #setExamples = (examples: I_Example[] = []): Command | never => {
-    const EXAMPLES = new Examples({
-      entity: {
-        type: 'Program',
-        name: this.name,
-      },
-      examples,
-    });
-
-    this.examples = EXAMPLES.examples;
-    this.examples_help = EXAMPLES.help;
-
-    return this;
-  };
-
-  #setOperation = (operation?: I_Operation): Command | never => {
-    const resolved_operation = operation || {};
-    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
-
-    this.operation = new Operation(this.name, this.help, resolved_operation);
-
-    return this;
-  };
-
   #setUsage = (usage?: string): Command => {
     let command_usage = `${usage} ${this.name}`;
 
@@ -216,6 +188,30 @@ export class Command implements I_Command {
       '\n\n',
       resolvedUsageHelp,
     ].join('');
+
+    return this;
+  };
+
+  #setExamples = (examples: I_Example[] = []): Command | never => {
+    const EXAMPLES = new Examples({
+      entity: {
+        type: 'Program',
+        name: this.name,
+      },
+      examples,
+    });
+
+    this.examples = EXAMPLES.examples;
+    this.examples_help = EXAMPLES.help;
+
+    return this;
+  };
+
+  #setOperation = (operation?: I_Operation): Command | never => {
+    const resolved_operation = operation || {};
+    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
+
+    this.operation = new Operation(this.name, this.help, resolved_operation);
 
     return this;
   };
@@ -282,13 +278,13 @@ export class Command implements I_Command {
       }
 
       try {
-        arg.isValid(typedParameter);
+        arg.validator(typedParameter);
       } catch (e) {
         throw new ParseError((e as Error).message);
       }
 
       try {
-        typedParameter = arg.parse({ value: parameter, coerced_value: typedParameter, }) as string;
+        typedParameter = arg.parser({ value: parameter, coerced_value: typedParameter, }) as string;
       } catch (e) {
         throw new ParseError((e as Error).message);
       }
@@ -351,21 +347,14 @@ export class StrictCommand extends Command {
       .#setArguments(command.arguments)
       .#setFlags(command.flags)
       .#setCommands(command.commands)
-      .#setUsage(command.usage)
       .#setExamples(command.examples)
-      .#setHelp(command.help)
-      .#setOperation(command.operation)
-      .#setIsForceCommand()
-      .#setSubcommandIdentifiers();
+      .#setOperation(command.operation);
   }
 
   #setName = (name: string): StrictCommand | never => {
-    if (Utils.isNotDefined(this.name) || Utils.isNotString(this.name) || Utils.stringContainsSpaces(this.name)) {
+    if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Command property "name" must be defined, of type "string", and cannot contain spaces.');
     }
-
-    this.name = name;
-    this.name_help = this.name;
 
     return this;
   };
@@ -375,38 +364,21 @@ export class StrictCommand extends Command {
       throw new ConfigurationError(`Command property "aliases" must be of type "array", can only contain indexes of type "string", and cannot contain indexes with spaces for command "${this.name}".`);
     }
 
-    this.aliases = aliases;
-    this.aliases_help = (this.aliases.length > 0) ? [
-      '\n\n',
-      'ALIASES:',
-      '\n\n',
-      `  ${this.aliases?.join(',')}`,
-    ].join('') : '';
-
     return this;
   };
 
   #setDeprecated = (deprecated = false): StrictCommand | never => {
-    if (Utils.isNotBoolean(this.deprecated)) {
+    if (Utils.isNotBoolean(deprecated)) {
       throw new ConfigurationError(`Command property "deprecated" must be of type "boolean" for command "${this.name}".`);
     }
-
-    this.deprecated = deprecated;
 
     return this;
   };
 
   #setDescription = (description: string): StrictCommand | never => {
-    if (Utils.isNotDefined(this.description) || Utils.isNotString(this.description)) {
+    if (Utils.isNotDefined(description) || Utils.isNotString(description)) {
       throw new ConfigurationError(`Command property "description" must be defined and of type "string" for command "${this.name}".`);
     }
-
-    this.description = description;
-    this.description_help = [
-      '\n\n',
-      `  ${this.description}`,
-      this.deprecated === true ? `\n\n  This command has been deprecated and will be removed from a future release.${this.aliases.length > 0 ? `\n  Command aliases ${JSON.stringify(this.aliases)} can be used as a guard against future breaking changes.` : ''}` : '',
-    ].join('');
 
     return this;
   };
@@ -477,91 +449,6 @@ export class StrictCommand extends Command {
     if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
     }
-
-    const resolved_operation = operation || {};
-    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
-
-    this.operation = new Operation(this.name, this.help, resolved_operation);
-
-    return this;
-  };
-
-  #setUsage = (usage?: string): StrictCommand => {
-    let command_usage = `${usage} ${this.name}`;
-
-    if (this.arguments.length > 0) {
-      const args = this.arguments.map(arg => {
-        if (arg.variant === 'variadic') {
-          return `<${arg.name}...>`;
-        } else if (arg.variant === 'value') {
-          return `<${arg.name}>`;
-        } else {
-          return '<boolean>';
-        }
-      });
-
-      command_usage += ` ${args.join(' ')}`;
-    }
-
-    if (this.commands.length > 0) {
-      command_usage += ' <command>';
-    }
-
-    let resolvedUsage: string;
-    let resolvedUsageHelp: string;
-
-    if (this.is_generated_usage) {
-      resolvedUsage = command_usage;
-      resolvedUsageHelp = `  ${command_usage}${this.flags.length > 0 ? ' [flags]' : ''}`;
-    } else {
-      resolvedUsage = usage!;
-      resolvedUsageHelp = `  ${usage}`;
-    }
-
-    this.usage = resolvedUsage;
-    this.usage_help = [
-      '\n\n',
-      'USAGE:',
-      '\n\n',
-      resolvedUsageHelp,
-    ].join('');
-
-    return this;
-  };
-
-  #setHelp = (help?: string): StrictCommand => {
-    if (Utils.isDefined(this.help) && Utils.isNotString(this.help)) {
-      throw new ConfigurationError(`Command property "help" must be of type "string" for command "${this.name}".`);
-    }
-
-    this.help = help || [
-      this.name_help,
-      this.description_help,
-      this.usage_help,
-      this.examples_help,
-      this.aliases_help,
-      this.arguments_help,
-      this.commands_help,
-      this.flags_help,
-      this.commands.length > 0 ? `\n\nUse "${this.usage} <command> --help" for more information about a given command.` : '',
-    ].join('');
-
-    return this;
-  };
-
-  #setIsForceCommand = (): StrictCommand => {
-    const is_force_command = this.flags.some(flag => flag.name === 'force');
-
-    this.is_force_command = is_force_command;
-
-    return this;
-  };
-
-  #setSubcommandIdentifiers = (): StrictCommand => {
-    const potential_commands = this.commands.map(command => command.name);
-    const potential_aliases = this.commands.map(command => command.aliases).flat();
-
-    this.subcommand_identifiers = [ ...potential_commands, ...potential_aliases, ];
 
     return this;
   };

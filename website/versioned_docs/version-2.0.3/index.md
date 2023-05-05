@@ -213,8 +213,8 @@ Argument property "type" must be defined, of type "string", and set as "string",
 ##### argument.values
 Argument property "values" must be of type "array" and can only contain indexes of type "argument.type".
 
-##### argument.isValid
-Argument property "isValid" must be of type "function". The argument "isValid" function is provided the parsed value found for the argument so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "isValid" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
+##### argument.validator
+Argument property "validator" must be of type "function". The argument "validator" function is provided the parsed value found for the argument so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "validator" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
 
 ```js
 const arg: I_Argument = {
@@ -223,7 +223,7 @@ const arg: I_Argument = {
   variant: 'value',
   type: 'string',
   values: [ 'project', 'group', 'user', ],
-  isValid: (value) => {
+  validator: (value) => {
     if (value === 'user') {
       throw new Error('Fetching users is temporarily disabled.')
     }

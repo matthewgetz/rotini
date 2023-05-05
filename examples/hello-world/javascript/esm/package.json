@@ -2,7 +2,7 @@
   "name": "hello-world",
   "type": "module",
   "bin": {
-    "rfe": "./index.js"
+    "hello-world": "./index.js"
   },
   "scripts": {
     "setup": "npm install && chmod +x index.js && npm link --force"

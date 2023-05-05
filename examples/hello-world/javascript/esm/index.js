@@ -57,7 +57,6 @@ const configuration = {
 };
 
 (async () => {
-  const program = rotini({ definition, configuration });
-  const result = await program.run().catch(program.error);
-  result?.handler_result && console.info(result.handler_result);
+  const { results } = await rotini({ definition, configuration }).run();
+  results?.handler_result && console.info(results.handler_result);
 })();

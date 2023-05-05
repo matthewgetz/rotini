@@ -3,7 +3,7 @@ import { OperationResult, Parameter, } from '../types';
 import { Configuration, getConfiguration, } from './configuration';
 import { Definition, getDefinition, } from './definition';
 import { Flag, PositionalFlag, } from '../flags';
-import { OperationTimeoutError, ParseError, OperationError, } from '../errors';
+import { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from '../errors';
 import { Parameters, getParameters, } from './parameters';
 import { Timing, } from '../timing';
 import Utils from '../../utils';
@@ -125,7 +125,7 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
   const RESULTS: { [key: string]: FlagResult } = {};
   const FLAG_TYPE = isGlobal ? 'Global Flag' : 'Flag';
 
-  flags.forEach(({ long_key, name, short_key, type, variant, isValid, parse, default: defaultValue, required, values, }) => {
+  flags.forEach(({ long_key, name, short_key, type, variant, validator, parser, default: defaultValue, required, values, }) => {
     UNMATCHED_PARSED_FLAGS.forEach(({ id, key, value, prefix, }) => {
       if (((short_key === key && prefix === '-') || (long_key === key && prefix === '--')) && (!next_command_id || (next_command_id && id < next_command_id))) {
         if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
@@ -138,7 +138,7 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
         }
 
         try {
-          isValid(value as never);
+          validator(value as never);
         } catch (e) {
           throw new ParseError((e as Error).message, help);
         }
@@ -146,7 +146,7 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
         let parsed_value;
 
         try {
-          parsed_value = parse({ original_value: value.toString(), type_coerced_value: value, }) as string;
+          parsed_value = parser({ value: value.toString(), coerced_value: value, }) as string;
         } catch (e) {
           throw new ParseError((e as Error).message, help);
         }
@@ -211,7 +211,7 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
 
   if (parameters[0] && parameters[0].value.startsWith('-')) {
     if (shortFlagMatch || longFlagMatch) {
-      const { name, type, variant, values, default: default_value, isValid, parse, operation, } = (shortFlagMatch || longFlagMatch)!;
+      const { name, type, variant, values, default: default_value, validator, parser, operation, } = (shortFlagMatch || longFlagMatch)!;
       const remaining_parameters = parameters.slice(1).map(p => p.value);
 
       if (program_configuration.strict_flags && variant === 'value' && remaining_parameters.length > 1) {
@@ -242,8 +242,8 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, resolvedHelp);
       }
 
-      isValid(value as never);
-      value = parse({ original_value: (value as string), type_coerced_value: type_coerced_value as string, }) as string;
+      validator(value as never);
+      value = parser({ value: (value as string), coerced_value: type_coerced_value as string, }) as string;
       await operation(value as never);
       process.exit(0);
     }
@@ -392,41 +392,37 @@ const parse = async (program: Definition, program_configuration: Configuration, 
   return operation;
 };
 
-export const rotini = (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): { run: () => Promise<Results> | never } => {
-  const build_time = new Timing();
-  const parse_time = new Timing();
+export const rotini = async (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): Promise<Results> => {
+  try {
+    const build_time = new Timing();
+    const parse_time = new Timing();
 
-  build_time.start();
-  const configuration = getConfiguration(program.configuration);
-  const definition = getDefinition(program.definition, configuration);
-  const parameters = getParameters(program.parameters);
-  build_time.end();
+    build_time.start();
+    const configuration = getConfiguration(program.configuration);
+    const definition = getDefinition(program.definition, configuration);
+    const parameters = getParameters(program.parameters);
+    build_time.end();
 
-  const run = async (): Promise<Results> | never => {
-    try {
-      parse_time.start();
-      const operation = await parse(definition, configuration, parameters);
-      parse_time.end();
-      const results = await operation() as OperationResult;
-      return {
-        results,
-        metadata: {
-          build: build_time.elapsed(),
-          parse: parse_time.elapsed(),
-        },
-      };
-    } catch (e) {
-      const error = e as Error;
-      if (error instanceof ParseError) {
-        console.error(`Error: ${error.message}${error.help}`);
-      } else if (error instanceof OperationError || error instanceof OperationTimeoutError) {
-        console.error(`${error.name}: ${error.message}`);
-      } else {
-        throw error;
-      }
-      process.exit(1);
+    parse_time.start();
+    const operation = await parse(definition, configuration, parameters);
+    parse_time.end();
+    const results = await operation() as OperationResult;
+    return {
+      results,
+      metadata: {
+        build: build_time.elapsed(),
+        parse: parse_time.elapsed(),
+      },
+    };
+  } catch (e) {
+    const error = e as Error;
+    if (error instanceof ParseError) {
+      console.error(`Error: ${error.message}${error.help}`);
+    } else if (error instanceof ConfigurationError || error instanceof OperationError || error instanceof OperationTimeoutError) {
+      console.error(`${error.name}: ${error.message}`);
+    } else {
+      throw error;
     }
-  };
-
-  return { run, };
+    process.exit(1);
+  }
 };

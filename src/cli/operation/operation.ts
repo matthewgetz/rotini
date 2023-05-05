@@ -6,8 +6,8 @@ import Utils from '../../utils';
 const FIVE_MINS_IN_MS = 300000;
 
 export class Operation implements I_Operation {
-  #command_name: string;
-  #command_help: string;
+  command_name: string;
+  command_help: string;
 
   timeout!: number;
   handler!: Handler;
@@ -19,8 +19,8 @@ export class Operation implements I_Operation {
   operation!: OperationHandler;
 
   constructor (command_name: string, command_help: string, operation: I_Operation = {}) {
-    this.#command_name = command_name;
-    this.#command_help = command_help;
+    this.command_name = command_name;
+    this.command_help = command_help;
 
     this
       .#setTimeout(operation.timeout)
@@ -45,7 +45,7 @@ export class Operation implements I_Operation {
 
   #setOnHandlerTimeout = (onHandlerTimeout?: Handler): Operation | never => {
     if (Utils.isDefined(onHandlerTimeout) && Utils.isNotFunction(onHandlerTimeout)) {
-      throw new ConfigurationError(`Operation property "onHandlerTimeout" must be of type "function" for command "${this.#command_name}".`);
+      throw new ConfigurationError(`Operation property "onHandlerTimeout" must be of type "function" for command "${this.command_name}".`);
     }
 
     this.onHandlerTimeout = onHandlerTimeout;
@@ -55,17 +55,17 @@ export class Operation implements I_Operation {
 
   #setHandler = (handler?: Handler): Operation | never => {
     if (Utils.isDefined(handler) && Utils.isNotFunction(handler)) {
-      throw new ConfigurationError(`Operation property "handler" must be of type "function" for command "${this.#command_name}".`);
+      throw new ConfigurationError(`Operation property "handler" must be of type "function" for command "${this.command_name}".`);
     }
 
-    this.handler = handler || ((): void => console.info(this.#command_help));
+    this.handler = handler || ((): void => console.info(this.command_help));
 
     return this;
   };
 
   #setBeforeHandler = (beforeHandler?: BeforeHandler): Operation | never => {
     if (Utils.isDefined(beforeHandler) && (Utils.isNotFunction(beforeHandler) || Utils.isNotDefined(this.handler))) {
-      throw new ConfigurationError(`Operation property "beforeHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
+      throw new ConfigurationError(`Operation property "beforeHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
     }
 
     this.beforeHandler = beforeHandler;
@@ -75,7 +75,7 @@ export class Operation implements I_Operation {
 
   #setAfterHandler = (afterHandler?: AfterHandler): Operation | never => {
     if (Utils.isDefined(afterHandler) && (Utils.isNotFunction(afterHandler) || Utils.isNotDefined(this.handler))) {
-      throw new ConfigurationError(`Operation property "afterHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
+      throw new ConfigurationError(`Operation property "afterHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
     }
 
     this.afterHandler = afterHandler;
@@ -85,7 +85,7 @@ export class Operation implements I_Operation {
 
   #setOnHandlerSuccess = (onHandlerSuccess?: SuccessHandler): Operation | never => {
     if (Utils.isDefined(onHandlerSuccess) && (Utils.isNotFunction(onHandlerSuccess) || Utils.isNotDefined(this.handler))) {
-      throw new ConfigurationError(`Operation property "onHandlerSuccess" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
+      throw new ConfigurationError(`Operation property "onHandlerSuccess" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
     }
 
     this.onHandlerSuccess = onHandlerSuccess;
@@ -95,7 +95,7 @@ export class Operation implements I_Operation {
 
   #setOnHandlerFailure = (onHandlerFailure?: FailureHandler): Operation | never => {
     if (Utils.isDefined(onHandlerFailure) && (Utils.isNotFunction(onHandlerFailure) || Utils.isNotDefined(this.handler))) {
-      throw new ConfigurationError(`Operation property "onHandlerFailure" must be of type "function" and can only be defined if "handler" is defined for command "${this.#command_name}".`);
+      throw new ConfigurationError(`Operation property "onHandlerFailure" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
     }
 
     this.onHandlerFailure = onHandlerFailure;
@@ -107,7 +107,7 @@ export class Operation implements I_Operation {
     let operation: OperationHandler;
 
     if (this.handler) {
-      const timeoutError = new OperationTimeoutError(`Command handler for command "${this.#command_name}" has timed out after ${this.timeout}ms.`);
+      const timeoutError = new OperationTimeoutError(`Command handler for command "${this.command_name}" has timed out after ${this.timeout}ms.`);
 
       operation = async ({ parsed, getConfigurationFile, }): Promise<OperationResult> | never => {
         let before_handler_result: unknown;
@@ -159,6 +159,76 @@ export class Operation implements I_Operation {
     }
 
     this.operation = operation;
+
+    return this;
+  };
+}
+
+export class StrictOperation extends Operation {
+  constructor (command_name: string, command_help: string, operation: I_Operation = {}) {
+    super(command_name, command_help, operation);
+    this
+      .#setTimeout(operation.timeout)
+      .#setOnHandlerTimeout(operation.onHandlerTimeout)
+      .#setHandler(operation.handler)
+      .#setBeforeHandler(operation.beforeHandler)
+      .#setAfterHandler(operation.afterHandler)
+      .#setOnHandlerSuccess(operation.onHandlerSuccess)
+      .#setOnHandlerFailure(operation.onHandlerFailure);
+  }
+
+  #setTimeout = (timeout: number = FIVE_MINS_IN_MS): StrictOperation | never => {
+    if (Utils.isDefined(timeout) && (Utils.isNotNumber(timeout) || timeout < 0)) {
+      throw new ConfigurationError(`Operation property "timeout" must be of type "number" and cannot be less than 0ms.`);
+    }
+
+    return this;
+  };
+
+  #setOnHandlerTimeout = (onHandlerTimeout?: Handler): StrictOperation | never => {
+    if (Utils.isDefined(onHandlerTimeout) && Utils.isNotFunction(onHandlerTimeout)) {
+      throw new ConfigurationError(`Operation property "onHandlerTimeout" must be of type "function" for command "${this.command_name}".`);
+    }
+
+    return this;
+  };
+
+  #setHandler = (handler?: Handler): StrictOperation | never => {
+    if (Utils.isDefined(handler) && Utils.isNotFunction(handler)) {
+      throw new ConfigurationError(`Operation property "handler" must be of type "function" for command "${this.command_name}".`);
+    }
+
+    return this;
+  };
+
+  #setBeforeHandler = (beforeHandler?: BeforeHandler): StrictOperation | never => {
+    if (Utils.isDefined(beforeHandler) && (Utils.isNotFunction(beforeHandler) || Utils.isNotDefined(this.handler))) {
+      throw new ConfigurationError(`Operation property "beforeHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
+    }
+
+    return this;
+  };
+
+  #setAfterHandler = (afterHandler?: AfterHandler): StrictOperation | never => {
+    if (Utils.isDefined(afterHandler) && (Utils.isNotFunction(afterHandler) || Utils.isNotDefined(this.handler))) {
+      throw new ConfigurationError(`Operation property "afterHandler" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
+    }
+
+    return this;
+  };
+
+  #setOnHandlerSuccess = (onHandlerSuccess?: SuccessHandler): StrictOperation | never => {
+    if (Utils.isDefined(onHandlerSuccess) && (Utils.isNotFunction(onHandlerSuccess) || Utils.isNotDefined(this.handler))) {
+      throw new ConfigurationError(`Operation property "onHandlerSuccess" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
+    }
+
+    return this;
+  };
+
+  #setOnHandlerFailure = (onHandlerFailure?: FailureHandler): StrictOperation | never => {
+    if (Utils.isDefined(onHandlerFailure) && (Utils.isNotFunction(onHandlerFailure) || Utils.isNotDefined(this.handler))) {
+      throw new ConfigurationError(`Operation property "onHandlerFailure" must be of type "function" and can only be defined if "handler" is defined for command "${this.command_name}".`);
+    }
 
     return this;
   };

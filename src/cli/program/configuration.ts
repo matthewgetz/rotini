@@ -10,12 +10,43 @@ export class Configuration {
   check_for_npm_update!: boolean;
 
   constructor (configuration: I_Configuration = {}) {
-    this.strict_commands = configuration.strict_commands || true;
-    this.strict_flags = configuration.strict_flags || true;
-    this.strict_mode = configuration.strict_mode || false;
-    this.strict_usage = configuration.strict_usage || false;
-    this.check_for_npm_update = configuration.check_for_npm_update || false;
+    this
+      .#setStrictCommands(configuration.strict_commands)
+      .#setStrictFlags(configuration.strict_flags)
+      .#setStrictUsage(configuration.strict_usage)
+      .#setStrictMode(configuration.strict_mode)
+      .#setCheckForNpmUpdate(configuration.check_for_npm_update);
   }
+
+  #setStrictCommands = (strict_commands = true): Configuration | never => {
+    this.strict_commands = strict_commands;
+
+    return this;
+  };
+
+  #setStrictFlags = (strict_flags = true): Configuration | never => {
+    this.strict_flags = strict_flags;
+
+    return this;
+  };
+
+  #setStrictMode = (strict_mode = false): Configuration | never => {
+    this.strict_mode = strict_mode;
+
+    return this;
+  };
+
+  #setStrictUsage = (strict_usage = false): Configuration | never => {
+    this.strict_usage = strict_usage;
+
+    return this;
+  };
+
+  #setCheckForNpmUpdate = (check_for_npm_update = false): Configuration | never => {
+    this.check_for_npm_update = check_for_npm_update;
+
+    return this;
+  };
 }
 
 export class StrictConfiguration extends Configuration {

@@ -16,7 +16,7 @@ const definition: Definition = {
           description: 'the amount of items to order',
           type: 'number',
           variant: 'value',
-          isValid: (value: number) => {
+          validator: (value: number) => {
             if (value > 10) {
               throw new Error("Mama Rotini's can only place orders of 10 items at a time.");
             }

@@ -1,16 +1,16 @@
-import { DefaultIsValid, DefaultParse, TYPES, VARIANTS, STYLES, } from './types';
+import { DefaultParser, DefaultValidator, TYPES, VARIANTS, STYLES, } from './types';
 
 describe('types', () => {
-  describe('DefaultIsValid', () => {
+  describe('DefaultValidator', () => {
     it('returns true', () => {
-      const result = DefaultIsValid();
+      const result = DefaultValidator();
       expect(result).toBe(true);
     });
   });
 
-  describe('DefaultParse', () => {
+  describe('DefaultParser', () => {
     it('returns coerced value', () => {
-      const result = DefaultParse({ value: '123', coerced_value: 123, });
+      const result = DefaultParser({ value: '123', coerced_value: 123, });
       expect(result).toBe(123);
     });
   });
@@ -33,7 +33,7 @@ describe('types', () => {
 
   describe('STYLES', () => {
     it('contains expected values', () => {
-      const EXPECTED_STYLES = [ 'positional', 'global', 'local', ];
+      const EXPECTED_STYLES = [ 'global', 'local', 'positional', ];
       expect(STYLES.length).toBe(3);
       expect(STYLES).toStrictEqual(EXPECTED_STYLES);
     });

@@ -1,8 +1,8 @@
 {
-  "name": "rfe",
+  "name": "hello-world",
   "type": "commonjs",
   "bin": {
-    "rfe": "./index.js"
+    "hello-world": "./index.js"
   },
   "scripts": {
     "setup": "npm install && tsc && chmod +x index.js && npm link --force"

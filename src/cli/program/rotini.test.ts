@@ -3,7 +3,7 @@ import { I_Configuration, I_Definition, } from '../interfaces';
 
 describe('rotini', () => {
   describe('run', () => {
-    it('throws error when no program definition is passed', () => {
+    it('throws error when no program definition is passed', async () => {
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
       const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
@@ -14,8 +14,8 @@ describe('rotini', () => {
         check_for_npm_update: false,
       };
 
-      // @ts-expect-error no program definition
-      rotini({ configuration, parameters: [ 'hello-world', ], });
+      // @ts-expect-error missing definition
+      await rotini({ configuration, parameters: [ 'hello-world', ], });
 
       expect(error).toHaveBeenCalledTimes(1);
       expect(error).toHaveBeenCalledWith('ConfigurationError: Program property "name" must be defined, of type "string", and cannot contain spaces.');
@@ -46,8 +46,7 @@ describe('rotini', () => {
         check_for_npm_update: false,
       };
 
-      const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
-      const { results, } = await program.run();
+      const { results, } = await rotini({ definition, configuration, parameters: [ 'hello-world', ], });
       expect(results).toEqual({
         after_handler_result: undefined,
         before_handler_result: undefined,
@@ -74,8 +73,7 @@ describe('rotini', () => {
         ],
       };
 
-      const program = rotini({ definition, parameters: [ 'hello-world', ], });
-      const { results, } = await program.run();
+      const { results, } = await rotini({ definition, parameters: [ 'hello-world', ], });
       expect(results).toEqual({
         after_handler_result: undefined,
         before_handler_result: undefined,
@@ -114,8 +112,7 @@ describe('rotini', () => {
       };
 
       try {
-        const program = rotini({ definition, });
-        await program.run();
+        await rotini({ definition, });
       } catch (e) {
         //
       }
@@ -151,8 +148,7 @@ describe('rotini', () => {
         check_for_npm_update: false,
       };
 
-      const program = rotini({ definition, configuration, parameters: [ 'hello', ], });
-      await program.run();
+      await rotini({ definition, configuration, parameters: [ 'hello', ], });
 
       expect(exit).toHaveBeenCalled();
       expect(error).toHaveBeenCalledWith('Error: Unknown parameters found ["hello"].\n\nDid you mean one of these?\n  hello-world');
@@ -183,11 +179,10 @@ describe('rotini', () => {
         check_for_npm_update: false,
       };
 
-      const program = rotini({ definition, configuration, parameters: [ 'hello-world', ], });
       let errorName;
       let errorMessage;
       try {
-        await program.run();
+        await rotini({ definition, configuration, parameters: [ 'hello-world', ], });
       } catch (e) {
         const error = e as Error;
         errorName = error.name;

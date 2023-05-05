@@ -14,8 +14,8 @@ describe('Argument', () => {
     expect(arg.variant).toBe('value');
     expect(arg.type).toBe('string');
     expect(arg.values).toStrictEqual([]);
-    expect(arg.isValid('')).toBe(true);
-    expect(arg.parse({ value: '123', coerced_value: 123, })).toBe(123);
+    expect(arg.validator('')).toBe(true);
+    expect(arg.parser({ value: '123', coerced_value: 123, })).toBe(123);
   });
 
   it('returns argument', () => {
@@ -25,13 +25,13 @@ describe('Argument', () => {
       variant: 'variadic',
       type: 'number[]',
       values: [ 1, 2, 3, 4, 5, ],
-      isValid: (value: number): boolean => {
+      validator: (value: number): boolean => {
         if (value > 3) {
           return true;
         }
         return false;
       },
-      parse: ({ coerced_value, }): string => {
+      parser: ({ coerced_value, }): string => {
         const value = {
           1: 'one',
           2: 'two',
@@ -48,9 +48,9 @@ describe('Argument', () => {
     expect(arg.variant).toBe('variadic');
     expect(arg.type).toBe('number[]');
     expect(arg.values).toStrictEqual([ 1, 2, 3, 4, 5, ]);
-    expect(() => {arg.isValid(2);}).toThrowError('Argument value "2" is invalid for argument "id".');
-    expect(arg.isValid(5)).toBe(true);
-    expect(arg.parse({ value: '4', coerced_value: 4, })).toBe('four');
+    expect(() => {arg.validator(2);}).toThrowError('Argument value "2" is invalid for argument "id".');
+    expect(arg.validator(5)).toBe(true);
+    expect(arg.parser({ value: '4', coerced_value: 4, })).toBe('four');
   });
 });
 
@@ -316,81 +316,81 @@ describe('StrictArgument', () => {
     });
   });
 
-  describe('isValid', () => {
-    const error = new ConfigurationError('Argument property "isValid" must be of type "function" for argument "id".');
+  describe('validator', () => {
+    const error = new ConfigurationError('Argument property "validator" must be of type "function" for argument "id".');
     const is_valid_error = new ParseError('Argument value "1" is invalid for argument "id".');
     const custom_error = new Error('this is a custom error');
 
-    it('does not throw error when property "isValid" is not defined', () => {
+    it('does not throw error when property "validator" is not defined', () => {
       expect(() => {
         new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', });
       }).not.toThrow();
     });
 
-    it('throws error when argument property "isValid" is not function', () => {
+    it('throws error when argument property "validator" is not function', () => {
       expect(() => {
-        // @ts-expect-error argument property "isValid" is not function
-        new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: 'should be function', });
+        // @ts-expect-error argument property "validator" is not function
+        new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: 'should be function', });
       }).toThrowError(error);
     });
 
-    it('throws default error when "isValid" function returns false', () => {
+    it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (value: number): boolean => value > 3, });
-        arg.isValid(1);
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (value: number): boolean => value > 3, });
+        arg.validator(1);
       }).toThrowError(is_valid_error);
     });
 
-    it('throws default error when "isValid" function returns false', () => {
+    it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (value: number): boolean => value > 3, });
-        arg.isValid(1);
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (value: number): boolean => value > 3, });
+        arg.validator(1);
       }).toThrowError(is_valid_error);
     });
 
-    it('throws custom error when "isValid" function throws error', () => {
+    it('throws custom error when "validator" function throws error', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): never => { throw custom_error; }, });
-        arg.isValid('');
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (): never => { throw custom_error; }, });
+        arg.validator('');
       }).toThrowError(custom_error);
     });
 
     it('does not throw error when return is void', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): void => { }, });
-        arg.isValid('');
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (): void => { }, });
+        arg.validator('');
       }).not.toThrow();
     });
 
     it('does not throw error when return is true', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', isValid: (): boolean => true, });
-        arg.isValid('');
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (): boolean => true, });
+        arg.validator('');
       }).not.toThrow();
     });
   });
 
   describe('parse', () => {
-    const error = new ConfigurationError('Argument property "parse" must be of type "function" for argument "id".');
-    const parse_error = new ConfigurationError('Argument value could not be parsed for argument "id".');
+    const error = new ConfigurationError('Argument property "parser" must be of type "function" for argument "id".');
+    const parse_error = new ConfigurationError('Argument value "1" could not be parsed for argument "id".');
 
-    it('does not throw error when property "parse" is not defined', () => {
+    it('does not throw error when property "parser" is not defined', () => {
       expect(() => {
         new StrictArgument({ name: 'id', description: 'id description', });
       }).not.toThrow();
     });
 
-    it('throws error when argument property "parse" is not function', () => {
+    it('throws error when argument property "parser" is not function', () => {
       expect(() => {
-        // @ts-expect-error argument property "parse" is not function
-        new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parse: 'should be function', });
+        // @ts-expect-error argument property "parser" is not function
+        new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parser: 'should be function', });
       }).toThrowError(error);
     });
 
-    it('throws default error when argument property "parse" function throws an error', () => {
+    it('throws default error when argument property "parser" function throws an error', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parse: (): never => { throw new Error('could not parse value'); }, });
-        arg.parse({ value: '1', coerced_value: 1, });
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', parser: (): never => { throw new Error('could not parse value'); }, });
+        arg.parser({ value: '1', coerced_value: 1, });
       }).toThrowError(parse_error);
     });
 
@@ -401,12 +401,12 @@ describe('StrictArgument', () => {
           name: 'id',
           description: 'id description',
           variant: 'value', type: 'string',
-          parse: ({ value: originalValue, }): object => {
+          parser: ({ value: originalValue, }): object => {
             const [ key, value, ] = (originalValue).split('=');
             return { key, value, };
           },
         });
-        result = arg.parse({ value: 'name=matt', coerced_value: 'name=matt', });
+        result = arg.parser({ value: 'name=matt', coerced_value: 'name=matt', });
       }).not.toThrow();
       expect(result).toEqual({ key: 'name', value: 'matt', });
     });
@@ -424,8 +424,8 @@ describe('StrictArgument', () => {
       expect(arg.variant).toBe('value');
       expect(arg.type).toBe('string');
       expect(arg.values).toStrictEqual([]);
-      expect(arg.isValid('')).toBe(true);
-      expect(arg.parse({ value: '567', coerced_value: 567, })).toBe(567);
+      expect(arg.validator('')).toBe(true);
+      expect(arg.parser({ value: '567', coerced_value: 567, })).toBe(567);
     });
 
     it('creates new argument correctly', () => {
@@ -435,13 +435,13 @@ describe('StrictArgument', () => {
         variant: 'variadic',
         type: 'number[]',
         values: [ 1, 2, 3, 7, ],
-        isValid: (data: unknown): boolean => {
+        validator: (data: unknown): boolean => {
           if (data as number > 3) {
             return false;
           }
           return true;
         },
-        parse: ({ value: originalValue, }): object => {
+        parser: ({ value: originalValue, }): object => {
           const [ key, value, ] = (originalValue).split('=');
           return { key, value, };
         },
@@ -455,11 +455,11 @@ describe('StrictArgument', () => {
         values: [ 1, 2, 3, 7, ],
       });
 
-      expect(arg.isValid(3 as never)).toBe(true);
+      expect(arg.validator(3 as never)).toBe(true);
       expect(() => {
-        expect(arg.isValid(4 as never)).toBe(false);
+        expect(arg.validator(4 as never)).toBe(false);
       }).toThrowError('Argument value "4" is invalid for argument "name".');
-      expect(arg.parse({ value: 'name=matt', coerced_value: 'name=matt', })).toEqual({ key: 'name', value: 'matt', });
+      expect(arg.parser({ value: 'name=matt', coerced_value: 'name=matt', })).toEqual({ key: 'name', value: 'matt', });
     });
   });
 });

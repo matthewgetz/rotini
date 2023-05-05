@@ -408,18 +408,17 @@ export class StrictDefinition extends Definition {
     super(program, configuration);
 
     this
-      .#checkName(program?.name)
-      .#checkDescription(program.description)
-      .#checkVersion(program.version)
-      .#checkDocumentation(program.documentation)
-      .#checkAndSetCommands(program.commands)
-      .#checkAndSetGlobalFlags(program.global_flags)
-      .#checkAndSetPositionalFlags(program.positional_flags)
-      .#checkAndSetExamples(program.examples)
-      .#checkAndSetConfigurationFiles(program.configuration_files);
+      .#setName(program?.name)
+      .#setDescription(program.description)
+      .#setVersion(program.version)
+      .#setDocumentation(program.documentation)
+      .#setCommands(program.commands)
+      .#setGlobalFlags(program.global_flags)
+      .#setExamples(program.examples)
+      .#setConfigurationFiles(program.configuration_files);
   }
 
-  #checkName = (name: string): StrictDefinition | never => {
+  #setName = (name: string): StrictDefinition | never => {
     if (Utils.isNotDefined(name) || Utils.isNotString(name) || Utils.stringContainsSpaces(name)) {
       throw new ConfigurationError('Program property "name" must be defined, of type "string", and cannot contain spaces.');
     }
@@ -427,7 +426,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkDescription = (description: string): StrictDefinition | never => {
+  #setDescription = (description: string): StrictDefinition | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description) || Utils.isEmptyString(description)) {
       throw new ConfigurationError('Program property "description" must be defined and of type "string".');
     }
@@ -435,7 +434,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkVersion = (version: string): StrictDefinition | never => {
+  #setVersion = (version: string): StrictDefinition | never => {
     if ((Utils.isNotDefined(version) || Utils.isNotString(version)) || Utils.isEmptyString(version)) {
       throw new ConfigurationError('Program property "version" must be defined and of type "string".');
     }
@@ -443,7 +442,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkDocumentation = (documentation?: string): StrictDefinition | never => {
+  #setDocumentation = (documentation?: string): StrictDefinition | never => {
     if (Utils.isDefined(documentation) && Utils.isNotString(documentation)) {
       throw new ConfigurationError(`Program property "documentation" must be of type "string".`);
     }
@@ -451,7 +450,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkAndSetCommands = (commands: I_Command[] = []): StrictDefinition | never => {
+  #setCommands = (commands: I_Command[] = []): StrictDefinition | never => {
     const COMMANDS = new StrictCommands({
       entity: {
         type: 'Program',
@@ -466,7 +465,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkAndSetGlobalFlags = (global_flags: I_GlobalFlag[] = []): StrictDefinition | never => {
+  #setGlobalFlags = (global_flags: I_GlobalFlag[] = []): StrictDefinition | never => {
     const GLOBAL_FLAGS = new StrictFlags({
       entity: {
         type: 'Program',
@@ -481,116 +480,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkAndSetPositionalFlags = (positional_flags: I_PositionalFlag[] = []): StrictDefinition | never => {
-    const versionOperation = (): void => console.info(this.version);
-    const helpOperation = (): void => console.info(this.help);
-    const updateOperation = async (): Promise<Promise<void>> => {
-      const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
-
-      let packageHasUpdate = false;
-      let latestVersion = '';
-      try {
-        const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
-        packageHasUpdate = result.hasUpdate;
-        latestVersion = result.latestVersion;
-      } catch (e) {
-        const programData = data?.[this.name] || {};
-        this.configuration_file.setContent({
-          ...data,
-          [this.name]: {
-            ...programData,
-            last_update_time: new Date().getTime(),
-          },
-        });
-      }
-
-      if (packageHasUpdate) {
-        const programData = data?.[this.name] || {};
-        this.configuration_file.setContent({
-          ...data,
-          [this.name]: {
-            ...programData,
-            last_update_time: new Date().getTime(),
-          },
-        });
-        await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
-      } else {
-        console.info(`Latest version of ${this.name} is installed.`);
-      }
-    };
-
-    const reservedPositionalFlags = {
-      update: positional_flags.find(flag => flag.name === 'update'),
-      version: positional_flags.find(flag => flag.name === 'version'),
-      help: positional_flags.find(flag => flag.name === 'help'),
-    };
-
-    if (reservedPositionalFlags?.update) {
-      reservedPositionalFlags.update.variant = 'boolean';
-      reservedPositionalFlags.update.type = 'boolean';
-      reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
-    } else {
-      if (this.configuration.check_for_npm_update) {
-        positional_flags.push(new PositionalFlag({
-          name: 'update',
-          description: 'install the latest version of the program',
-          variant: 'boolean',
-          type: 'boolean',
-          short_key: 'u',
-          long_key: 'update',
-          operation: updateOperation,
-        }));
-      }
-    }
-
-    if (reservedPositionalFlags?.version) {
-      reservedPositionalFlags.version.variant = 'boolean';
-      reservedPositionalFlags.version.type = 'boolean';
-      reservedPositionalFlags.version.operation = reservedPositionalFlags.version.operation || versionOperation;
-    } else {
-      positional_flags.push(new PositionalFlag({
-        name: 'version',
-        description: 'output the program version',
-        variant: 'boolean',
-        type: 'boolean',
-        short_key: 'v',
-        long_key: 'version',
-        operation: versionOperation,
-      }));
-    }
-
-    if (reservedPositionalFlags?.help) {
-      reservedPositionalFlags.help.variant = 'boolean';
-      reservedPositionalFlags.help.type = 'boolean';
-      reservedPositionalFlags.help.operation = reservedPositionalFlags.help.operation || helpOperation;
-    } else {
-      positional_flags.push(new PositionalFlag({
-        name: 'help',
-        description: 'output the program help',
-        variant: 'boolean',
-        type: 'boolean',
-        short_key: 'h',
-        long_key: 'help',
-        operation: helpOperation,
-      }));
-    }
-
-    const POSITIONAL_FLAGS = new StrictFlags({
-      entity: {
-        type: 'Program',
-        key: 'positional_flags',
-        name: this.name,
-      },
-      flags: positional_flags,
-    });
-
-    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.flags;
-    this.positional_flags_help = POSITIONAL_FLAGS.help;
-
-    return this;
-  };
-
-  #checkAndSetExamples = (examples: I_Example[] = []): StrictDefinition | never => {
+  #setExamples = (examples: I_Example[] = []): StrictDefinition | never => {
     const EXAMPLES = new StrictExamples({
       entity: {
         type: 'Program',
@@ -604,7 +494,7 @@ export class StrictDefinition extends Definition {
     return this;
   };
 
-  #checkAndSetConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): StrictDefinition | never => {
+  #setConfigurationFiles = (configuration_files?: I_ConfigurationFile[]): StrictDefinition | never => {
     const files = new StrictConfigurationFiles(configuration_files);
 
     this.configuration_files = files.configuration_files;
@@ -615,13 +505,7 @@ export class StrictDefinition extends Definition {
 }
 
 export const getDefinition = (definition: I_Definition, configuration: Configuration): Definition => {
-  try {
-    const Program = configuration.strict_mode ? StrictDefinition : Definition;
-    const DEFINITION = new Program(definition, configuration);
-    return DEFINITION;
-  } catch (e) {
-    const error = e as ConfigurationError;
-    console.error(`${error.name}: ${error.message}`);
-    process.exit(1);
-  }
+  const ProgramDefinition = (configuration.strict_mode === true) ? StrictDefinition : Definition;
+  const program_definition = new ProgramDefinition(definition, configuration);
+  return program_definition;
 };
