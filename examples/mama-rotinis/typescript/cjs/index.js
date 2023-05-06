@@ -64,7 +64,7 @@ const definition = {
 const configuration = {
     strict_commands: true,
     strict_flags: true,
-    strict_usage: false,
+    strict_help: false,
     strict_mode: false,
 };
 void (async () => {

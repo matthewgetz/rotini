@@ -31,7 +31,7 @@ export interface I_Definition {
 export interface I_Configuration {
   strict_commands?: boolean
   strict_flags?: boolean
-  strict_usage?: boolean
+  strict_help?: boolean
   strict_mode?: boolean
   check_for_npm_update?: boolean
 }

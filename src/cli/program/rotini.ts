@@ -198,7 +198,7 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
 };
 
 const parsePositionalFlag = async (parameters: Parameter[], positional_flags: PositionalFlag[], program_configuration: Configuration, help: string): Promise<void> | never => {
-  const resolvedHelp = program_configuration.strict_usage ? help : undefined;
+  const resolvedHelp = program_configuration.strict_help ? help : undefined;
   const helpFlag = positional_flags.find(flag => flag.name === 'help');
 
   if (parameters.length === 0) {
@@ -272,7 +272,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
     const nextPossibleOrdered = nextPossible.sort((a, b) => b.similarity - a.similarity).filter(p => p.similarity > 0);
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
-    const help = (didYouMean !== '' && program_configuration.strict_usage === false) ? undefined : program.help;
+    const help = (didYouMean !== '' && program_configuration.strict_help === false) ? undefined : program.help;
 
     throw new ParseError(`${unknownParameters}${didYouMean}`, help);
   }
@@ -360,7 +360,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
     const nextPossibleOrdered = nextPossible.sort((a, b) => b.similarity - a.similarity).filter(p => p.similarity > 0);
     const nextPossibleOrderedStrings = nextPossibleOrdered.map(p => `  ${p.value}`);
     const didYouMean = nextPossibleOrdered.length > 0 ? `\n\nDid you mean one of these?\n${nextPossibleOrderedStrings.join('\n')}` : '';
-    const help = (didYouMean !== '' && program_configuration.strict_usage === false) ? undefined : COMMANDS.results[COMMANDS.results.length - 1].command.help;
+    const help = (didYouMean !== '' && program_configuration.strict_help === false) ? undefined : COMMANDS.results[COMMANDS.results.length - 1].command.help;
 
     throw new ParseError(`${unknownCommands}${didYouMean}`, help);
   }
@@ -387,7 +387,7 @@ const parse = async (program: Definition, program_configuration: Configuration, 
     }
   }
 
-  const operation = (): Promise<unknown> | unknown => COMMANDS.results[COMMANDS.results.length - 1].command.operation.operation!({ parsed: { commands, global_flags, }, getConfigurationFile: program.getConfigurationFile, });
+  const operation = (): Promise<unknown> | unknown => COMMANDS.results[COMMANDS.results.length - 1].command.operation.operation({ parsed: { commands, global_flags, }, getConfigurationFile: program.getConfigurationFile, });
 
   return operation;
 };

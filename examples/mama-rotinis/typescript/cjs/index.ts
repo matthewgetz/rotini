@@ -65,7 +65,7 @@ const definition: Definition = {
 const configuration: Configuration = {
   strict_commands: true,
   strict_flags: true,
-  strict_usage: false,
+  strict_help: false,
   strict_mode: false,
 };
 

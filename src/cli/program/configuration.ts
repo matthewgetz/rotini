@@ -5,7 +5,7 @@ import Utils from '../../utils';
 export class Configuration {
   strict_commands!: boolean;
   strict_flags!: boolean;
-  strict_usage!: boolean;
+  strict_help!: boolean;
   strict_mode!: boolean;
   check_for_npm_update!: boolean;
 
@@ -13,7 +13,7 @@ export class Configuration {
     this
       .#setStrictCommands(configuration.strict_commands)
       .#setStrictFlags(configuration.strict_flags)
-      .#setStrictUsage(configuration.strict_usage)
+      .#setStrictHelp(configuration.strict_help)
       .#setStrictMode(configuration.strict_mode)
       .#setCheckForNpmUpdate(configuration.check_for_npm_update);
   }
@@ -36,8 +36,8 @@ export class Configuration {
     return this;
   };
 
-  #setStrictUsage = (strict_usage = false): Configuration | never => {
-    this.strict_usage = strict_usage;
+  #setStrictHelp = (strict_help = false): Configuration | never => {
+    this.strict_help = strict_help;
 
     return this;
   };
@@ -55,7 +55,7 @@ export class StrictConfiguration extends Configuration {
     this
       .#setStrictCommands(configuration.strict_commands)
       .#setStrictFlags(configuration.strict_flags)
-      .#setStrictUsage(configuration.strict_usage)
+      .#setStrictHelp(configuration.strict_help)
       .#setStrictMode(configuration.strict_mode)
       .#setCheckForNpmUpdate(configuration.check_for_npm_update);
   }
@@ -84,9 +84,9 @@ export class StrictConfiguration extends Configuration {
     return this;
   };
 
-  #setStrictUsage = (strict_usage = false): StrictConfiguration | never => {
-    if (Utils.isNotBoolean(strict_usage)) {
-      throw new ConfigurationError('Program configuration property "strict_usage" must be of type "boolean".');
+  #setStrictHelp = (strict_help = false): StrictConfiguration | never => {
+    if (Utils.isNotBoolean(strict_help)) {
+      throw new ConfigurationError('Program configuration property "strict_help" must be of type "boolean".');
     }
 
     return this;

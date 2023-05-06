@@ -49,26 +49,26 @@ describe('ProgramConfiguration', () => {
     });
   });
 
-  describe('strict_usage', () => {
-    const expectedErrorMessage = 'Program configuration property "strict_usage" must be of type "boolean".';
+  describe('strict_help', () => {
+    const expectedErrorMessage = 'Program configuration property "strict_help" must be of type "boolean".';
 
-    it('throws error when "strict_usage" is string', () => {
+    it('throws error when "strict_help" is string', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "strict_usage" is string
-        new StrictConfiguration({ strict_usage: 'yes', });
+        // @ts-expect-error program configuration property "strict_help" is string
+        new StrictConfiguration({ strict_help: 'yes', });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('throws error when "strict_usage" is number', () => {
+    it('throws error when "strict_help" is number', () => {
       expect(() => {
-        // @ts-expect-error program configuration property "strict_usage" is number
-        new StrictConfiguration({ strict_usage: 0, });
+        // @ts-expect-error program configuration property "strict_help" is number
+        new StrictConfiguration({ strict_help: 0, });
       }).toThrowError(expectedErrorMessage);
     });
 
-    it('does not throw when "strict_usage" is boolean', () => {
+    it('does not throw when "strict_help" is boolean', () => {
       expect(() => {
-        new StrictConfiguration({ strict_usage: true, });
+        new StrictConfiguration({ strict_help: true, });
       }).not.toThrow();
     });
   });
