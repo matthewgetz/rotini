@@ -3,7 +3,7 @@ import { Commands, StrictCommands, } from './commands';
 import { Example, Examples, StrictExamples, } from '../examples';
 import { ConfigurationError, ParseError, } from '../errors';
 import { Flag, Flags, StrictFlags, } from '../flags';
-import { Operation, } from '../operation';
+import { Operation, StrictOperation, } from '../operation';
 import { Parameters, } from '../program';
 import { I_Argument, I_Command, I_CommandMetadata, I_Example, I_Operation, I_LocalFlag, } from '../interfaces';
 import { Parameter, Value, Values, CommandResult, ParseCommandArgumentsReturn, } from '../types';
@@ -433,6 +433,8 @@ export class StrictCommand extends Command {
     if (Utils.isDefined(operation) && Utils.isNotObject(operation)) {
       throw new ConfigurationError(`Command property "operation" must be of type "object" for command "${this.name}".`);
     }
+
+    this.operation = new StrictOperation(this.name, this.help, operation);
 
     return this;
   };

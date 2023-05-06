@@ -135,8 +135,6 @@ export class StrictFlag extends Flag {
       throw new ConfigurationError('Flag property "name" must be defined, of type "string", and cannot contain spaces.');
     }
 
-    this.name = name;
-
     return this;
   };
 
@@ -145,8 +143,6 @@ export class StrictFlag extends Flag {
       throw new ConfigurationError(`Flag property "description" must be defined and of type "string" for ${this.style} flag "${this.name}".`);
     }
 
-    this.description = description;
-
     return this;
   };
 
@@ -154,8 +150,6 @@ export class StrictFlag extends Flag {
     if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'boolean', 'value', 'variadic', ]))) {
       throw new ConfigurationError(`Flag property "variant" must be defined, of type "string", and set as "boolean" or "value" for ${this.style} flag "${this.name}".`);
     }
-
-    this.variant = variant;
 
     return this;
   };
@@ -169,8 +163,6 @@ export class StrictFlag extends Flag {
       throw new ConfigurationError(`Flag property "type" must be set as "boolean" when flag property "variant" is set as "boolean" for ${this.style} flag "${this.name}".`);
     }
 
-    this.type = type;
-
     return this;
   };
 
@@ -179,36 +171,11 @@ export class StrictFlag extends Flag {
       throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for ${this.style} flag "${this.name}".`);
     }
 
-    this.style = style;
-
-    return this;
-  };
-
-  #setShortFlag = (short_key?: string): StrictFlag | never => {
-    if (Utils.isDefined(short_key) && (Utils.isNotString(short_key) || Utils.stringContainsSpaces(short_key!))) {
-      throw new ConfigurationError(`Flag property "short_key" must be of type "string" and cannot contain spaces for ${this.style} flag "${this.name}".`);
-    }
-
-    this.short_key = short_key;
-
-    return this;
-  };
-
-  #setLongFlag = (long_key?: string): StrictFlag | never => {
-    if (Utils.isDefined(long_key) && (Utils.isNotString(long_key) || Utils.stringContainsSpaces(long_key!))) {
-      throw new ConfigurationError(`Flag property "long_key" must be of type "string" and cannot contain spaces for ${this.style} flag "${this.name}".`);
-    }
-
-    this.long_key = long_key;
-
     return this;
   };
 
   #setFlags = (short_key?: string, long_key?: string): StrictFlag | never => {
-    this.#setShortFlag(short_key);
-    this.#setLongFlag(long_key);
-
-    if ((Utils.isNotDefined(this.short_key) && Utils.isNotDefined(this.long_key)) || this.short_key === this.long_key) {
+    if ((Utils.isNotDefined(short_key) && Utils.isNotDefined(long_key)) || short_key === long_key) {
       throw new ConfigurationError(`Flag must have property "short_key", "long_key", or both "short_key" and "long_key" set, and if both "short_key" and "long_key" are set they cannot be the same value for ${this.style} flag "${this.name}".`);
     }
 
@@ -229,8 +196,6 @@ export class StrictFlag extends Flag {
       const [ type, ] = this.type.split('[]');
       throw new ConfigurationError(`Flag property "values" must be of type "array" and can only contain indexes of type "${type}" for ${this.style} flag "${this.name}".`);
     }
-
-    this.values = values;
 
     return this;
   };
@@ -266,8 +231,6 @@ export class StrictFlag extends Flag {
       throw new ConfigurationError(`Flag property "default" must be one of allowed values ${JSON.stringify(this.values)} but received value "${JSON.stringify(default_value)}" for ${this.style} flag "${this.name}".`);
     }
 
-    this.default = default_value;
-
     return this;
   };
 
@@ -275,8 +238,6 @@ export class StrictFlag extends Flag {
     if (Utils.isDefined(required) && Utils.isNotBoolean(required)) {
       throw new ConfigurationError(`Flag property "required" must be of type "boolean" for ${this.style} flag "${this.name}".`);
     }
-
-    this.required = required;
 
     return this;
   };
@@ -326,8 +287,6 @@ export class PositionalFlag extends Flag {
 }
 
 export class StrictPositionalFlag extends StrictFlag {
-  operation!: PositionalFlagOperation;
-
   constructor (flag: I_PositionalFlag) {
     super({ ...flag, style: 'positional', });
     this.#setOperation(flag.operation);

@@ -397,6 +397,7 @@ export class StrictDefinition extends Definition {
       .#setDocumentation(program.documentation)
       .#setCommands(program.commands)
       .#setGlobalFlags(program.global_flags)
+      .#setPositionalFlags(program.positional_flags)
       .#setExamples(program.examples)
       .#setConfigurationFiles(program.configuration_files);
   }
@@ -459,6 +460,115 @@ export class StrictDefinition extends Definition {
     });
 
     this.global_flags = GLOBAL_FLAGS.flags;
+
+    return this;
+  };
+
+  #setPositionalFlags = (positional_flags: I_PositionalFlag[] = []): StrictDefinition | never => {
+    const versionOperation = (): void => console.info(this.version);
+    const helpOperation = (): void => console.info(this.help);
+    const updateOperation = async (): Promise<Promise<void>> => {
+      const { data, } = this.configuration_file.getContent() as { data: { [key: string]: { last_update_time: number } } };
+
+      let packageHasUpdate = false;
+      let latestVersion = '';
+      try {
+        const result = await Utils.packageHasUpdate({ package_name: this.name, current_version: this.version, });
+        packageHasUpdate = result.hasUpdate;
+        latestVersion = result.latestVersion;
+      } catch (e) {
+        const programData = data?.[this.name] || {};
+        this.configuration_file.setContent({
+          ...data,
+          [this.name]: {
+            ...programData,
+            last_update_time: new Date().getTime(),
+          },
+        });
+      }
+
+      if (packageHasUpdate) {
+        const programData = data?.[this.name] || {};
+        this.configuration_file.setContent({
+          ...data,
+          [this.name]: {
+            ...programData,
+            last_update_time: new Date().getTime(),
+          },
+        });
+        await Utils.updatePackage({ package_name: this.name, version: latestVersion, });
+      } else {
+        console.info(`Latest version of ${this.name} is installed.`);
+      }
+    };
+
+    const reservedPositionalFlags = {
+      update: positional_flags.find(flag => flag.name === 'update'),
+      version: positional_flags.find(flag => flag.name === 'version'),
+      help: positional_flags.find(flag => flag.name === 'help'),
+    };
+
+    if (reservedPositionalFlags?.update) {
+      reservedPositionalFlags.update.variant = 'boolean';
+      reservedPositionalFlags.update.type = 'boolean';
+      reservedPositionalFlags.update.operation = reservedPositionalFlags.update.operation || updateOperation;
+    } else {
+      if (this.configuration.check_for_npm_update) {
+        positional_flags.push(new PositionalFlag({
+          name: 'update',
+          description: 'install the latest version of the program',
+          variant: 'boolean',
+          type: 'boolean',
+          short_key: 'u',
+          long_key: 'update',
+          operation: updateOperation,
+        }));
+      }
+    }
+
+    if (reservedPositionalFlags?.version) {
+      reservedPositionalFlags.version.variant = 'boolean';
+      reservedPositionalFlags.version.type = 'boolean';
+      reservedPositionalFlags.version.operation = reservedPositionalFlags.version.operation || versionOperation;
+    } else {
+      positional_flags.push(new PositionalFlag({
+        name: 'version',
+        description: 'output the program version',
+        variant: 'boolean',
+        type: 'boolean',
+        short_key: 'v',
+        long_key: 'version',
+        operation: versionOperation,
+      }));
+    }
+
+    if (reservedPositionalFlags?.help) {
+      reservedPositionalFlags.help.variant = 'boolean';
+      reservedPositionalFlags.help.type = 'boolean';
+      reservedPositionalFlags.help.operation = reservedPositionalFlags.help.operation || helpOperation;
+    } else {
+      positional_flags.push(new PositionalFlag({
+        name: 'help',
+        description: 'output the program help',
+        variant: 'boolean',
+        type: 'boolean',
+        short_key: 'h',
+        long_key: 'help',
+        operation: helpOperation,
+      }));
+    }
+
+    const POSITIONAL_FLAGS = new StrictFlags({
+      entity: {
+        type: 'Program',
+        key: 'positional_flags',
+        name: this.name,
+      },
+      flags: positional_flags,
+    });
+
+    this.positional_flags = <PositionalFlag[]>POSITIONAL_FLAGS.flags;
+    this.positional_flags_help = POSITIONAL_FLAGS.help;
 
     return this;
   };
