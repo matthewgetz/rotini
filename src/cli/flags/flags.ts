@@ -1,28 +1,19 @@
-import { I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from '../interfaces';
 import { ConfigurationError, } from '../errors';
+import { FlagsProperties, } from '../types';
 import { GlobalFlag, LocalFlag, PositionalFlag, ForceFlag, HelpFlag, StrictForceFlag, StrictGlobalFlag, StrictHelpFlag, StrictLocalFlag, StrictPositionalFlag, } from './flag';
 import Utils from '../../utils';
-
-type Properties = {
-  entity: {
-    type: 'Program' | 'Command'
-    key: 'local_flags' | 'global_flags' | 'positional_flags'
-    name: string
-  }
-  flags: I_GlobalFlag[] | I_LocalFlag[] | I_PositionalFlag[]
-}
 
 export class Flags {
   flags!: GlobalFlag[] | LocalFlag[] | PositionalFlag[];
   help!: string;
 
-  constructor (properties: Properties) {
+  constructor (properties: FlagsProperties) {
     this
       .#setFlags(properties)
       .#setHelp(properties);
   }
 
-  #setFlags = (properties: Properties): Flags | never => {
+  #setFlags = (properties: FlagsProperties): Flags | never => {
     const { type, key, } = properties.entity;
     const flags = Utils.isArray(properties.flags) ? properties.flags : [];
 
@@ -66,7 +57,7 @@ export class Flags {
     return this;
   };
 
-  #setHelp = (properties: Properties): Flags => {
+  #setHelp = (properties: FlagsProperties): Flags => {
     const HEADINGS = {
       local_flags: 'FLAGS',
       global_flags: 'GLOBAL FLAGS',
@@ -133,14 +124,14 @@ export class Flags {
 }
 
 export class StrictFlags extends Flags {
-  constructor (properties: Properties) {
+  constructor (properties: FlagsProperties) {
     super(properties);
     this
       .#setFlags(properties)
       .#ensureNoDuplicateFlagProperties(properties);
   }
 
-  #setFlags = (properties: Properties): StrictFlags | never => {
+  #setFlags = (properties: FlagsProperties): StrictFlags | never => {
     const { type, key, name, } = properties.entity;
     const flags = properties.flags;
 
@@ -188,7 +179,7 @@ export class StrictFlags extends Flags {
     return this;
   };
 
-  #ensureNoDuplicateFlagProperties = (properties: Properties): StrictFlags | never => {
+  #ensureNoDuplicateFlagProperties = (properties: FlagsProperties): StrictFlags | never => {
     const { type, key, name, } = properties.entity;
     const flag_type = key.split('_')[0];
 

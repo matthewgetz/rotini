@@ -1,4 +1,5 @@
-import { I_Argument, I_Example, } from './interfaces';
+import { Command, } from '../cli/commands';
+import { I_Argument, I_Example, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from './interfaces';
 
 export type Values = string[] | number[] | boolean[];
 
@@ -32,6 +33,15 @@ export type ArgumentsProperties = {
     name: string
   }
   arguments: I_Argument[]
+}
+
+export type FlagsProperties = {
+  entity: {
+    type: 'Program' | 'Command'
+    key: 'local_flags' | 'global_flags' | 'positional_flags'
+    name: string
+  }
+  flags: I_GlobalFlag[] | I_LocalFlag[] | I_PositionalFlag[]
 }
 
 export type ParseObject = {
@@ -152,3 +162,67 @@ export type Parameter = {
   id: number
   value: string
 };
+
+export type FlagResult = {
+  values: string[] | number[] | boolean[]
+  variant: 'boolean' | 'value' | 'variadic'
+}
+
+export type ParseValue = string | number | boolean
+
+export type ParseResult = {
+  id: number
+  key: string
+  value: ParseValue
+  prefix: '-' | '--'
+}
+
+export type ParseFlagsReturn = {
+  original_parameters: readonly Parameter[]
+  parsed_parameters: (string | number | boolean)[]
+  unparsed_parameters: Parameter[]
+  errors: Error[]
+  results: ParseResult[]
+}
+
+export type Results = {
+  results: OperationResult
+}
+
+export type ParseGlobalFlagsReturn = {
+  original_parsed_flags: readonly ParseResult[],
+  matched_parsed_flags: ParseResult[],
+  unmatched_parsed_flags: ParseResult[],
+  errors: Error[]
+  results: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+}
+
+export type CommandResult = {
+  name: string
+  variant: Variant
+  values: Values
+}
+
+export type ParseCommandArgumentsReturn = {
+  original_parameters: readonly Parameter[]
+  parsed_parameters: (string | number | boolean)[]
+  unparsed_parameters: Parameter[]
+  results: { [key: string]: Value }
+}
+
+export type ParseCommandResult = {
+  id: number
+  command: Command
+  isAliasMatch: boolean
+  parsed: {
+    flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+    arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
+  }
+}
+
+export type ParseCommandsReturn = {
+  original_parameters: readonly Parameter[]
+  parsed_parameters: (string | number | boolean)[]
+  unparsed_parameters: Parameter[]
+  results: ParseCommandResult[]
+}

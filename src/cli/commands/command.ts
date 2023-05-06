@@ -6,21 +6,8 @@ import { Flag, Flags, StrictFlags, } from '../flags';
 import { Operation, } from '../operation';
 import { Parameters, } from '../program';
 import { I_Argument, I_Command, I_CommandMetadata, I_Example, I_Operation, I_LocalFlag, } from '../interfaces';
-import { Parameter, Variant, Value, Values, } from '../types';
+import { Parameter, Value, Values, CommandResult, ParseCommandArgumentsReturn, } from '../types';
 import Utils from '../../utils';
-
-type T_Result = {
-  name: string
-  variant: Variant
-  values: Values
-}
-
-type T_ParseCommandArgumentsReturn = {
-  original_parameters: readonly Parameter[]
-  parsed_parameters: (string | number | boolean)[]
-  unparsed_parameters: Parameter[]
-  results: { [key: string]: Value }
-}
 
 export class Command implements I_Command {
   name!: string;
@@ -246,14 +233,14 @@ export class Command implements I_Command {
     return this;
   };
 
-  parseArguments = (parameters: Parameter[] = []): T_ParseCommandArgumentsReturn => {
+  parseArguments = (parameters: Parameter[] = []): ParseCommandArgumentsReturn => {
     const params = new Parameters(parameters);
 
-    const RESULTS: T_Result[] = [];
+    const RESULTS: CommandResult[] = [];
 
     const help_flag = this.flags.find(flag => flag.name === 'help');
 
-    const parseArgument = (result: T_Result, arg: Argument, parameter: string): void => {
+    const parseArgument = (result: CommandResult, arg: Argument, parameter: string): void => {
       if (parameter === `-${help_flag?.short_key}` || parameter === `--${help_flag?.long_key}`) {
         console.info(this.help);
         process.exit(0);
@@ -320,7 +307,7 @@ export class Command implements I_Command {
     params.adjustUnparsedParameters();
 
     const mappedResults: { [key: string]: Value } = {};
-    RESULTS.map((result: T_Result) => {
+    RESULTS.map((result: CommandResult) => {
       mappedResults[result.name] = (result.variant === 'variadic') ? result.values : result.values[0];
     });
 

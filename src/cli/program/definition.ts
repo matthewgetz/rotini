@@ -1,7 +1,7 @@
 import { homedir, } from 'os';
 
 import { I_ConfigurationFile, I_Command, I_Definition, I_Example, I_GlobalFlag, I_PositionalFlag, } from '../interfaces';
-import { ConfigFile, Parameter, } from '../types';
+import { ConfigFile, Parameter, ParseCommandResult, ParseCommandsReturn, } from '../types';
 import { Command, Commands, StrictCommands, } from '../commands';
 import { ConfigurationFile, ConfigurationFiles, StrictConfigurationFiles, } from '../configuration-files';
 import { Flags, GlobalFlag, PositionalFlag, StrictFlags, } from '../flags';
@@ -10,23 +10,6 @@ import { ConfigurationError, } from '../errors';
 import Utils from '../../utils';
 import { Configuration, } from './configuration';
 import { Parameters, } from './parameters';
-
-export type T_ParseResult = {
-  id: number
-  command: Command
-  isAliasMatch: boolean
-  parsed: {
-    flags: { [key: string]: string | number | boolean | (string | number | boolean)[] }
-    arguments: { [key: string]: string | number | boolean | (string | number | boolean)[] }
-  }
-}
-
-export type T_ParseCommandsReturn = {
-  original_parameters: readonly Parameter[]
-  parsed_parameters: (string | number | boolean)[]
-  unparsed_parameters: Parameter[]
-  results: T_ParseResult[]
-}
 
 export class Definition implements I_Definition {
   name!: string;
@@ -355,9 +338,9 @@ export class Definition implements I_Definition {
     return this;
   };
 
-  parseCommands = (parameters: Parameter[] = []): T_ParseCommandsReturn => {
+  parseCommands = (parameters: Parameter[] = []): ParseCommandsReturn => {
     const params = new Parameters(parameters);
-    const RESULTS: T_ParseResult[] = [];
+    const RESULTS: ParseCommandResult[] = [];
 
     let potential_next_commands = this.commands;
 

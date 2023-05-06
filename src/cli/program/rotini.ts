@@ -1,5 +1,5 @@
 import { I_Configuration, I_Definition, } from '../interfaces';
-import { OperationResult, Parameter, } from '../types';
+import { OperationResult, Parameter, ParseFlagsReturn, ParseResult, ParseGlobalFlagsReturn, Results, FlagResult, } from '../types';
 import { Configuration, getConfiguration, } from './configuration';
 import { Definition, getDefinition, } from './definition';
 import { Flag, PositionalFlag, } from '../flags';
@@ -7,37 +7,11 @@ import { ConfigurationError, OperationError, OperationTimeoutError, ParseError, 
 import { Parameters, getParameters, } from './parameters';
 import Utils from '../../utils';
 
-type FlagResult = {
-  values: string[] | number[] | boolean[]
-  variant: 'boolean' | 'value' | 'variadic'
-}
-
-export type T_ParseValue = string | number | boolean
-
-export type T_ParseResult = {
-  id: number
-  key: string
-  value: T_ParseValue
-  prefix: '-' | '--'
-}
-
-export type T_ParseFlagsReturn = {
-  original_parameters: readonly Parameter[]
-  parsed_parameters: (string | number | boolean)[]
-  unparsed_parameters: Parameter[]
-  errors: Error[]
-  results: T_ParseResult[]
-}
-
-export type Results = {
-  results: OperationResult
-}
-
-export const parseFlags = (parameters: Parameter[] = []): T_ParseFlagsReturn => {
+export const parseFlags = (parameters: Parameter[] = []): ParseFlagsReturn => {
   const params = new Parameters(parameters);
 
   const ERRORS: Error[] = [];
-  const RESULTS: T_ParseResult[] = [];
+  const RESULTS: ParseResult[] = [];
 
   for (let p = 0; p < parameters.length; p++) {
     const parameter = parameters[p].value;
@@ -104,18 +78,10 @@ export const parseFlags = (parameters: Parameter[] = []): T_ParseFlagsReturn => 
   };
 };
 
-export type T_ParseGlobalFlagsReturn = {
-  original_parsed_flags: readonly T_ParseResult[],
-  matched_parsed_flags: T_ParseResult[],
-  unmatched_parsed_flags: T_ParseResult[],
-  errors: Error[]
-  results: { [key: string]: string | number | boolean | (string | number | boolean)[] }
-}
-
-export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id, }: { flags: Flag[], parsedFlags: T_ParseResult[], help: string, isGlobal: boolean, next_command_id?: number }): T_ParseGlobalFlagsReturn => {
-  const ORIGINAL_PARSED_FLAGS: readonly T_ParseResult[] = Object.freeze([ ...parsedFlags, ]);
-  const MATCHED_PARSED_FLAGS: T_ParseResult[] = [];
-  let UNMATCHED_PARSED_FLAGS: T_ParseResult[] = parsedFlags;
+export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id, }: { flags: Flag[], parsedFlags: ParseResult[], help: string, isGlobal: boolean, next_command_id?: number }): ParseGlobalFlagsReturn => {
+  const ORIGINAL_PARSED_FLAGS: readonly ParseResult[] = Object.freeze([ ...parsedFlags, ]);
+  const MATCHED_PARSED_FLAGS: ParseResult[] = [];
+  let UNMATCHED_PARSED_FLAGS: ParseResult[] = parsedFlags;
   const ERRORS: Error[] = [];
   const RESULTS: { [key: string]: FlagResult } = {};
   const FLAG_TYPE = isGlobal ? 'Global Flag' : 'Flag';

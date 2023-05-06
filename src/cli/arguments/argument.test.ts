@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 import { Argument, StrictArgument, } from './argument';
 import { ConfigurationError, ParseError, } from '../errors';
 
@@ -344,7 +344,7 @@ describe('StrictArgument', () => {
 
     it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string[]', validator: (values: string[]): boolean => values.length > 4, });
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string[]', validator: ({ coerced_value, }): boolean => coerced_value.length > 4, });
         arg.validator({ value: [ 'apple', 'orange', 'grape', ], coerced_value: [ 'apple', 'orange', 'grape', ], });
       }).toThrowError(is_valid_values_error);
     });
