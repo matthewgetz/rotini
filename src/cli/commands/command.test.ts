@@ -1,4 +1,16 @@
-import { StrictCommand, } from './command';
+import { Command, StrictCommand, } from './command';
+import { ConfigurationFiles, } from '../configuration-files';
+import { Argument, } from '../arguments';
+
+const configuration_files = new ConfigurationFiles([
+  {
+    id: 'rotini',
+    directory: './configs',
+    file: 'config.json',
+  },
+]);
+
+const getConfigurationFile = configuration_files.getConfigurationFile;
 
 describe('StrictCommand', () => {
   describe('name', () => {
@@ -200,13 +212,180 @@ describe('StrictCommand', () => {
     });
   });
 
-  // describe('class', () => {
-  //   it.todo('creates new StrictCommand correctly (defaults)', () => {
-  //     //
-  //   });
+  describe('class', () => {
+    it.skip('creates new StrictCommand correctly (defaults)', () => {
+      //
+    });
 
-  //   it.todo('creates new StrictCommand correctly', () => {
-  //     //
-  //   });
-  // });
+    it('creates new StrictCommand correctly (generated usage)', async () => {
+      const command = new Command({
+        name: 'get',
+        aliases: [ 'retrieve', 'fetch', ],
+        deprecated: true,
+        description: 'get command description',
+        usage: 'rotini',
+        help: 'command help',
+        operation: {
+          handler: (): string => 'handler',
+        },
+        examples: [
+          {
+            description: 'get command example',
+            usage: 'rotini get 1 project',
+          },
+        ],
+        arguments: [
+          {
+            name: 'id',
+            description: 'id argument description',
+            variant: 'value',
+            type: 'string',
+          },
+        ],
+        commands: [
+          {
+            name: 'project',
+            description: 'get command description',
+            arguments: [
+              {
+                name: 'ids',
+                description: 'id argument description',
+                variant: 'variadic',
+                type: 'number[]',
+              },
+              {
+                name: 'bool',
+                description: 'bool argument description',
+                variant: 'boolean',
+                type: 'boolean',
+              },
+            ],
+          },
+        ],
+        flags: [
+          {
+            name: 'simple',
+            description: 'simple flag description',
+            short_key: 's',
+            long_key: 'simple',
+            required: true,
+          },
+          {
+            name: 'filter',
+            description: 'filter flag description',
+            short_key: 'f',
+            required: false,
+            variant: 'variadic',
+            type: 'string',
+          },
+        ],
+      },
+      {
+        is_generated_usage: true,
+      }
+      );
+
+      expect(command.name).toBe('get');
+      expect(command.name_help).toBe('get');
+      expect(command.description).toBe('get command description');
+      expect(command.description_help).toBe('\n\n  get command description\n\n  This command has been deprecated and will be removed from a future release.\n  Command aliases ["retrieve","fetch"] can be used as a guard against future breaking changes.');
+      expect(command.usage).toBe('rotini get <id> <command>');
+      expect(command.usage_help).toBe('\n\nUSAGE:\n\n  rotini get <id> <command> [flags]');
+      expect(command.aliases).toStrictEqual([ 'retrieve', 'fetch', ]);
+      expect(command.aliases_help).toStrictEqual('\n\nALIASES:\n\n  retrieve,fetch');
+      expect(command.deprecated).toBe(true);
+      expect(command.arguments.length).toBe(1);
+      expect(command.arguments_help).toBe('\n\nARGUMENTS:\n\n  id=string      id argument description');
+      expect(command.commands.length).toBe(1);
+      expect(command.commands_help).toBe('\n\nCOMMANDS:\n\n  project      get command description');
+      expect(command.examples.length).toStrictEqual(1);
+      expect(command.examples_help).toBe('\n\nEXAMPLES:\n\n  # get command example\n  rotini get 1 project');
+      expect(command.flags.length).toStrictEqual(3);
+      expect(command.flags_help).toBe('\n\nFLAGS:\n\n  -s,--simple=boolean*      simple flag description\n  -f=string...              filter flag description\n  -h,--help=boolean         output the command help');
+      expect(command.is_force_command).toBe(false);
+      expect(command.is_generated_usage).toBe(true);
+      expect(command.subcommand_identifiers).toStrictEqual([ 'project', ]);
+      expect(command.help).toBe('command help');
+      expect(await command.operation.operation({
+        parsed: { commands: [ { name: 'get', arguments: {}, flags: {}, }, ], global_flags: {}, },
+        getConfigurationFile,
+      })).toStrictEqual({
+        after_handler_result: undefined,
+        before_handler_result: undefined,
+        handler_failure_result: undefined,
+        handler_result: 'handler',
+        handler_success_result: undefined,
+        handler_timeout_result: undefined,
+      });
+    });
+
+    it('creates new StrictCommand correctly', () => {
+      const command = new Command({
+        name: 'get',
+        aliases: [ 'retrieve', 'fetch', ],
+        deprecated: true,
+        description: 'get command description',
+        usage: 'get command usage',
+        arguments: [
+          {
+            name: 'id',
+            description: 'id argument description',
+            variant: 'value',
+            type: 'string',
+          },
+        ],
+        commands: [
+          {
+            name: 'project',
+            description: 'get command description',
+            arguments: [
+              {
+                name: 'ids',
+                description: 'id argument description',
+                variant: 'variadic',
+                type: 'number[]',
+              },
+              {
+                name: 'bool',
+                description: 'bool argument description',
+                variant: 'boolean',
+                type: 'boolean',
+              },
+            ],
+          },
+        ],
+        flags: [
+          {
+            name: 'simple',
+            description: 'simple flag description',
+            short_key: 's',
+            long_key: 'simple',
+            required: true,
+          },
+          {
+            name: 'filter',
+            description: 'filter flag description',
+            short_key: 'f',
+            required: false,
+            variant: 'variadic',
+            type: 'string',
+          },
+        ],
+      },
+      {
+        is_generated_usage: false,
+      }
+      );
+
+      expect(command.name).toBe('get');
+      expect(command.name_help).toBe('get');
+      expect(command.description).toBe('get command description');
+      expect(command.description_help).toBe('\n\n  get command description\n\n  This command has been deprecated and will be removed from a future release.\n  Command aliases ["retrieve","fetch"] can be used as a guard against future breaking changes.');
+      expect(command.usage).toBe('get command usage');
+      expect(command.usage_help).toBe('\n\nUSAGE:\n\n  get command usage');
+      expect(command.aliases).toStrictEqual([ 'retrieve', 'fetch', ]);
+      expect(command.aliases_help).toStrictEqual('\n\nALIASES:\n\n  retrieve,fetch');
+      expect(command.deprecated).toBe(true);
+    });
+  });
 });

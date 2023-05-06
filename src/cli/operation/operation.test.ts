@@ -4,12 +4,6 @@ import { OperationError, OperationTimeoutError, } from '../errors';
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-vi.mock('console', () => {
-  return {
-    info: vi.fn(),
-  };
-});
-
 const configuration_files = new ConfigurationFiles([
   {
     id: 'rotini',
@@ -176,7 +170,7 @@ describe('StrictOperation', () => {
       'get command help',
       {
         timeout: 5,
-        handler: (): Promise<void> => sleep(6),
+        handler: (): Promise<void> => sleep(10),
         onHandlerTimeout: (): void => console.info('timeout handler called'),
       }
     );
@@ -214,7 +208,7 @@ describe('StrictOperation', () => {
       'get command help',
       {
         timeout: 5,
-        handler: (): Promise<void> => sleep(6),
+        handler: (): Promise<void> => sleep(10),
         onHandlerTimeout: (): void => console.info('timeout handler called'),
         onHandlerFailure: (): void => console.info('failure handler called'),
       }

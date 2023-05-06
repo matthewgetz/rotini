@@ -100,8 +100,10 @@ export class Flags {
           ? `-${short_key}=${value}`
           : `--${long_key}=${value}`;
 
+      const required = flag.required ? '*' : '';
+
       return {
-        flag: `  ${flags}`,
+        flag: `  ${flags}${required}`,
         description,
         variant,
       };
