@@ -338,8 +338,6 @@ export class StrictPositionalFlag extends StrictFlag {
       throw new ConfigurationError(`Flag property "operation" must be of type "function" for ${this.style} flag ${this.name}`);
     }
 
-    this.operation = operation;
-
     return this;
   };
 }

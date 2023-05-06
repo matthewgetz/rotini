@@ -208,10 +208,7 @@ export class Command implements I_Command {
   };
 
   #setOperation = (operation?: I_Operation): Command | never => {
-    const resolved_operation = operation || {};
-    resolved_operation.handler = resolved_operation.handler || ((): void => console.info(this.help));
-
-    this.operation = new Operation(this.name, this.help, resolved_operation);
+    this.operation = new Operation(this.name, this.help, operation);
 
     return this;
   };
