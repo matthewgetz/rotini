@@ -76,59 +76,55 @@ export class Operation implements I_Operation {
   };
 
   #setOperation = (): Operation => {
-    let operation: OperationHandler;
+    const timeoutError = new OperationTimeoutError(`Command handler for command "${this.command_name}" has timed out after ${this.timeout}ms.`);
 
-    if (this.handler) {
-      const timeoutError = new OperationTimeoutError(`Command handler for command "${this.command_name}" has timed out after ${this.timeout}ms.`);
+    const operation: OperationHandler = async ({ parsed, getConfigurationFile, }): Promise<OperationResult> | never => {
+      let before_handler_result: unknown;
+      let handler_result: unknown;
+      let after_handler_result: unknown;
+      let handler_success_result: unknown;
+      let handler_failure_result: unknown;
+      let handler_timeout_result: unknown;
 
-      operation = async ({ parsed, getConfigurationFile, }): Promise<OperationResult> | never => {
-        let before_handler_result: unknown;
-        let handler_result: unknown;
-        let after_handler_result: unknown;
-        let handler_success_result: unknown;
-        let handler_failure_result: unknown;
-        let handler_timeout_result: unknown;
-
-        const handleWithTimeout = async (): Promise<void> | never => {
-          let timer: NodeJS.Timeout;
-
-          try {
-            handler_result = await Promise.race([
-              this.handler({ parsed, before_handler_result, getConfigurationFile, }),
-              new Promise((_, reject) => timer = setTimeout(reject, this.timeout, timeoutError)),
-            ]);
-          } catch (error) {
-            if (error instanceof OperationTimeoutError) {
-              handler_timeout_result = await this.onHandlerTimeout?.({ parsed, before_handler_result, getConfigurationFile, });
-            }
-            throw error;
-          } finally {
-            clearTimeout(timer!);
-          }
-        };
+      const handleWithTimeout = async (): Promise<void> | never => {
+        let timer: NodeJS.Timeout;
 
         try {
-          before_handler_result = await this.beforeHandler?.({ parsed, getConfigurationFile, });
-          await handleWithTimeout();
-          after_handler_result = await this.afterHandler?.({ parsed, before_handler_result, handler_result, getConfigurationFile, });
-          handler_success_result = await this.onHandlerSuccess?.({ parsed, before_handler_result, handler_result, after_handler_result, getConfigurationFile, });
+          handler_result = await Promise.race([
+            this.handler({ parsed, before_handler_result, getConfigurationFile, }),
+            new Promise((_, reject) => timer = setTimeout(reject, this.timeout, timeoutError)),
+          ]);
         } catch (error) {
-          if (!(error instanceof OperationTimeoutError)) {
-            handler_failure_result = await this.onHandlerFailure?.({ parsed, getConfigurationFile, });
+          if (error instanceof OperationTimeoutError) {
+            handler_timeout_result = await this.onHandlerTimeout?.({ parsed, before_handler_result, getConfigurationFile, });
           }
           throw error;
+        } finally {
+          clearTimeout(timer!);
         }
-
-        return {
-          before_handler_result,
-          handler_result,
-          after_handler_result,
-          handler_success_result,
-          handler_failure_result,
-          handler_timeout_result,
-        };
       };
-    }
+
+      try {
+        before_handler_result = await this.beforeHandler?.({ parsed, getConfigurationFile, });
+        await handleWithTimeout();
+        after_handler_result = await this.afterHandler?.({ parsed, before_handler_result, handler_result, getConfigurationFile, });
+        handler_success_result = await this.onHandlerSuccess?.({ parsed, before_handler_result, handler_result, after_handler_result, getConfigurationFile, });
+      } catch (error) {
+        if (!(error instanceof OperationTimeoutError)) {
+          handler_failure_result = await this.onHandlerFailure?.({ parsed, getConfigurationFile, });
+        }
+        throw error;
+      }
+
+      return {
+        before_handler_result,
+        handler_result,
+        after_handler_result,
+        handler_success_result,
+        handler_failure_result,
+        handler_timeout_result,
+      };
+    };
 
     this.operation = operation;
 

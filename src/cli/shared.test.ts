@@ -50,7 +50,7 @@ describe('getValidatorFunction', () => {
     const func = getValidatorFunction({ name: 'id', entity: 'Flag', });
 
     expect(typeof func).toBe('function');
-    expect(func('always true')).toBe(true);
+    expect(func({ value: 'always true', coerced_value: 'always true', })).toBe(true);
   });
 
   it('throws error when false', () => {
@@ -58,7 +58,7 @@ describe('getValidatorFunction', () => {
 
     expect(typeof func).toBe('function');
     expect(() => {
-      func('throws error');
+      func({ value: 'throws error', coerced_value: 'throws error', });
     }).toThrowError('Flag value "throws error" is invalid for flag "id".');
   });
 
@@ -69,7 +69,7 @@ describe('getValidatorFunction', () => {
 
     let result;
     try {
-      func('throws error');
+      func({ value: 'throws error', coerced_value: 'throws error', });
     } catch (e) {
       result = e as Error;
     }
@@ -86,7 +86,7 @@ describe('getValidatorFunction', () => {
 
     let result;
     try {
-      func([ 'throws', 'error', ]);
+      func({ value: [ 'throws', 'error', ], coerced_value: [ 'throws', 'error', ], });
     } catch (e) {
       result = e as Error;
     }

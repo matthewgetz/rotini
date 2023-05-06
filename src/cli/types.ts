@@ -1,7 +1,5 @@
 import { I_Argument, I_Example, } from './interfaces';
 
-export type Validator = (value: Value) => boolean | void | never;
-
 export type Values = string[] | number[] | boolean[];
 
 export const TYPES = [ 'string', 'number', 'boolean', 'string[]', 'number[]', 'boolean[]', ] as const;
@@ -15,14 +13,16 @@ export type Variant = typeof VARIANTS[number];
 export const STYLES = [ 'global', 'local', 'positional', ] as const;
 export type Style = typeof STYLES[number];
 
-export type ParseProperties = {
+export type ValueProperties = {
   value: string | string[]
   coerced_value: Value
 };
 
-export type Parser = (properties: ParseProperties) => unknown;
+export type Validator = (properties: ValueProperties) => boolean | void | never;
 
-export const DefaultParser = (properties: ParseProperties): Value => properties.coerced_value;
+export type Parser = (properties: ValueProperties) => unknown;
+
+export const DefaultParser = (properties: ValueProperties): Value => properties.coerced_value;
 
 export const DefaultValidator = (): boolean => true;
 
@@ -106,7 +106,7 @@ export type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> |
 
 export type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined
 
-export type OperationHandler = ((props: OperationProps) => Promise<OperationResult> | never) | undefined
+export type OperationHandler = ((props: OperationProps) => Promise<OperationResult> | never)
 
 export type GetContent<T> = {
   data: T | undefined

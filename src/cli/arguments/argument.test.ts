@@ -25,8 +25,8 @@ describe('Argument', () => {
       variant: 'variadic',
       type: 'number[]',
       values: [ 1, 2, 3, 4, 5, ],
-      validator: (value: number): boolean => {
-        if (value > 3) {
+      validator: ({ coerced_value, }): boolean => {
+        if (coerced_value > 3) {
           return true;
         }
         return false;
@@ -48,8 +48,8 @@ describe('Argument', () => {
     expect(arg.variant).toBe('variadic');
     expect(arg.type).toBe('number[]');
     expect(arg.values).toStrictEqual([ 1, 2, 3, 4, 5, ]);
-    expect(() => {arg.validator(2);}).toThrowError('Argument value "2" is invalid for argument "id".');
-    expect(arg.validator(5)).toBe(true);
+    expect(() => {arg.validator({ value: '2', coerced_value: 2, });}).toThrowError('Argument value "2" is invalid for argument "id".');
+    expect(arg.validator({ value: '5', coerced_value: 5, })).toBe(true);
     expect(arg.parser({ value: '4', coerced_value: 4, })).toBe('four');
   });
 });
@@ -337,15 +337,15 @@ describe('StrictArgument', () => {
 
     it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (value: number): boolean => value > 3, });
-        arg.validator(1);
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: ({ coerced_value, }): boolean => coerced_value > 3, });
+        arg.validator({ value: '1', coerced_value: 1, });
       }).toThrowError(is_valid_value_error);
     });
 
     it('throws default error when "validator" function returns false', () => {
       expect(() => {
         const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string[]', validator: (values: string[]): boolean => values.length > 4, });
-        arg.validator([ 'apple', 'orange', 'grape', ]);
+        arg.validator({ value: [ 'apple', 'orange', 'grape', ], coerced_value: [ 'apple', 'orange', 'grape', ], });
       }).toThrowError(is_valid_values_error);
     });
 
@@ -444,8 +444,8 @@ describe('StrictArgument', () => {
         variant: 'variadic',
         type: 'number[]',
         values: [ 1, 2, 3, 7, ],
-        validator: (data: unknown): boolean => {
-          if (data as number > 3) {
+        validator: ({ coerced_value, }): boolean => {
+          if (coerced_value > 3) {
             return false;
           }
           return true;
@@ -464,9 +464,9 @@ describe('StrictArgument', () => {
         values: [ 1, 2, 3, 7, ],
       });
 
-      expect(arg.validator(3 as never)).toBe(true);
+      expect(arg.validator({ value: '2', coerced_value: 2, })).toBe(true);
       expect(() => {
-        expect(arg.validator(4 as never)).toBe(false);
+        expect(arg.validator({ value: '4', coerced_value: 4, })).toBe(false);
       }).toThrowError('Argument value "4" is invalid for argument "name".');
       expect(arg.parser({ value: 'name=matt', coerced_value: 'name=matt', })).toEqual({ key: 'name', value: 'matt', });
     });
