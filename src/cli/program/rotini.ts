@@ -99,7 +99,7 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
         }
 
         try {
-          validator(value as never);
+          validator({ value: value.toString(), coerced_value: value, });
         } catch (e) {
           throw new ParseError((e as Error).message, help);
         }
@@ -203,7 +203,7 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
         throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, resolvedHelp);
       }
 
-      validator(value as never);
+      validator({ value: (value as string), coerced_value: type_coerced_value as string, });
       value = parser({ value: (value as string), coerced_value: type_coerced_value as string, }) as string;
       await operation(value as never);
       process.exit(0);

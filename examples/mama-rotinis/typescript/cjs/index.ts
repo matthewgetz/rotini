@@ -3,7 +3,7 @@
 import { rotini, Definition, Configuration } from '../../../../build';
 
 const definition: Definition = {
-  name: 'rfe',
+  name: 'mama-rotinis',
   description: "Mama Rotini's Pizzeria",
   version: '1.0.0',
   commands: [
@@ -16,7 +16,8 @@ const definition: Definition = {
           description: 'the amount of items to order',
           type: 'number',
           variant: 'value',
-          validator: (value: number) => {
+          validator: ({ coerced_value }) => {
+            const value = coerced_value as number;
             if (value > 10) {
               throw new Error("Mama Rotini's can only place orders of 10 items at a time.");
             }
@@ -66,10 +67,10 @@ const configuration: Configuration = {
   strict_commands: true,
   strict_flags: true,
   strict_help: false,
-  strict_mode: false,
+  strict_mode: true,
 };
 
 void (async (): Promise<void> => {
-  const { results } = await rotini({ definition, configuration }).run();
+  const { results } = await rotini({ definition, configuration });
   results?.handler_result && console.info(results.handler_result);
 })();

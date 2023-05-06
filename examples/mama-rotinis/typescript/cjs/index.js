@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const build_1 = require("../../../../build");
 const definition = {
-    name: 'rfe',
+    name: 'mama-rotinis',
     description: "Mama Rotini's Pizzeria",
     version: '1.0.0',
     commands: [
@@ -16,7 +16,8 @@ const definition = {
                     description: 'the amount of items to order',
                     type: 'number',
                     variant: 'value',
-                    isValid: (value) => {
+                    validator: ({ coerced_value }) => {
+                        const value = coerced_value;
                         if (value > 10) {
                             throw new Error("Mama Rotini's can only place orders of 10 items at a time.");
                         }
@@ -65,9 +66,9 @@ const configuration = {
     strict_commands: true,
     strict_flags: true,
     strict_help: false,
-    strict_mode: false,
+    strict_mode: true,
 };
 void (async () => {
-    const { results } = await (0, build_1.rotini)({ definition, configuration }).run();
+    const { results } = await (0, build_1.rotini)({ definition, configuration });
     results?.handler_result && console.info(results.handler_result);
 })();

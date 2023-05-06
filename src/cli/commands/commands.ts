@@ -25,15 +25,23 @@ export class Commands {
     this.entity_name = properties.entity.name;
     this.usage = properties.usage;
 
-    const commands = Utils.isArray(properties.commands) ? properties.commands : [];
-    this.commands = commands.map((command: I_Command) => {
-      const usage = command.usage || this.usage;
-      return new Command({ ...command, usage, }, { is_generated_usage: usage === this.usage, });
-    });
-    this.help = this.#makeCommandsSection();
+    this
+      .#setCommands(properties.commands)
+      .#setHelp();
   }
 
-  #makeCommandsSection = (): string => {
+  #setCommands = (commands: I_Command[]): Commands => {
+    const COMMANDS = Utils.isArray(commands) ? commands : [];
+
+    this.commands = COMMANDS.map((COMMAND: I_Command) => {
+      const usage = COMMAND.usage || this.usage;
+      return new Command({ ...COMMAND, usage, }, { is_generated_usage: usage === this.usage, });
+    });
+
+    return this;
+  };
+
+  #setHelp = (): Commands => {
     const commandNamesAndAliases = this.commands.map(command => {
       const name = command.name;
       const aliases = command.aliases?.join(',');
@@ -53,7 +61,7 @@ export class Commands {
       return `${c.name}${spaces}      ${c.description}`;
     });
 
-    return formattedNames.length > 0
+    this.help = formattedNames.length > 0
       ? [
         '\n\n',
         'COMMANDS:',
@@ -61,15 +69,18 @@ export class Commands {
         formattedNames.join('\n'),
       ].join('')
       : '';
+
+    return this;
   };
 }
 
 export class StrictCommands extends Commands {
   constructor (properties: CommandsProperties) {
     super(properties);
-    this.#setCommands(properties.commands);
-    this.#ensureNoDuplicateCommandPropertyValues('name');
-    this.#ensureNoDuplicateCommandPropertyValues('aliases');
+    this
+      .#setCommands(properties.commands)
+      .#ensureNoDuplicateCommandPropertyValues('name')
+      .#ensureNoDuplicateCommandPropertyValues('aliases');
   }
 
   #setCommands = (commands: I_Command[]): StrictCommands | never => {
@@ -85,7 +96,7 @@ export class StrictCommands extends Commands {
     return this;
   };
 
-  #ensureNoDuplicateCommandPropertyValues = (property: 'name' | 'aliases'): void | never => {
+  #ensureNoDuplicateCommandPropertyValues = (property: 'name' | 'aliases'): StrictCommands | never => {
     const commandProperties = this.commands.map(command => command[property as keyof Command]).filter(value => Utils.isDefined(value));
     const properties = (property === 'aliases') ? commandProperties.flat() : commandProperties;
 
@@ -94,5 +105,7 @@ export class StrictCommands extends Commands {
     if (hasDuplicates) {
       throw new ConfigurationError(`Duplicate command "${property}" found for ${this.entity_type.toLowerCase()} "${this.entity_name}": ${JSON.stringify(duplicates)}.`);
     }
+
+    return this;
   };
 }

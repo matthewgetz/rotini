@@ -33,10 +33,12 @@ export class Command implements I_Command {
   flags_help!: string;
 
   is_generated_usage: boolean;
+  has_commands: boolean;
   subcommand_identifiers!: string[];
 
   constructor (command: I_Command, metadata: I_CommandMetadata) {
     this.is_generated_usage = metadata.is_generated_usage;
+    this.has_commands = Utils.isDefined(command.commands);
     this
       .#setName(command?.name)
       .#setAliases(command?.aliases)
@@ -44,8 +46,8 @@ export class Command implements I_Command {
       .#setDescription(command?.description)
       .#setArguments(command?.arguments)
       .#setFlags(command?.flags)
-      .#setCommands(command?.commands)
       .#setUsage(command?.usage)
+      .#setCommands(command?.commands)
       .#setExamples(command?.examples)
       .#setHelp(command?.help)
       .#setOperation(command?.operation)
@@ -153,7 +155,7 @@ export class Command implements I_Command {
       command_usage += ` ${args.join(' ')}`;
     }
 
-    if (this.commands.length > 0) {
+    if (this.has_commands) {
       command_usage += ' <command>';
     }
 
@@ -262,7 +264,7 @@ export class Command implements I_Command {
       }
 
       try {
-        arg.validator(typedParameter);
+        arg.validator({ value: parameter, coerced_value: typedParameter, });
       } catch (e) {
         throw new ParseError((e as Error).message);
       }
