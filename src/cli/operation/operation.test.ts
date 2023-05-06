@@ -169,19 +169,19 @@ describe('StrictOperation', () => {
 
   it('calls onHandlerTimeout function when async timeout is hit (undefined onHandlerFailure)', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const expectedError = new OperationTimeoutError('Command handler for command "get" has timed out after 100ms.');
+    const expectedError = new OperationTimeoutError('Command handler for command "get" has timed out after 5ms.');
 
     const operation = new StrictOperation(
       'get',
       'get command help',
       {
-        timeout: 100,
-        handler: (): Promise<void> => sleep(200),
+        timeout: 5,
+        handler: (): Promise<void> => sleep(6),
         onHandlerTimeout: (): void => console.info('timeout handler called'),
       }
     );
 
-    expect(operation.timeout).toBe(100);
+    expect(operation.timeout).toBe(5);
     expect(operation.beforeHandler).toBe(undefined);
     expect(operation.handler).not.toBe(undefined);
     expect(operation.afterHandler).toBe(undefined);
@@ -207,20 +207,20 @@ describe('StrictOperation', () => {
 
   it('calls onHandlerTimeout function when async timeout is hit (defined onHandlerFailure)', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const expectedError = new OperationTimeoutError('Command handler for command "get" has timed out after 100ms.');
+    const expectedError = new OperationTimeoutError('Command handler for command "get" has timed out after 5ms.');
 
     const operation = new StrictOperation(
       'get',
       'get command help',
       {
-        timeout: 100,
-        handler: (): Promise<void> => sleep(200),
+        timeout: 5,
+        handler: (): Promise<void> => sleep(6),
         onHandlerTimeout: (): void => console.info('timeout handler called'),
         onHandlerFailure: (): void => console.info('failure handler called'),
       }
     );
 
-    expect(operation.timeout).toBe(100);
+    expect(operation.timeout).toBe(5);
     expect(operation.beforeHandler).toBe(undefined);
     expect(operation.handler).not.toBe(undefined);
     expect(operation.afterHandler).toBe(undefined);
