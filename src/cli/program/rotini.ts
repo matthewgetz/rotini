@@ -5,7 +5,6 @@ import { Definition, getDefinition, } from './definition';
 import { Flag, PositionalFlag, } from '../flags';
 import { ConfigurationError, OperationError, OperationTimeoutError, ParseError, } from '../errors';
 import { Parameters, getParameters, } from './parameters';
-import { Timing, } from '../timing';
 import Utils from '../../utils';
 
 type FlagResult = {
@@ -32,10 +31,6 @@ export type T_ParseFlagsReturn = {
 
 export type Results = {
   results: OperationResult
-  metadata: {
-    build: number
-    parse: number
-  }
 }
 
 export const parseFlags = (parameters: Parameter[] = []): T_ParseFlagsReturn => {
@@ -394,27 +389,14 @@ const parse = async (program: Definition, program_configuration: Configuration, 
 
 export const rotini = async (program: { definition: I_Definition, configuration?: I_Configuration, parameters?: string[] }): Promise<Results> => {
   try {
-    const build_time = new Timing();
-    const parse_time = new Timing();
-
-    build_time.start();
     const configuration = getConfiguration(program.configuration);
     const definition = getDefinition(program.definition, configuration);
     const parameters = getParameters(program.parameters);
-    build_time.end();
 
-    parse_time.start();
     const operation = await parse(definition, configuration, parameters);
-    parse_time.end();
     const results = await operation() as OperationResult;
 
-    return {
-      results,
-      metadata: {
-        build: build_time.elapsed(),
-        parse: parse_time.elapsed(),
-      },
-    };
+    return { results, };
   } catch (e) {
     const error = e as Error;
     if (error instanceof ParseError) {
