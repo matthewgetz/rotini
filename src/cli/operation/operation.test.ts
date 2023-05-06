@@ -1,6 +1,6 @@
 import { StrictOperation, } from './operation';
 import { ConfigurationFiles, } from '../configuration-files';
-import { OperationTimeoutError, } from '../errors';
+import { OperationError, OperationTimeoutError, } from '../errors';
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -51,7 +51,7 @@ describe('StrictOperation', () => {
     expect(info).toHaveBeenLastCalledWith('get command help');
   });
 
-  it('returns operation', async () => {
+  it('returns operation (undefined handlers)', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
 
     const operation = new StrictOperation(
@@ -87,7 +87,87 @@ describe('StrictOperation', () => {
     expect(info).toHaveBeenLastCalledWith('defined handler');
   });
 
-  it('calls onHandlerTimeout function when async timeout is hit', async () => {
+  it('returns operation (defined handlers)', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+    const operation = new StrictOperation(
+      'get',
+      'get command help',
+      {
+        beforeHandler: (): void => console.info('before handler called'),
+        handler: (): void => console.info('defined handler'),
+        afterHandler: (): void => console.info('after handler called'),
+        onHandlerSuccess: (): void => console.info('on success handler called'),
+      }
+    );
+
+    expect(operation.timeout).toBe(300000);
+    expect(operation.beforeHandler).not.toBe(undefined);
+    expect(operation.handler).not.toBe(undefined);
+    expect(operation.afterHandler).not.toBe(undefined);
+    expect(operation.onHandlerSuccess).not.toBe(undefined);
+    expect(operation.onHandlerFailure).toBe(undefined);
+    expect(operation.onHandlerTimeout).toBe(undefined);
+    expect(operation.operation).not.toBe(undefined);
+
+    operation.handler({
+      before_handler_result: undefined,
+      parsed: { commands: [ { name: 'get', arguments: {}, flags: {}, }, ], global_flags: {}, },
+      getConfigurationFile,
+    });
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenLastCalledWith('defined handler');
+
+    await operation.operation({
+      parsed: { commands: [ { name: 'get', arguments: {}, flags: {}, }, ], global_flags: {}, },
+      getConfigurationFile,
+    });
+    expect(info).toHaveBeenCalledTimes(5);
+    expect(info).toHaveBeenCalledWith('before handler called');
+    expect(info).toHaveBeenCalledWith('defined handler');
+    expect(info).toHaveBeenCalledWith('after handler called');
+    expect(info).toHaveBeenLastCalledWith('on success handler called');
+  });
+
+  it('onHandlerFailure called when handler error is not OperationTimeoutError', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+    const expectedError = new OperationError('operation error');
+
+    const operation = new StrictOperation(
+      'get',
+      'get command help',
+      {
+        handler: (): void => { throw new OperationError('operation error'); },
+        onHandlerFailure: (): void => console.info('on failure handler called'),
+      }
+    );
+
+    expect(operation.timeout).toBe(300000);
+    expect(operation.beforeHandler).toBe(undefined);
+    expect(operation.handler).not.toBe(undefined);
+    expect(operation.afterHandler).toBe(undefined);
+    expect(operation.onHandlerSuccess).toBe(undefined);
+    expect(operation.onHandlerFailure).not.toBe(undefined);
+    expect(operation.onHandlerTimeout).toBe(undefined);
+    expect(operation.operation).not.toBe(undefined);
+
+    let result;
+    try {
+      await operation.operation({
+        parsed: { commands: [ { name: 'get', arguments: {}, flags: {}, }, ], global_flags: {}, },
+        getConfigurationFile,
+      });
+    } catch (e) {
+      result = e;
+    }
+
+    expect(result).toEqual(expectedError);
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledWith('on failure handler called');
+  });
+
+  it('calls onHandlerTimeout function when async timeout is hit (undefined onHandlerFailure)', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     const expectedError = new OperationTimeoutError('Command handler for command "get" has timed out after 100ms.');
 
@@ -123,6 +203,46 @@ describe('StrictOperation', () => {
     expect(result).toEqual(expectedError);
     expect(info).toHaveBeenCalledTimes(1);
     expect(info).toHaveBeenLastCalledWith('timeout handler called');
+  });
+
+  it('calls onHandlerTimeout function when async timeout is hit (defined onHandlerFailure)', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const expectedError = new OperationTimeoutError('Command handler for command "get" has timed out after 100ms.');
+
+    const operation = new StrictOperation(
+      'get',
+      'get command help',
+      {
+        timeout: 100,
+        handler: (): Promise<void> => sleep(200),
+        onHandlerTimeout: (): void => console.info('timeout handler called'),
+        onHandlerFailure: (): void => console.info('failure handler called'),
+      }
+    );
+
+    expect(operation.timeout).toBe(100);
+    expect(operation.beforeHandler).toBe(undefined);
+    expect(operation.handler).not.toBe(undefined);
+    expect(operation.afterHandler).toBe(undefined);
+    expect(operation.onHandlerSuccess).toBe(undefined);
+    expect(operation.onHandlerFailure).not.toBe(undefined);
+    expect(operation.onHandlerTimeout).not.toBe(undefined);
+    expect(operation.operation).not.toBe(undefined);
+
+    let result;
+    try {
+      await operation.operation({
+        parsed: { commands: [ { name: 'get', arguments: {}, flags: {}, }, ], global_flags: {}, },
+        getConfigurationFile,
+      });
+    } catch (e) {
+      result = e;
+    }
+
+    expect(result).toEqual(expectedError);
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledWith('timeout handler called');
+    expect(info).not.toHaveBeenLastCalledWith('failure handler called');
   });
 
   it('throws error when operation property "timeout" is not number', () => {
@@ -210,6 +330,18 @@ describe('StrictOperation', () => {
         {
           // @ts-expect-error handler is not function
           onHandlerSuccess: 'should be function',
+        }
+      );
+    }).toThrowError('Operation property "onHandlerSuccess" must be of type "function" and can only be defined if "handler" is defined for command "get".');
+  });
+
+  it('throws error when operation property "onHandlerSuccess" is defined function but "handler" is default handler', () => {
+    expect(() => {
+      new StrictOperation(
+        'get',
+        'get command help',
+        {
+          onHandlerSuccess: (): void => {},
         }
       );
     }).toThrowError('Operation property "onHandlerSuccess" must be of type "function" and can only be defined if "handler" is defined for command "get".');
