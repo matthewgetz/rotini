@@ -212,8 +212,68 @@ describe('StrictCommand', () => {
   });
 
   describe('class', () => {
-    it.skip('creates new StrictCommand correctly (defaults)', () => {
-      //
+    it('creates new StrictCommand correctly (defaults)', async () => {
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+
+      const command = new Command(
+        {
+          name: 'default_command',
+          description: 'a default command',
+          usage: 'rotini',
+        },
+        {
+          is_generated_usage: true,
+        }
+      );
+
+      const expectedHelp = [
+        'default_command',
+        '\n\n',
+        '  a default command',
+        '\n\n',
+        'USAGE:',
+        '\n\n',
+        '  rotini default_command [flags]',
+        '\n\n',
+        'FLAGS:',
+        '\n\n',
+        '  -h,--help=boolean      output the command help',
+      ].join('');
+
+      expect(command.name).toBe('default_command');
+      expect(command.name_help).toBe('default_command');
+      expect(command.description).toBe('a default command');
+      expect(command.description_help).toBe('\n\n  a default command');
+      expect(command.usage).toBe('rotini default_command');
+      expect(command.usage_help).toBe('\n\nUSAGE:\n\n  rotini default_command [flags]');
+      expect(command.aliases).toStrictEqual([]);
+      expect(command.aliases_help).toStrictEqual('');
+      expect(command.deprecated).toBe(false);
+      expect(command.arguments.length).toBe(0);
+      expect(command.arguments_help).toBe('');
+      expect(command.commands.length).toBe(0);
+      expect(command.commands_help).toBe('');
+      expect(command.examples.length).toStrictEqual(0);
+      expect(command.examples_help).toBe('');
+      expect(command.flags.length).toStrictEqual(1);
+      expect(command.flags_help).toBe('\n\nFLAGS:\n\n  -h,--help=boolean      output the command help');
+      expect(command.is_force_command).toBe(false);
+      expect(command.is_generated_usage).toBe(true);
+      expect(command.subcommand_identifiers).toStrictEqual([]);
+      expect(command.help).toBe(expectedHelp);
+      expect(await command.operation.operation({
+        parsed: { commands: [ { name: 'get', arguments: {}, flags: {}, }, ], global_flags: {}, },
+        getConfigurationFile,
+      })).toStrictEqual({
+        after_handler_result: undefined,
+        before_handler_result: undefined,
+        handler_failure_result: undefined,
+        handler_result: undefined,
+        handler_success_result: undefined,
+        handler_timeout_result: undefined,
+      });
+      expect(info).toHaveBeenCalledTimes(1);
+      expect(info).toHaveBeenLastCalledWith(expectedHelp);
     });
 
     it('creates new StrictCommand correctly (generated usage)', async () => {

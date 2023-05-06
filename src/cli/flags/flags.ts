@@ -17,8 +17,9 @@ export class Flags {
   help!: string;
 
   constructor (properties: Properties) {
-    this.#setFlags(properties);
-    this.#setHelp(properties);
+    this
+      .#setFlags(properties)
+      .#setHelp(properties);
   }
 
   #setFlags = (properties: Properties): Flags | never => {
@@ -65,7 +66,7 @@ export class Flags {
     return this;
   };
 
-  #setHelp = (properties: Properties): void => {
+  #setHelp = (properties: Properties): Flags => {
     const HEADINGS = {
       local_flags: 'FLAGS',
       global_flags: 'GLOBAL FLAGS',
@@ -126,6 +127,8 @@ export class Flags {
         formattedNames.join('\n'),
       ].join('')
       : '';
+
+    return this;
   };
 }
 
@@ -139,7 +142,7 @@ export class StrictFlags extends Flags {
 
   #setFlags = (properties: Properties): StrictFlags | never => {
     const { type, key, name, } = properties.entity;
-    const flags = properties.flags || [];
+    const flags = properties.flags;
 
     if (Utils.isNotArray(flags)) {
       throw new ConfigurationError(`${type} property "${key}" must of type "array" for ${type.toLowerCase()} "${name}".`);
