@@ -1,6 +1,5 @@
 import { Command, StrictCommand, } from './command';
 import { ConfigurationFiles, } from '../configuration-files';
-import { Argument, } from '../arguments';
 
 const configuration_files = new ConfigurationFiles([
   {
