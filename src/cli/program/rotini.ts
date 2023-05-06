@@ -407,6 +407,7 @@ export const rotini = async (program: { definition: I_Definition, configuration?
     const operation = await parse(definition, configuration, parameters);
     parse_time.end();
     const results = await operation() as OperationResult;
+
     return {
       results,
       metadata: {

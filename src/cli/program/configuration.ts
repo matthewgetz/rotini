@@ -30,14 +30,14 @@ export class Configuration {
     return this;
   };
 
-  #setStrictMode = (strict_mode = false): Configuration | never => {
-    this.strict_mode = strict_mode;
+  #setStrictHelp = (strict_help = false): Configuration | never => {
+    this.strict_help = strict_help;
 
     return this;
   };
 
-  #setStrictHelp = (strict_help = false): Configuration | never => {
-    this.strict_help = strict_help;
+  #setStrictMode = (strict_mode = false): Configuration | never => {
+    this.strict_mode = strict_mode;
 
     return this;
   };
@@ -76,17 +76,17 @@ export class StrictConfiguration extends Configuration {
     return this;
   };
 
-  #setStrictMode = (strict_mode = false): StrictConfiguration | never => {
-    if (Utils.isNotBoolean(strict_mode)) {
-      throw new ConfigurationError('Program configuration property "strict_mode" must be of type "boolean".');
+  #setStrictHelp = (strict_help = false): StrictConfiguration | never => {
+    if (Utils.isNotBoolean(strict_help)) {
+      throw new ConfigurationError('Program configuration property "strict_help" must be of type "boolean".');
     }
 
     return this;
   };
 
-  #setStrictHelp = (strict_help = false): StrictConfiguration | never => {
-    if (Utils.isNotBoolean(strict_help)) {
-      throw new ConfigurationError('Program configuration property "strict_help" must be of type "boolean".');
+  #setStrictMode = (strict_mode = false): StrictConfiguration | never => {
+    if (Utils.isNotBoolean(strict_mode)) {
+      throw new ConfigurationError('Program configuration property "strict_mode" must be of type "boolean".');
     }
 
     return this;
