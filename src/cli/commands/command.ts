@@ -239,6 +239,7 @@ export class Command implements I_Command {
     const params = new Parameters(parameters);
 
     const RESULTS: CommandResult[] = [];
+    const ERRORS: Error[] = [];
 
     const help_flag = this.flags.find(flag => flag.name === 'help');
 
@@ -249,30 +250,40 @@ export class Command implements I_Command {
       }
 
       if (parameter.startsWith('-')) {
-        throw new ParseError(`Expected argument "${arg.name}" but found flag "${parameter}" for command "${this.name}".`);
+        ERRORS.push(new ParseError(`Expected argument "${arg.name}" but found flag "${parameter}" for command "${this.name}".`));
+        return;
+        // throw new ParseError(`Expected argument "${arg.name}" but found flag "${parameter}" for command "${this.name}".`);
       }
 
       let typedParameter: string | number | boolean;
       try {
         typedParameter = Utils.getTypedValue({ value: parameter, coerceTo: arg.type, additionalErrorInfo: `for command "${this.name}" argument "${arg.name}"`, }) as never;
       } catch (error) {
-        throw new ParseError((error as Error).message);
+        ERRORS.push(error as Error);
+        return;
+        // throw new ParseError((error as Error).message);
       }
 
       if (arg.values.length > 0 && !arg.values.includes(typedParameter)) {
-        throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)} for command "${this.name}".`);
+        ERRORS.push(new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)} for command "${this.name}".`));
+        return;
+        // throw new ParseError(`Expected argument "${arg.name}" value to be one of ${JSON.stringify(arg.values)} for command "${this.name}".`);
       }
 
       try {
         arg.validator({ value: parameter, coerced_value: typedParameter, });
       } catch (e) {
-        throw new ParseError((e as Error).message);
+        ERRORS.push(e as Error);
+        return;
+        // throw new ParseError((e as Error).message);
       }
 
       try {
         typedParameter = arg.parser({ value: parameter, coerced_value: typedParameter, }) as string;
       } catch (e) {
-        throw new ParseError((e as Error).message);
+        ERRORS.push(e as Error);
+        return;
+        // throw new ParseError((e as Error).message);
       }
 
       result.values.push(typedParameter as never);
@@ -285,7 +296,9 @@ export class Command implements I_Command {
       const result = { name: arg.name, variant: arg.variant, values, };
 
       if (!parameter) {
-        throw new ParseError(`Expected argument "${arg.name}" for command "${this.name}".`);
+        ERRORS.push(new ParseError(`Expected argument "${arg.name}" for command "${this.name}".`));
+        return;
+        // throw new ParseError(`Expected argument "${arg.name}" for command "${this.name}".`);
       }
 
       if (arg.variant === 'variadic') {
@@ -318,6 +331,7 @@ export class Command implements I_Command {
       parsed_parameters: params.parsed_parameters,
       unparsed_parameters: params.unparsed_parameters,
       results: mappedResults,
+      errors: ERRORS,
     };
   };
 }

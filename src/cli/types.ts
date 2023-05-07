@@ -217,6 +217,7 @@ export type ParseCommandArgumentsReturn = {
   parsed_parameters: (string | number | boolean)[]
   unparsed_parameters: Parameter[]
   results: { [key: string]: Value }
+  errors: Error[]
 }
 
 export type ParseCommandResult = {
@@ -234,4 +235,5 @@ export type ParseCommandsReturn = {
   parsed_parameters: (string | number | boolean)[]
   unparsed_parameters: Parameter[]
   results: ParseCommandResult[]
+  errors: Error[]
 }

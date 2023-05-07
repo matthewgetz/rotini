@@ -341,6 +341,7 @@ export class Definition implements I_Definition {
   parseCommands = (parameters: Parameter[] = []): ParseCommandsReturn => {
     const params = new Parameters(parameters);
     const RESULTS: ParseCommandResult[] = [];
+    let ERRORS: Error[] = [];
 
     let potential_next_commands = this.commands;
 
@@ -357,17 +358,29 @@ export class Definition implements I_Definition {
       if (command) {
         potential_next_commands = command.commands;
 
-        const { results: args, parsed_parameters, unparsed_parameters, } = command.parseArguments(params.working_parameters);
-
         RESULTS.push({
           id,
           command,
           isAliasMatch: command.aliases.includes(value),
           parsed: {
             flags: {},
-            arguments: args,
+            arguments: {},
           },
         });
+
+        const { results: args, parsed_parameters, unparsed_parameters, errors, } = command.parseArguments(params.working_parameters);
+        RESULTS[RESULTS.length - 1].parsed.arguments = args;
+        ERRORS = [ ...ERRORS, ...errors, ];
+
+        if (ERRORS.length > 0) {
+          return {
+            original_parameters: params.original_parameters,
+            parsed_parameters: params.parsed_parameters,
+            unparsed_parameters: params.unparsed_parameters,
+            results: RESULTS,
+            errors: ERRORS,
+          };
+        }
 
         params.parsed_parameters.push(value as never);
         params.parsed_parameters = [ ...params.parsed_parameters, ...parsed_parameters, ];
@@ -382,6 +395,7 @@ export class Definition implements I_Definition {
       parsed_parameters: params.parsed_parameters,
       unparsed_parameters: params.unparsed_parameters,
       results: RESULTS,
+      errors: ERRORS,
     };
   };
 }

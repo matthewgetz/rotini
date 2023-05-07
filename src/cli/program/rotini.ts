@@ -159,7 +159,6 @@ export const matchFlags = ({ flags, parsedFlags, help, isGlobal, next_command_id
 };
 
 const parsePositionalFlag = async (parameters: Parameter[], positional_flags: PositionalFlag[], program_configuration: Configuration, help: string): Promise<void> | never => {
-  const resolvedHelp = program_configuration.strict_help ? help : undefined;
   const helpFlag = positional_flags.find(flag => flag.name === 'help');
 
   if (parameters.length === 0) {
@@ -167,50 +166,65 @@ const parsePositionalFlag = async (parameters: Parameter[], positional_flags: Po
     process.exit(0);
   }
 
-  const shortFlagMatch = positional_flags.find(flag => `-${flag.short_key}` === parameters[0].value);
-  const longFlagMatch = positional_flags.find(flag => `--${flag.long_key}` === parameters[0].value);
+  const shortFlagMatch = positional_flags.find(flag => `-${flag.short_key}` === parameters[0].value || parameters[0].value.startsWith(`-${flag.short_key}=`));
+  const longFlagMatch = positional_flags.find(flag => `--${flag.long_key}` === parameters[0].value || parameters[0].value.startsWith(`--${flag.long_key}=`));
+  const flagMatch = shortFlagMatch || longFlagMatch;
 
   if (parameters[0] && parameters[0].value.startsWith('-')) {
-    if (shortFlagMatch || longFlagMatch) {
-      const { name, type, variant, values, default: default_value, validator, parser, operation, } = (shortFlagMatch || longFlagMatch)!;
-      const remaining_parameters = parameters.slice(1).map(p => p.value);
+    if (flagMatch) {
+      const name = flagMatch.name;
+      const flags = parseFlags(parameters);
+      const mapped_results = {};
+      flags.results.forEach(flag => {
+        const key = name as keyof typeof mapped_results;
+        if (mapped_results[key]) {
+          (mapped_results[key] as never[]).push(flag.value as never);
+        } else {
+          mapped_results[key] = [ flag.value, ] as never;
+        }
+      });
 
-      if (program_configuration.strict_flags && variant === 'value' && remaining_parameters.length > 1) {
-        throw new ParseError(`Positional flag "${name}" is of variant "${variant}" but found multiple values: ${JSON.stringify(remaining_parameters)}.`, resolvedHelp);
+      let value;
+      try {
+        const { variant, type, values, validator, parser, } = flagMatch;
+        value = mapped_results[name as keyof typeof mapped_results];
+
+        if (variant === 'value' && (value as never[]).length > 1) {
+          throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${JSON.stringify(value)}".`, help);
+        }
+
+        value = variant === 'value' ? mapped_results[name as keyof typeof mapped_results][0] : mapped_results[name as keyof typeof mapped_results];
+        const type_coerced_value = value && Utils.isArray(value)
+          ? (value as string[]).map(v => Utils.getTypedValue({ value: v, coerceTo: type, }))
+          : value
+            ? Utils.getTypedValue({ value, coerceTo: type, })
+            : undefined;
+
+        if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
+          throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${value}".`, help);
+        }
+
+        const string_values = values.map(v => v.toString());
+
+        if (variant === 'value' && values.length > 0 && !values.includes(value)) {
+          throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, help);
+        } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => string_values.includes(v))) {
+          throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, help);
+        }
+
+        validator({ value: (value as string), coerced_value: type_coerced_value as string, });
+        value = parser({ value: (value as string), coerced_value: type_coerced_value as string, }) as never;
+      } catch (e) {
+        const err = e as Error;
+        throw new ParseError(err.message, help);
       }
 
-      let value: string | number | boolean | string[] | number[] | boolean[] = variant === 'variadic' ? remaining_parameters : remaining_parameters[0];
-
-      value = (type === 'boolean' && !value) ? true : value;
-      const hasValue = (Utils.isNotArray(value) && value) || (Utils.isArray(value) && (value as unknown as string[]).length > 0);
-      value = hasValue ? value : default_value || true;
-
-      const type_coerced_value = value && Utils.isArray(value)
-        ? (value as string[]).map(v => Utils.getTypedValue({ value: v, coerceTo: type, }))
-        : value
-          ? Utils.getTypedValue({ value, coerceTo: type, })
-          : undefined;
-
-      if ((type !== 'boolean' && Utils.isBoolean(value)) || (type === 'boolean' && Utils.isNotBoolean(value))) {
-        throw new ParseError(`Positional flag "${name}" is of type "${type}" but flag "${parameters[0].value}" has value "${value}".`, resolvedHelp);
-      }
-
-      const string_values = values.map(v => v.toString());
-
-      if (variant === 'value' && values.length > 0 && !values.includes(value as never)) {
-        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found value "${value}".`, resolvedHelp);
-      } else if (variant === 'variadic' && values.length > 0 && !(value as string[]).every(v => string_values.includes(v))) {
-        throw new ParseError(`Positional flag "${name}" allowed values are ${JSON.stringify(values)} but found values "${JSON.stringify(value)}".`, resolvedHelp);
-      }
-
-      validator({ value: (value as string), coerced_value: type_coerced_value as string, });
-      value = parser({ value: (value as string), coerced_value: type_coerced_value as string, }) as string;
-      await operation(value as never);
+      await flagMatch.operation(value);
       process.exit(0);
     }
 
     if (program_configuration.strict_flags) {
-      throw new ParseError(`Unknown positional flag found "${parameters[0].value}".`, resolvedHelp);
+      throw new ParseError(`Unknown positional flag found "${parameters[0].value}".`, help);
     }
   }
 };
@@ -220,7 +234,14 @@ const parse = async (program: Definition, program_configuration: Configuration, 
 
   const COMMANDS = program.parseCommands(parameters);
   const FLAGS = parseFlags(COMMANDS.unparsed_parameters);
-  let ERRORS: Error[] = [];
+  let ERRORS: Error[] = [ ...COMMANDS.errors, ];
+
+  if (ERRORS.length > 0) {
+    const last_command = COMMANDS.results[COMMANDS.results.length - 1];
+    const resolved_help = last_command?.command?.help || program.help;
+    const error = new ParseError(ERRORS[0].message, resolved_help);
+    throw error;
+  }
 
   if (COMMANDS.results.length === 0) {
     const unknownParameters = `Unknown parameters found ${JSON.stringify(COMMANDS.unparsed_parameters.map(u => u.value))}.`;
@@ -338,7 +359,10 @@ const parse = async (program: Definition, program_configuration: Configuration, 
   });
 
   if (ERRORS.length > 0) {
-    throw ERRORS[0];
+    const last_command = COMMANDS.results[COMMANDS.results.length - 1];
+    const resolved_help = last_command?.command?.help || program.help;
+    const error = new ParseError(ERRORS[0].message, resolved_help);
+    throw error;
   }
 
   if (COMMAND.is_force_command && command.flags.force !== true) {
