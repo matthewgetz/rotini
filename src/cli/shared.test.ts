@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { getParserFunction, getValidatorFunction, } from './shared';
 import { ParseError, } from './errors';
 

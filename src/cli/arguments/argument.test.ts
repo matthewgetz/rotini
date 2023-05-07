@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { Argument, StrictArgument, } from './argument';
 import { ConfigurationError, ParseError, } from '../errors';
 
@@ -14,7 +13,7 @@ describe('Argument', () => {
     expect(arg.variant).toBe('value');
     expect(arg.type).toBe('string');
     expect(arg.values).toStrictEqual([]);
-    expect(arg.validator('')).toBe(true);
+    expect(arg.validator({ value: '', coerced_value: '', })).toBe(true);
     expect(arg.parser({ value: '123', coerced_value: 123, })).toBe(123);
   });
 
@@ -38,8 +37,8 @@ describe('Argument', () => {
           3: 'three',
           4: 'four',
           5: 'five',
-        }[coerced_value];
-        return value;
+        };
+        return value[coerced_value as keyof typeof value];
       },
     });
 
@@ -337,14 +336,14 @@ describe('StrictArgument', () => {
 
     it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: ({ coerced_value, }): boolean => coerced_value > 3, });
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: ({ coerced_value, }: { coerced_value: number }): boolean => coerced_value > 3, });
         arg.validator({ value: '1', coerced_value: 1, });
       }).toThrowError(is_valid_value_error);
     });
 
     it('throws default error when "validator" function returns false', () => {
       expect(() => {
-        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string[]', validator: ({ coerced_value, }): boolean => coerced_value.length > 4, });
+        const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string[]', validator: ({ coerced_value, }: { coerced_value: string[] }): boolean => coerced_value.length > 4, });
         arg.validator({ value: [ 'apple', 'orange', 'grape', ], coerced_value: [ 'apple', 'orange', 'grape', ], });
       }).toThrowError(is_valid_values_error);
     });
@@ -352,21 +351,21 @@ describe('StrictArgument', () => {
     it('throws custom error when "validator" function throws error', () => {
       expect(() => {
         const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (): never => { throw custom_error; }, });
-        arg.validator('');
+        arg.validator({ value: '', coerced_value: '', });
       }).toThrowError(custom_error);
     });
 
     it('does not throw error when return is void', () => {
       expect(() => {
         const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (): void => { }, });
-        arg.validator('');
+        arg.validator({ value: '', coerced_value: '', });
       }).not.toThrow();
     });
 
     it('does not throw error when return is true', () => {
       expect(() => {
         const arg = new StrictArgument({ name: 'id', description: 'id description', variant: 'value', type: 'string', validator: (): boolean => true, });
-        arg.validator('');
+        arg.validator({ value: '', coerced_value: '', });
       }).not.toThrow();
     });
   });
@@ -433,7 +432,7 @@ describe('StrictArgument', () => {
       expect(arg.variant).toBe('value');
       expect(arg.type).toBe('string');
       expect(arg.values).toStrictEqual([]);
-      expect(arg.validator('')).toBe(true);
+      expect(arg.validator({ value: '', coerced_value: '', })).toBe(true);
       expect(arg.parser({ value: '567', coerced_value: 567, })).toBe(567);
     });
 

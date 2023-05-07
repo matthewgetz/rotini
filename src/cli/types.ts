@@ -14,16 +14,23 @@ export type Variant = typeof VARIANTS[number];
 export const STYLES = [ 'global', 'local', 'positional', ] as const;
 export type Style = typeof STYLES[number];
 
+// export type ValueProperties = {
+//   value: string | string[]
+//   coerced_value: Value
+// };
+
 export type ValueProperties = {
-  value: string | string[]
-  coerced_value: Value
+  value: any
+  coerced_value: any
 };
 
 export type Validator = (properties: ValueProperties) => boolean | void | never;
 
 export type Parser = (properties: ValueProperties) => unknown;
 
-export const DefaultParser = (properties: ValueProperties): Value => properties.coerced_value;
+// export const DefaultParser = (properties: ValueProperties): Value => properties.coerced_value;
+
+export const DefaultParser = (properties: ValueProperties): unknown => properties.coerced_value;
 
 export const DefaultValidator = (): boolean => true;
 
