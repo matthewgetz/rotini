@@ -19,30 +19,28 @@ const execute = (command: string): Promise<void> => {
 };
 
 export const packageHasUpdate = async ({ package_name, current_version, }: { package_name: string, current_version: string }): Promise<{ hasUpdate: boolean, latestVersion: string }> => {
-  const result = await fetch(`${registry}/${package_name}`);
+  const result = await fetch(`${registry}/${package_name}/latest`);
 
-  const data = await result.json() as { versions: string[] };
-  const packageVersions = Object.keys(data.versions);
-  const filteredPackageVersions = packageVersions.filter(v => /^\d+(\.\d+)*$/.test(v.toString()));
-  const latestVersion = filteredPackageVersions[filteredPackageVersions.length - 1];
+  const data = await result.json() as { version: string };
+  const latest_version = data.version;
 
-  const [ currentMajor, currentMinor, currentPatch, ] = current_version.split('.').map(n => Number(n));
-  const [ latestMajor, latestMinor, latestPatch, ] = latestVersion.split('.').map(n => Number(n));
+  const [ current_major, current_minor, current_patch, ] = current_version.split('.').map(n => Number(n));
+  const [ latest_major, latest_minor, latest_patch, ] = latest_version.split('.').map(n => Number(n));
 
   let hasUpdate = false;
   if (
-    (latestMajor > currentMajor)
-    || (latestMajor === currentMajor && latestMinor > currentMinor)
-    || (latestMajor === currentMajor && latestMinor === currentMinor && latestPatch > currentPatch)
+    (latest_major > current_major)
+    || (latest_major === current_major && latest_minor > current_minor)
+    || (latest_major === current_major && latest_minor === current_minor && latest_patch > current_patch)
   ) {
     hasUpdate = true;
   }
 
-  return { hasUpdate, latestVersion, };
+  return { hasUpdate, latestVersion: latest_version, };
 };
 
 export const updatePackage = async ({ package_name, version, }: { package_name: string, version: string }): Promise<void> => {
-  console.info(`Installing version ${version} for ${package_name}...`);
+  console.info(`Installing version ${version} for "${package_name}"...`);
   await execute(`npm install -g ${package_name}@${version} --registry=${registry}`);
   console.info('Done.');
 };
