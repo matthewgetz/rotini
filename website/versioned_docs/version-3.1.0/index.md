@@ -78,9 +78,8 @@ const configuration = {
 };
 
 (async () => {
-  const program = rotini({ definition, configuration });
-  const result = await program.run().catch(program.error);
-  result && console.info(result);
+  const { results } = await rotini({ definition, configuration });
+  // log results...
 })();
 ```
 
@@ -92,20 +91,19 @@ const configuration = {
 ```js
 #!/usr/bin/env node
 
-import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';
+import { rotini, Definition, Configuration } from 'rotini';
 
-const definition: I_ProgramDefinition = {
+const definition: Definition = {
   // see definition below...
 };
 
-const configuration: I_ProgramConfiguration = {
+const configuration: Configuration = {
   // see configuration below...
 };
 
 void (async (): Promise<void> => {
-  const program = rotini({ definition, configuration });
-  const result = await program.run().catch(program.error);
-  result && console.info(result);
+  const { results } = await rotini({ definition, configuration });
+  // log results...
 })();
 ```
 
@@ -114,45 +112,22 @@ void (async (): Promise<void> => {
 </Tabs>
 ```
 
-## Program Features
-
-Auto-generated help is printed to the console when a `-h` or `--help` flag is passed to a rotini program. If a help flag is provided after a command, the help for that command is printed instead of the program help.
-
-```bash
-my-cli -h
-```
-
-```bash
-my-cli hello --help
-```
-
-The program version is printed to the console when a `-v` or `--version` flag is passed to a rotini program.
-
-```bash
-my-cli --version
-```
-
-Once your program is published to a registry, you can setup your program to check for updates. When this is configured, rotini will check intermittently for new versions of your CLI program. If a new version is found in the registry, users will be prompted to install (y/N) the new version. When the user chooses to install the new version, the original command will need to be re-run. When the user chooses to skip the new version installation, the passed command will be executed. In every case, rotini will set a timestamp that it will use to know when to check for updates again.
-
-Passing a `-u` or `--update` flag to a rotini program will run the update process. If an update is available it will be installed.
-
-```bash
-my-cli --update
-```
-
 ## Program Definition
 
-Defines a rotini program. See the [I_ProgramDefinition](./api#i_programdefinition) interface for more information.
+Defines a rotini program. See the [Definition](./api#definition) interface for more information.
 
 | Property | Type | Required |
 | --- | --- | --- |
 | name | string | true |
 | description | string | true |
 | version | string | true |
-| configurations | [I_Configuration[]](./api#i_configuration) | false |
-| commands | [I_Command[]](./api#i_command) | false |
-| flags | [I_Flag[]](./api#i_flag) | false |
-| examples | [I_Example[]](./api/#i_example) | false |
+| documentation | string | false |
+| configuration_files | [ConfigurationFile[]](./api#configurationfile) | false |
+| commands | [Command[]](./api#command) | false |
+| positional_flags | [PositionalFlag[]](./api#positionalflag) | false |
+| global_flags | [GlobalFlag[]](./api#globalflag) | false |
+| examples | [Example[]](./api/#example) | false |
+| usage | string | false |
 | help | string | false |
 
 
@@ -168,20 +143,55 @@ Program definition property "version" must be defined and of type "string".
 ### Documentation
 Program definition property "documentation" must be of type "string".
 
-### Configurations
-Program definition property "configurations" is the optional array of configuration objects used to setup a program configuration files. See the [I_Configuration](./api#i_configuration) interface for more information. When defined it must be an array objects that contain "id", "directory", and "file" properties.
+### Configuration Files
+Program definition property "configuration_files" is the optional array of configuration objects used to setup a program configuration files. See the [ConfigurationFile](./api#configurationfile) interface for more information. When defined it must be an array objects that contain "id", "directory", and "file" properties.
 
-#### configuration.id
-Program definition property "id" must be defined, of type "string", and cannot contain spaces.
+#### configuration_file.id
+Program definition property "configuration_file.id" must be defined, of type "string", and cannot contain spaces.
 
-#### configuration.directory
-Program definition property "directory" must be defined and of type "string".
+#### configuration_file.directory
+Program definition property "configuration_file.directory" must be defined and of type "string".
 
-#### configuration.file
-Program definition property "file" must be defined and of type "string".
+#### configuration_file.file
+Program definition property "configuration_file.file" must be defined and of type "string".
+
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```javascript
+const configuration_files = [
+  {
+    id: 'rotini',
+    directory: './configs',
+    file: 'config.json'
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```typescript
+const configuration_files: ConfigurationFile[] = [
+  {
+    id: 'rotini',
+    directory: './configs',
+    file: 'config.json'
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
 
 ### Commands
-Program definition property "commands" must be of type "array". Additionally, the same command "name" cannot exist at the same level in the definition. For example, if a "get" command has been registered in an array of commands, then a second "get" command cannot exist within that command array. However, a "get" command could be registered in the commands array of the first "get" command as a subcommand. See the [I_Command](./api#i_command) interface for more information.
+Program definition property "commands" must be of type "array". Additionally, the same command "name" cannot exist at the same level in the definition. For example, if a "get" command has been registered in an array of commands, then a second "get" command cannot exist within that command array. However, a "get" command could be registered in the commands array of the first "get" command as a subcommand. See the [Command](./api#command) interface for more information.
 
 #### command.name
 Command property "name" must be defined, of type "string", and cannot contain spaces.
@@ -213,22 +223,56 @@ Argument property "type" must be defined, of type "string", and set as "string",
 ##### argument.values
 Argument property "values" must be of type "array" and can only contain indexes of type "argument.type".
 
-##### argument.isValid
-Argument property "isValid" must be of type "function". The argument "isValid" function is provided the parsed value found for the argument so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "isValid" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
+##### argument.validator
+Argument property "validator" must be of type "function". The argument "isValid" function is provided the parsed value found for the argument so that additional validation can be performed beyond providing an allowed value set. If a boolean is returned from the "isValid" function, `true` will result in a noop and `false` will throw a default rotini parse error. To provide additional control over the resulting error output, explicitly throwing an error with a custom message will override the default parse error message.
 
-```js
-const arg: I_Argument = {
-  name: 'resource',
-  description: 'the resource to be returned',
-  variant: 'value',
-  type: 'string',
-  values: [ 'project', 'group', 'user', ],
-  isValid: (value) => {
-    if (value === 'user') {
-      throw new Error('Fetching users is temporarily disabled.')
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```javascript
+const args = [
+  {
+    name: 'resource',
+    description: 'the resource to be returned',
+    variant: 'value',
+    type: 'string',
+    values: [ 'project', 'group', 'user', ],
+    validator: ({ value, coerced_value }) => {
+      if (value === 'user') {
+        throw new Error('Fetching users is temporarily disabled.')
+      }
     }
   }
-};
+];
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```typescript
+const args: Argument[] = [
+  {
+    name: 'resource',
+    description: 'the resource to be returned',
+    variant: 'value',
+    type: 'string',
+    values: [ 'project', 'group', 'user', ],
+    validator: ({ value, coerced_value }) => {
+      if (value === 'user') {
+        throw new Error('Fetching users is temporarily disabled.')
+      }
+    }
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 #### command.flags
@@ -247,7 +291,7 @@ Command property "commands" must of type "array". Additionally, the same command
 Command property "examples" must be of type "array".
 
 #### command.operation
-Command property "operation" must be of type "object". See the [I_Operation](./api#i_operation) interface for more information.
+Command property "operation" must be of type "object". See the [Operation](./api#operation) interface for more information.
 
 #### command.usage
 Command property "usage" must be of type "string". This property will override the generated command usage if set.
@@ -255,64 +299,145 @@ Command property "usage" must be of type "string". This property will override t
 #### command.help
 Command property "help" must be of type "string". This property will override the generated command help output if set.
 
-```js
-const command: I_Command = {
-  name: 'get',
-  description: 'get a resource',
-  aliases: [ 'retrieve', ],
-  deprecated: true,
-  arguments: [
-    {
-      name: 'resource',
-      description: 'the resource to be returned',
-      variant: 'value',
-      type: 'string',
-      values: [ 'project', 'group' ],
-    },
-    {
-      name: 'id',
-      description: 'the resource id of the resource to be returned',
-      variant: 'value',
-      type: 'number',
-      isValid: (id) => {
-        if (id > 10) {
-          return false;
-        }
-        return true;
-      }
-    }
-  ],
-  flags: [
-    {
-      name: 'output',
-      description: 'specify the output format of command operation results',
-      variant: 'value',
-      type: 'string',
-      short_key: 'o',
-      long_key: 'output',
-      values: ['json', 'text'],
-      default: 'json',
-      required: false,
-    }
-  ],
-  commands: [
-    {
-      name: 'hello-world',
-      description: 'say hello world',
-      operation: {
-        handler: ({ parsed }) => {
-          const { global_flags } = parsed
-          return (global_flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```javascript
+const commands = [
+  {
+    name: 'get',
+    description: 'get a resource',
+    aliases: [ 'retrieve', ],
+    deprecated: true,
+    arguments: [
+      {
+        name: 'resource',
+        description: 'the resource to be returned',
+        variant: 'value',
+        type: 'string',
+        values: [ 'project', 'group' ],
+      },
+      {
+        name: 'id',
+        description: 'the resource id of the resource to be returned',
+        variant: 'value',
+        type: 'number',
+        isValid: (id) => {
+          if (id > 10) {
+            return false;
+          }
+          return true;
         }
       }
+    ],
+    flags: [
+      {
+        name: 'output',
+        description: 'specify the output format of command operation results',
+        variant: 'value',
+        type: 'string',
+        short_key: 'o',
+        long_key: 'output',
+        values: ['json', 'text'],
+        default: 'json',
+        required: false,
+      }
+    ],
+    commands: [
+      {
+        name: 'hello-world',
+        description: 'say hello world',
+        operation: {
+          handler: ({ parsed }) => {
+            const { global_flags } = parsed
+            return (global_flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+          }
+        }
+      }
+    ],
+    operation: {
+      handler: ({ parsed }) => {
+        const [get,] = parsed.commands;
+        return `GET /${get.arguments.resource}s/${get.arguments.id}`;
+      }
     }
-  ],
-  operation: {
-    handler: ({ parsed }) => {
-      const [get,] = parsed.commands;
-      return `GET /${get.arguments.resource}s/${get.arguments.id}`;
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```typescript
+const commands: Command[] = [
+  {
+    name: 'get',
+    description: 'get a resource',
+    aliases: [ 'retrieve', ],
+    deprecated: true,
+    arguments: [
+      {
+        name: 'resource',
+        description: 'the resource to be returned',
+        variant: 'value',
+        type: 'string',
+        values: [ 'project', 'group' ],
+      },
+      {
+        name: 'id',
+        description: 'the resource id of the resource to be returned',
+        variant: 'value',
+        type: 'number',
+        isValid: (id) => {
+          if (id > 10) {
+            return false;
+          }
+          return true;
+        }
+      }
+    ],
+    flags: [
+      {
+        name: 'output',
+        description: 'specify the output format of command operation results',
+        variant: 'value',
+        type: 'string',
+        short_key: 'o',
+        long_key: 'output',
+        values: ['json', 'text'],
+        default: 'json',
+        required: false,
+      }
+    ],
+    commands: [
+      {
+        name: 'hello-world',
+        description: 'say hello world',
+        operation: {
+          handler: ({ parsed }) => {
+            const { global_flags } = parsed
+            return (global_flags.output === 'json') ? { hello: 'world' } : 'Hello World';
+          }
+        }
+      }
+    ],
+    operation: {
+      handler: ({ parsed }) => {
+        const [get,] = parsed.commands;
+        return `GET /${get.arguments.resource}s/${get.arguments.id}`;
+      }
     }
-};
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 ### Positional Flags
@@ -390,22 +515,97 @@ Global flag property "isValid" must be of type "function". The "isValid" functio
 #### global_flag.parse
 Global flag property "parse" must be of type "function". The "parse" function is provided the original value and the type-coerced value found for the flag and can be used to additionally manipulate how the value is parsed for the flag.
 
-```js
-const flag: I_Flag = {
-  name: 'output',
-  description: 'specify the output format of command operation results',
-  variant: 'value',
-  type: 'string',
-  short_key: 'o',
-  long_key: 'output',
-  values: ['json', 'text'],
-  default: 'json',
-  required: false,
-};
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```javascript
+const global_flags = [
+  {
+    name: 'output',
+    description: 'specify the output format of command operation results',
+    variant: 'value',
+    type: 'string',
+    short_key: 'o',
+    long_key: 'output',
+    values: ['json', 'text'],
+    default: 'json',
+    required: false
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```typescript
+const global_flags: GlobalFlag[] = [
+  {
+    name: 'output',
+    description: 'specify the output format of command operation results',
+    variant: 'value',
+    type: 'string',
+    short_key: 'o',
+    long_key: 'output',
+    values: ['json', 'text'],
+    default: 'json',
+    required: false
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
 ```
 
 ### Examples
-Program definition property "examples" must be of type "array" and can only contain indexes of type "string".
+Program definition property "examples" must be of type "array".
+
+#### example.description
+Program definition property "example.description" must be defined and of type "string".
+
+#### example.usage
+Program definition property "example.usage" must be defined and of type "string".
+
+```mdx-code-block
+<Tabs>
+<TabItem value="JavaScript">
+```
+
+```javascript
+const examples = [
+  {
+    description: 'get a product',
+    usage: 'my-cli get product <id>'
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="TypeScript">
+```
+
+```typescript
+const examples: Example[] = [
+  {
+    description: 'get a product',
+    usage: 'my-cli get product <id>'
+  }
+];
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+### Usage
+Program definition property "usage" must be of type "string". This property will override the generated program usage if set.
 
 ### Help
 Program definition property "help" must be of type "string". This property will override the generated program help output if set.
@@ -471,7 +671,7 @@ const definition = {
 ```
 
 ```typescript
-const definition: I_ProgramDefinition = {
+const definition: Definition = {
   name: 'rotini',
   description: 'an example rotini program',
   version: '1.0.0',
@@ -526,22 +726,30 @@ const definition: I_ProgramDefinition = {
 ```
 
 ## Program Configuration
-The optional configuration object used to control the rotini framework behavior. See the [I_ProgramConfiguration](./api#i_programconfiguration) interface for more information.
+The optional configuration object used to control the rotini framework behavior. See the [Configuration](./api#configuration) interface for more information.
 
 | Property | Type | Default |
 | --- | --- | --- |
 | strict_commands | boolean | true |
 | strict_flags | boolean | true |
-| check_for_new_npm_version | boolean | false |
+| strict_help | boolean | false |
+| strict_mode | boolean | false |
+| check_for_npm_update | boolean | false |
 
-#### configuration.strict_commands
+### Strict Commands
 Program configuration property "strict_commands" must be of type "boolean". This property controls whether or not rotini will ignore parameters that it parses as commands when they cannot be mapped according to the provided program definition. Defaults to `true`.
 
-#### configuration.strict_flags
+### Strict Flags
 Program configuration property "strict_flags" must be of type "boolean". This property controls whether or not rotini will ignore parameters that it parses as flags when they cannot be mapped according to the provided program definition. Defaults to `true`.
 
-#### configuration.check_for_new_npm_version
-Program configuration property "check_for_new_npm_version" must be of type "boolean". This property controls whether or not rotini will intermittently check a registry for package updates. Defaults to `false`. A configuration with a "directory" and "file" name must be set additionally before rotini will attempt to intermittently update a CLI program.
+### Strict Help
+Program configuration property "strict_help" must be of type "boolean". This property controls whether or not rotini will output help when suggested commands (Did you mean one of these commands?) are output on parse error. Defaults to `false`.
+
+### Strict Mode
+Program configuration property "strict_mode" must be of type "boolean". This property controls whether or not rotini will perform additional checks against the passed program definition. Strict error output can be helpful when developing a rotini cli program, but these additional checks result in additional overhead that a correctly configured rotini cli program would benefit from skipping to speed up build and parse times. Defaults to `false`.
+
+### Check NPM Registry Version
+Program configuration property "check_for_npm_update" must be of type "boolean". This property controls whether or not rotini will intermittently check a registry for package updates. Defaults to `false`. A configuration with a "directory" and "file" name must be set additionally before rotini will attempt to intermittently update a CLI program.
 
 ```mdx-code-block
 <Tabs>
@@ -552,7 +760,9 @@ Program configuration property "check_for_new_npm_version" must be of type "bool
 const configuration = {
   strict_commands: true,
   strict_flags: true,
-  check_for_new_npm_version: false
+  strict_help: false,
+  strict_mode: false,
+  check_for_npm_update: false
 };
 ```
 
@@ -562,10 +772,12 @@ const configuration = {
 ```
 
 ```typescript
-const configuration: I_ProgramConfiguration = {
+const configuration: Configuration = {
   strict_commands: true,
   strict_flags: true,
-  check_for_new_npm_version: false
+  strict_help: false,
+  strict_mode: false,
+  check_for_npm_update: false
 };
 ```
 

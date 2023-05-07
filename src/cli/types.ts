@@ -28,6 +28,8 @@ export type Validator = (properties: ValueProperties) => boolean | void | never;
 
 export type Parser = (properties: ValueProperties) => unknown;
 
+export type PositionalFlagOperation = (value: any) => Promise<unknown> | unknown
+
 // export const DefaultParser = (properties: ValueProperties): Value => properties.coerced_value;
 
 export const DefaultParser = (properties: ValueProperties): unknown => properties.coerced_value;
@@ -54,7 +56,7 @@ export type FlagsProperties = {
 }
 
 export type ParseObject = {
-  commands: Array<{
+  commands: {
     name: string,
     arguments: {
       [key: string]: string | number | boolean | (string | number | boolean)[]
@@ -62,7 +64,7 @@ export type ParseObject = {
     flags: {
       [key: string]: string | number | boolean | (string | number | boolean)[]
     }
-  }>
+  }[]
   global_flags: {
     [key: string]: string | number | boolean | (string | number | boolean)[]
   }
@@ -137,14 +139,6 @@ export type SetContent = {
   error: Error | undefined
   hasError: boolean
 }
-
-export type PositionalFlagOperation =
-  | ((value: string) => Promise<unknown> | unknown)
-  | ((value: number) => Promise<unknown> | unknown)
-  | ((value: boolean) => Promise<unknown> | unknown)
-  | ((value: string[]) => Promise<unknown> | unknown)
-  | ((value: number[]) => Promise<unknown> | unknown)
-  | ((value: boolean[]) => Promise<unknown> | unknown)
 
 export type ConfigFile = {
   getContent: <T = object>() => GetContent<T>

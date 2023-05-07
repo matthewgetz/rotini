@@ -89,11 +89,6 @@ module.exports = {
           position: 'left',
         },
         {
-          label: 'Blog',
-          to: '/blog',
-          position: 'left',
-        },
-        {
           href: 'https://github.com/matthewgetz/rotini',
           className: 'header-github-link',
           'aria-label': 'GitHub Repository',
