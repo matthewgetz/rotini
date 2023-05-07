@@ -61,6 +61,7 @@ describe('updates', () => {
   });
 
   it('calls child_process.exec, rejects error, and outputs to console', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => { });
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     // @ts-expect-error allow mockImplementation
     child_process.exec.mockImplementation((command, callback) => callback('error', null, null));
@@ -75,11 +76,14 @@ describe('updates', () => {
     expect(result).toBe(undefined);
     expect(child_process.exec).toHaveBeenCalledTimes(1);
     expect(child_process.exec).toHaveBeenCalledWith('npm install -g rotini@1.2.3 --registry=https://registry.npmjs.org', expect.any(Function));
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledWith('Installing version 1.2.3 for "rotini"...');
     expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith('error');
   });
 
   it('calls child_process.exec, rejects stderr, and outputs to console', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => { });
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     // @ts-expect-error allow mockImplementation
     child_process.exec.mockImplementation((command, callback) => callback(null, null, 'stderr'));
@@ -94,6 +98,8 @@ describe('updates', () => {
     expect(result).toBe(undefined);
     expect(child_process.exec).toHaveBeenCalledTimes(1);
     expect(child_process.exec).toHaveBeenCalledWith('npm install -g rotini@1.2.3 --registry=https://registry.npmjs.org', expect.any(Function));
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledWith('Installing version 1.2.3 for "rotini"...');
     expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith('stderr');
   });

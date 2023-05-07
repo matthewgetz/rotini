@@ -1,4 +1,4 @@
-import { DefaultParser, DefaultValidator, TYPES, VARIANTS, STYLES, } from './types';
+import { DefaultParser, DefaultValidator, DefaultPositionalFlagOperation, TYPES, VARIANTS, STYLES, } from './types';
 
 describe('types', () => {
   describe('DefaultValidator', () => {
@@ -12,6 +12,13 @@ describe('types', () => {
     it('returns coerced value', () => {
       const result = DefaultParser({ value: '123', coerced_value: 123, });
       expect(result).toBe(123);
+    });
+  });
+
+  describe('DefaultPositionalFlagOperation', () => {
+    it('returns undefined (void return)', () => {
+      const result = DefaultPositionalFlagOperation();
+      expect(result).toBe(undefined);
     });
   });
 

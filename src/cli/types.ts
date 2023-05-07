@@ -27,6 +27,8 @@ export const DefaultParser = (properties: ValueProperties): Value => properties.
 
 export const DefaultValidator = (): boolean => true;
 
+export const DefaultPositionalFlagOperation = (): void => { };
+
 export type ArgumentsProperties = {
   entity: {
     type: 'Command'

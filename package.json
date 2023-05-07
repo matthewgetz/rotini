@@ -1,18 +1,18 @@
 {
   "name": "rotini",
   "scripts": {
-    "all": "npm run deps && npm run lint && npm run test:coverage && npm run compile && npm run build",
+    "all": "yarn run deps && yarn run lint && yarn run test:coverage && yarn run compile && yarn run build",
     "build": "tsup --config ./node_modules/@rotini/configs/tsup.config.ts",
-    "build:watch": "npm run build -- --watch",
+    "build:watch": "yarn run build --watch",
     "compile": "tsc",
-    "compile:watch": "npm run compile -- --watch",
-    "deps": "npm run deps:dev",
+    "compile:watch": "yarn run compile --watch",
+    "deps": "yarn run deps:dev",
     "deps:dev": "ncu --dep dev -e 2",
     "lint": "eslint src --config ./node_modules/@rotini/configs/.eslintrc.js --no-inline-config --max-warnings 0",
     "test": "vitest --config ./node_modules/@rotini/configs/vitest.config.ts",
-    "test:coverage": "npm run test -- --coverage",
-    "test:verbose": "npm run test -- --reporter verbose",
-    "test:watch": "npm run test -- --coverage --watch"
+    "test:coverage": "yarn run test --coverage",
+    "test:verbose": "yarn run test --reporter verbose",
+    "test:watch": "yarn run test --coverage --watch"
   },
   "devDependencies": {
     "@rotini/configs": "^1.0.8"

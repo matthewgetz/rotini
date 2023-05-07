@@ -1,5 +1,5 @@
 import { I_Flag, I_GenericFlag, I_GlobalFlag, I_LocalFlag, I_PositionalFlag, } from '../interfaces';
-import { DefaultValidator, DefaultParser, Type, Validator, Value, Values, Variant, Style, Parser, PositionalFlagOperation, } from '../types';
+import { DefaultValidator, DefaultParser, DefaultPositionalFlagOperation, Type, Validator, Value, Values, Variant, Style, Parser, PositionalFlagOperation, VARIANTS, TYPES, STYLES, } from '../types';
 import { ConfigurationError, } from '../errors';
 import { getParserFunction, getValidatorFunction, } from '../shared';
 import Utils from '../../utils';
@@ -45,6 +45,12 @@ export class Flag implements I_Flag {
     return this;
   };
 
+  #setStyle = (style: 'positional' | 'global' | 'local'): Flag | never => {
+    this.style = style;
+
+    return this;
+  };
+
   #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): Flag | never => {
     this.variant = variant;
 
@@ -53,12 +59,6 @@ export class Flag implements I_Flag {
 
   #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): Flag | never => {
     this.type = type;
-
-    return this;
-  };
-
-  #setStyle = (style: 'positional' | 'global' | 'local'): Flag | never => {
-    this.style = style;
 
     return this;
   };
@@ -140,35 +140,35 @@ export class StrictFlag extends Flag {
 
   #setDescription = (description: string): StrictFlag | never => {
     if (Utils.isNotDefined(description) || Utils.isNotString(description)) {
-      throw new ConfigurationError(`Flag property "description" must be defined and of type "string" for ${this.style} flag "${this.name}".`);
-    }
-
-    return this;
-  };
-
-  #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): StrictFlag | never => {
-    if (Utils.isNotDefined(variant) || Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, Object.freeze([ 'boolean', 'value', 'variadic', ]))) {
-      throw new ConfigurationError(`Flag property "variant" must be defined, of type "string", and set as "boolean" or "value" for ${this.style} flag "${this.name}".`);
-    }
-
-    return this;
-  };
-
-  #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): StrictFlag | never => {
-    if (Utils.isNotDefined(type) || Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, Object.freeze([ 'string', 'number', 'boolean', 'string[]', 'number[]', 'boolean[]', ]))) {
-      throw new ConfigurationError(`Flag property "type" must be defined, of type "string", and set as "string", "number", or "boolean" for ${this.style} flag "${this.name}".`);
-    }
-
-    if (this.variant === 'boolean' && Utils.isNotAllowedStringValue(type, Object.freeze([ 'boolean', ]))) {
-      throw new ConfigurationError(`Flag property "type" must be set as "boolean" when flag property "variant" is set as "boolean" for ${this.style} flag "${this.name}".`);
+      throw new ConfigurationError(`Flag property "description" must be defined and of type "string" for flag "${this.name}".`);
     }
 
     return this;
   };
 
   #setStyle = (style: 'positional' | 'global' | 'local'): StrictFlag | never => {
-    if (Utils.isNotDefined(style) || Utils.isNotString(style) || Utils.isNotAllowedStringValue(style, Object.freeze([ 'positional', 'global', 'local', ]))) {
-      throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for ${this.style} flag "${this.name}".`);
+    if (Utils.isNotDefined(style) || Utils.isNotString(style) || Utils.isNotAllowedStringValue(style, STYLES)) {
+      throw new ConfigurationError(`Flag property "style" must be defined, of type "string", and set as "positional", "global", or "local" for flag "${this.name}".`);
+    }
+
+    return this;
+  };
+
+  #setVariant = (variant: 'boolean' | 'value' | 'variadic' = 'boolean'): StrictFlag | never => {
+    if (Utils.isNotString(variant) || Utils.isNotAllowedStringValue(variant, VARIANTS)) {
+      throw new ConfigurationError(`Flag property "variant" must be of type "string" and set as "boolean" or "value" for ${this.style} flag "${this.name}".`);
+    }
+
+    return this;
+  };
+
+  #setType = (type: 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]' = (this.variant === 'boolean' ? 'boolean' : 'string')): StrictFlag | never => {
+    if (Utils.isNotString(type) || Utils.isNotAllowedStringValue(type, TYPES)) {
+      throw new ConfigurationError(`Flag property "type" must be of type "string" and set as "string", "number", or "boolean" for ${this.style} flag "${this.name}".`);
+    }
+
+    if (this.variant === 'boolean' && this.type !== 'boolean') {
+      throw new ConfigurationError(`Flag property "type" must be set as "boolean" when flag property "variant" is set as "boolean" for ${this.style} flag "${this.name}".`);
     }
 
     return this;
@@ -205,7 +205,7 @@ export class StrictFlag extends Flag {
       throw new ConfigurationError(`Flag property "default" must be of type "boolean" for ${this.style} flag "${this.name}" when flag property "variant" is set to "boolean".`);
     }
 
-    if ((Utils.isDefined(default_value) && this.variant === 'value' && (Utils.isNotString(default_value) && Utils.isNotNumber(default_value) && Utils.isNotBoolean(default_value))) || Utils.isEmptyString(default_value)) {
+    if ((Utils.isDefined(default_value) && this.variant === 'value' && (Utils.isNotString(default_value) && Utils.isNotNumber(default_value) && Utils.isNotBoolean(default_value)))) {
       throw new ConfigurationError(`Flag property "default" must be of type "string", "number", or "boolean" for ${this.style} flag "${this.name}" when flag property "variant" is set to "value".`);
     }
 
@@ -218,8 +218,7 @@ export class StrictFlag extends Flag {
     }
 
     if (Utils.isDefined(default_value) && this.variant === 'variadic' && ((this.type === 'string[]' && Utils.isNotArrayOfStrings(default_value)) || (this.type === 'number[]' && Utils.isNotArrayOfNumbers(default_value)) || (this.type === 'boolean[]' && Utils.isNotArrayOfBooleans(default_value)))) {
-      const [ type, ] = this.type.split('[]');
-      throw new ConfigurationError(`Flag property "default" must be of type "${type}" when flag property "type" is set as "${type}" for ${this.style} flag "${this.name}.`);
+      throw new ConfigurationError(`Flag property "default" must be of type "${this.type}" when flag property "type" is set as "${this.type}" for ${this.style} flag "${this.name}.`);
     }
 
     if (Utils.isDefined(default_value) && this.variant === 'value' && this.values.length > 0 && !this.values.includes(default_value as never)) {
@@ -276,10 +275,10 @@ export class PositionalFlag extends Flag {
 
   constructor (flag: I_PositionalFlag) {
     super({ ...flag, style: 'positional', });
-    this.#setOperation(flag.operation);
+    this.setOperation(flag.operation);
   }
 
-  #setOperation = (operation: PositionalFlagOperation = ((): void => { })): PositionalFlag | never => {
+  setOperation = (operation: PositionalFlagOperation = DefaultPositionalFlagOperation): PositionalFlag | never => {
     this.operation = operation;
 
     return this;
@@ -287,15 +286,19 @@ export class PositionalFlag extends Flag {
 }
 
 export class StrictPositionalFlag extends StrictFlag {
+  operation!: PositionalFlagOperation;
+
   constructor (flag: I_PositionalFlag) {
     super({ ...flag, style: 'positional', });
-    this.#setOperation(flag.operation);
+    this.setOperation(flag.operation);
   }
 
-  #setOperation = (operation: PositionalFlagOperation = ((): void => { })): StrictPositionalFlag | never => {
+  setOperation = (operation: PositionalFlagOperation = DefaultPositionalFlagOperation): StrictPositionalFlag | never => {
     if (Utils.isDefined(operation) && Utils.isNotFunction(operation)) {
-      throw new ConfigurationError(`Flag property "operation" must be of type "function" for ${this.style} flag ${this.name}`);
+      throw new ConfigurationError(`Flag property "operation" must be of type "function" for ${this.style} flag "${this.name}".`);
     }
+
+    this.operation = operation;
 
     return this;
   };
