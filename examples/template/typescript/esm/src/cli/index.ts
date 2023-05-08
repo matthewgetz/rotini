@@ -1,7 +1,7 @@
 import { Configuration, Definition, } from 'rotini';
-import { commands, } from './commands';
-import { positional_flags, } from './positional-flags';
-import { global_flags, } from './global-flags';
+import { commands, } from './commands/index.js';
+import { positional_flags, } from './positional-flags.js';
+import { global_flags, } from './global-flags.js';
 
 export const definition: Definition = {
   name: 'my-cli',

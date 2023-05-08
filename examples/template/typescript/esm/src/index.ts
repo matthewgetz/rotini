@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { rotini, } from 'rotini';
-import { definition, configuration, } from './cli';
+import { definition, configuration, } from './cli/index.js';
 
 void (async (): Promise<void> => {
   const { results, } = await rotini({ definition, configuration, });
