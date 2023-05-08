@@ -3,6 +3,7 @@
 build/
 coverage/
 dev-build/
+dist/
 node_modules/
 !src/**/*
 package-lock.json

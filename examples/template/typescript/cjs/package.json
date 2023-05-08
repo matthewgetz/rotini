@@ -2,7 +2,7 @@
   "name": "my-cli",
   "type": "commonjs",
   "bin": {
-    "my-cli": "./index.js"
+    "my-cli": "./dist/index.js"
   },
   "scripts": {
     "setup": "npm install && tsc && chmod +x index.js && npm link --force"
