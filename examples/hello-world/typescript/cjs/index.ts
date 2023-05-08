@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { rotini, I_ProgramDefinition, I_ProgramConfiguration } from 'rotini';
+import { rotini, Definition } from 'rotini';
 
-const definition: I_ProgramDefinition = {
-  name: 'rfe',
+const definition: Definition = {
+  name: 'hello-world',
   description: 'rotini framework example "hello world" program',
   version: '1.0.0',
   commands: [
@@ -51,12 +51,7 @@ const definition: I_ProgramDefinition = {
   ]
 };
 
-const configuration: I_ProgramConfiguration = {
-  strict_commands: true,
-  strict_flags: true
-};
-
 void (async (): Promise<void> => {
-  const { results } = await rotini({ definition, configuration });
+  const { results } = await rotini({ definition });
   results?.handler_result && console.info(results.handler_result);
 })();

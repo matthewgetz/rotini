@@ -3,7 +3,7 @@
 import { rotini } from 'rotini';
 
 const definition = {
-  name: 'rfe',
+  name: 'hello-world',
   description: 'rotini framework example "hello world" program',
   version: '1.0.0',
   commands: [
@@ -51,12 +51,7 @@ const definition = {
   ]
 };
 
-const configuration = {
-  strict_commands: true,
-  strict_flags: true
-};
-
 (async () => {
-  const { results } = await rotini({ definition, configuration });
+  const { results } = await rotini({ definition });
   results?.handler_result && console.info(results.handler_result);
 })();
