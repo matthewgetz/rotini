@@ -1,0 +1,13 @@
+{
+  "name": "my-cli",
+  "type": "commonjs",
+  "bin": {
+    "my-cli": "./index.js"
+  },
+  "scripts": {
+    "setup": "npm install && chmod +x index.js && npm link --force"
+  },
+  "dependencies": {
+    "rotini": "*"
+  }
+}

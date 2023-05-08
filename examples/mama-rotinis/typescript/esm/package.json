@@ -1,6 +1,6 @@
 {
   "name": "mama-rotinis",
-  "type": "commonjs",
+  "type": "module",
   "bin": {
     "mama-rotinis": "./index.js"
   },

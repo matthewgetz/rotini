@@ -1,8 +1,8 @@
 {
-  "name": "mama-rotinis",
+  "name": "my-cli",
   "type": "commonjs",
   "bin": {
-    "mama-rotinis": "./index.js"
+    "my-cli": "./index.js"
   },
   "scripts": {
     "setup": "npm install && tsc && chmod +x index.js && npm link --force"

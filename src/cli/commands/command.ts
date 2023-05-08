@@ -139,6 +139,7 @@ export class Command implements I_Command {
   };
 
   #setUsage = (usage?: string): Command => {
+    usage = usage?.replace(' <command>', '');
     let command_usage = `${usage} ${this.name}`;
 
     if (this.arguments.length > 0) {
@@ -212,7 +213,7 @@ export class Command implements I_Command {
       this.arguments_help,
       this.commands_help,
       this.flags_help,
-      this.commands.length > 0 ? `\n\nUse "${this.usage} <command> --help" for more information about a given command.` : '',
+      this.commands.length > 0 ? `\n\nUse "${this.usage} --help" for more information about a given command.` : '',
     ].join('');
 
     return this;
