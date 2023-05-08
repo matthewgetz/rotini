@@ -225,7 +225,7 @@ const definition: Definition = {
           name: 'orders',
           description: 'delete all orders',
           operation: {
-            handler: ({ parsed, getConfigurationFile }) => {
+            handler: ({ getConfigurationFile }) => {
               const {  setContent } = getConfigurationFile('orders');
               setContent({ orders: [] })
               return '🚫🍕';
