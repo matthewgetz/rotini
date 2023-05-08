@@ -1,11 +1,11 @@
 {
-  "name": "my-cli",
+  "name": "template",
   "type": "module",
   "bin": {
-    "my-cli": "./dist/index.js"
+    "template": "./dist/index.js"
   },
   "scripts": {
-    "setup": "npm install && tsc && chmod +x index.js && npm link --force"
+    "setup": "npm install && tsc && chmod +x ./dist/index.js && npm link --force"
   },
   "devDependencies": {
     "typescript": "*"

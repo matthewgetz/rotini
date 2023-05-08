@@ -1,11 +1,11 @@
 {
-  "name": "my-cli",
+  "name": "template",
   "type": "module",
   "bin": {
-    "my-cli": "./src/index.js"
+    "template": "./src/index.js"
   },
   "scripts": {
-    "setup": "npm install && chmod +x index.js && npm link --force"
+    "setup": "npm install && chmod +x ./src/index.js && npm link --force"
   },
   "dependencies": {
     "rotini": "*"
