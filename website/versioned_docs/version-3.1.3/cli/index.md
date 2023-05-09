@@ -46,7 +46,7 @@ rotini --help
 ```
 
 ```text
-rotini · 3.1.3
+rotini · 3.1.4
 
   The rotini cli framework companion cli.
 
@@ -121,7 +121,7 @@ USAGE:
 
 EXAMPLES:
 
-  # simple generate (defaults to javascript commonjs example)
+  # simple generate (defaults to typescript commonjs example)
   rotini generate my-cli
 
   # generate a typescript esm example
