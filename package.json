@@ -2,7 +2,7 @@
   "name": "rotini",
   "scripts": {
     "all": "yarn run deps && yarn run lint && yarn run test:coverage && yarn run compile && yarn run build",
-    "build": "tsup --config ./node_modules/@rotini/configs/tsup.config.ts",
+    "build": "tsup --config ./node_modules/@rotini/configs/bs.tsup.config.ts",
     "build:watch": "yarn run build --watch",
     "compile": "tsc",
     "compile:watch": "yarn run compile --watch",
@@ -15,7 +15,7 @@
     "test:watch": "yarn run test --coverage --watch"
   },
   "devDependencies": {
-    "@rotini/configs": "^1.0.8"
+    "@rotini/configs": "^3.1.4"
   },
   "eslintConfig": {
     "extends": "./node_modules/@rotini/configs/.eslintrc.js"
