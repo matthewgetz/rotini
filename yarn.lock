@@ -355,10 +355,10 @@
     "@pnpm/network.ca-file" "^1.0.1"
     config-chain "^1.1.11"
 
-"@rotini/configs@^3.1.4":
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/@rotini/configs/-/configs-3.1.4.tgz#10efeb818e08e0a35ce2d0fa288244f5265d6c7c"
-  integrity sha512-ae2OaAS32rotywEx7ljTF9p5WPdiTdjlAwoptjwxz1sWqcwbSB1BW8k2Y7SmqRipUJHz31YKJmPASlmLwhUZlA==
+"@rotini/configs@^3.1.5":
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@rotini/configs/-/configs-3.1.5.tgz#8cd4ddf83de57329980cc0d53f1ea09097586100"
+  integrity sha512-US+nmHtLgT5EsFahN5fJYs+3GDfWGjEBTapPLeK4SWmcDOugONoeJFTXwivYS3HB6LdWOrJU0iGMYKKKMQndOw==
   dependencies:
     "@types/node" "*"
     "@typescript-eslint/eslint-plugin" "*"

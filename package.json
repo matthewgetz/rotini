@@ -15,7 +15,7 @@
     "test:watch": "yarn run test --coverage --watch"
   },
   "devDependencies": {
-    "@rotini/configs": "^3.1.4"
+    "@rotini/configs": "^3.1.5"
   },
   "eslintConfig": {
     "extends": "./node_modules/@rotini/configs/.eslintrc.js"
