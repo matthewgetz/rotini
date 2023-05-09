@@ -105,7 +105,8 @@ type BeforeHandlerProps = {
 
  type FailureHandlerProps = {
   parsed: ParseObject
-  getConfigurationFile: GetConfigurationFile
+   getConfigurationFile: GetConfigurationFile
+  error: Error
 }
 
 export type OperationResult = {

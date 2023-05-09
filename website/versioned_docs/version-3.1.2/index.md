@@ -8,6 +8,51 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 ```
 
+## Quick Start
+Get to it.
+
+```mdx-code-block
+<Tabs>
+<TabItem value="npx">
+```
+
+```bash
+npx @rotini/cli generate my-cli
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="npm">
+```
+
+```bash
+npm install -g @rotini/cli
+rotini generate my-cli
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value="yarn">
+```
+
+```bash
+yarn global add @rotini/cli
+rotini generate my-cli
+```
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
+```text
+cd my-cli
+npm run setup
+template --help
+
+      🍝
+```
+
 ## Concepts
 
 rotini is an opinionated CLI framework that aims to remove the code overhead required to create a Node.JS CLI program. Instead of building your own program, commands, arguments, and flags, rotini has a declarative definition object structure that defines your program—the only code that you write is for your command operations. When your program is executed, rotini matches the argv parameters passed to your program against your program definition and maps commands, arguments, and flags accordingly. The resulting parsed commands, arguments, and flags are handed to the last matched command operation, allowing you to expect argument and flag values and to perform your program actions.
@@ -142,6 +187,8 @@ Program definition property "version" must be defined and of type "string".
 
 ### Documentation
 Program definition property "documentation" must be of type "string".
+
+The program definition documentation property is used at the top of the program help to provide an external documentation link to users.
 
 ### Configuration Files
 Program definition property "configuration_files" is the optional array of configuration objects used to setup a program configuration files. See the [ConfigurationFile](./api#configurationfile) interface for more information. When defined it must be an array objects that contain "id", "directory", and "file" properties.

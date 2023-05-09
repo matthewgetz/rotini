@@ -270,40 +270,36 @@ type ParseObject = {
 
 ```js
 type BeforeHandlerProps = {
-  parsed: ParseObject;
-};
+  parsed: ParseObject
+  getConfigurationFile: GetConfigurationFile
+}
 
-type HandlerProps = {
-  parsed: ParseObject;
-  before_handler_result: unknown;
-};
+ type HandlerProps = {
+  parsed: ParseObject
+  before_handler_result: unknown
+  getConfigurationFile: GetConfigurationFile
+}
 
-type AfterHandlerProps = {
-  parsed: ParseObject;
-  before_handler_result: unknown;
-  handler_result: unknown;
-};
+ type AfterHandlerProps = {
+  parsed: ParseObject
+  before_handler_result: unknown
+  handler_result: unknown
+  getConfigurationFile: GetConfigurationFile
+}
 
-type SuccessHandlerProps = {
-  parsed: ParseObject;
-  before_handler_result: unknown;
-  handler_result: unknown;
-  after_handler_result: unknown;
-};
+ type SuccessHandlerProps = {
+  parsed: ParseObject
+  before_handler_result: unknown
+  handler_result: unknown
+  after_handler_result: unknown
+  getConfigurationFile: GetConfigurationFile
+}
 
-type FailureHandlerProps = {
-  parsed: ParseObject;
-};
-
-type BeforeHandler = ((props: BeforeHandlerProps) => Promise<unknown> | unknown) | undefined;
-
-type Handler = ((props: HandlerProps) => Promise<unknown> | unknown) | undefined;
-
-type AfterHandler = ((props: AfterHandlerProps) => Promise<unknown> | unknown) | undefined;
-
-type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> | unknown) | undefined;
-
-type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined;
+ type FailureHandlerProps = {
+  parsed: ParseObject
+  getConfigurationFile: GetConfigurationFile
+  error: Error
+}
 
 type OperationResult = {
   before_handler_result: unknown
@@ -313,11 +309,25 @@ type OperationResult = {
   handler_failure_result: unknown
   handler_timeout_result: unknown
 }
+
+type BeforeHandler = ((props: BeforeHandlerProps) => Promise<unknown> | unknown) | undefined
+
+type Handler = ((props: HandlerProps) => Promise<unknown> | unknown)
+
+type AfterHandler = ((props: AfterHandlerProps) => Promise<unknown> | unknown) | undefined
+
+type SuccessHandler = ((props: SuccessHandlerProps) => Promise<unknown> | unknown) | undefined
+
+type FailureHandler = ((props: FailureHandlerProps) => Promise<unknown> | unknown) | undefined
+
+type OperationHandler = ((props: OperationProps) => Promise<OperationResult> | never)
 ```
 
 ### Config File
 
 ```js
+type GetConfigurationFile = (id: string) => ConfigFile
+
 type GetContent<T> = {
   data: T | undefined;
   error: Error | undefined;

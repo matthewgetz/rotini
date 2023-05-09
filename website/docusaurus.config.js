@@ -89,6 +89,12 @@ module.exports = {
           position: 'left',
         },
         {
+          label: 'CLI',
+          docId: 'cli/index',
+          type: 'doc',
+          position: 'left',
+        },
+        {
           label: 'Blog',
           to: '/blog',
           position: 'left',

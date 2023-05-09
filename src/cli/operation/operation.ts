@@ -111,9 +111,10 @@ export class Operation implements I_Operation {
         await handleWithTimeout();
         after_handler_result = await this.afterHandler?.({ parsed, before_handler_result, handler_result, getConfigurationFile, });
         handler_success_result = await this.onHandlerSuccess?.({ parsed, before_handler_result, handler_result, after_handler_result, getConfigurationFile, });
-      } catch (error) {
+      } catch (e) {
+        const error = e as Error;
         if (!(error instanceof OperationTimeoutError)) {
-          handler_failure_result = await this.onHandlerFailure?.({ parsed, getConfigurationFile, });
+          handler_failure_result = await this.onHandlerFailure?.({ parsed, getConfigurationFile, error, });
         }
         throw error;
       }
