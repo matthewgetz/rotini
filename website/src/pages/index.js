@@ -19,9 +19,12 @@ import {
   FcLink as CommandAliasIcon,
   FcDeployment as DeployIcon,
   FcInTransit as ShipIcon,
-  FcBinoculars as CheckTypesIcon,
+  FcBinoculars as TypedIcon,
   FcAdvertising as AutoUpdateIcon,
-  FcFlashOn as NoDependenciesIcon
+  FcFlashOn as NoDependenciesIcon,
+  FcBookmark as FlagIcon,
+  FcHighPriority as ValidationIcon,
+  FcSerialTasks as OperationsIcon
 } from 'react-icons/fc';
 
 import versions from '../../versions.json'
@@ -122,14 +125,14 @@ const Features = () => {
           <Feature
             Icon={DefinitionIcon}
             title='Declarative Program Definitions'
-            info='Define and describe your program commands, arguments, and flags. rotini will build your program and parse it; you only need to write code for your command operations.'
+            info='Define your program commands, arguments, and flags. Rotini will build your program and parse it; you only need to write code for your command operation handlers.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
             Icon={ParserIcon}
             title='Command, Argument, and Flag Parsing'
-            info='rotini has a powerful and flexible parser. User input is checked against the program definition you write, and command operations are handed all parsed commands, arguments, and flags.'
+            info='Rotini has a powerful and configurable parser. User input is checked against the program definition you provide, and command operations are handed all parsed commands, arguments, and flags.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
@@ -151,15 +154,38 @@ const Features = () => {
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
             Icon={CommandForceIcon}
-            title='Command Force Prompting'
-            info='rotini will prompt users to confirm (Y/n) commands that have a "force" flag defined in their definition, which can be helpful as a guard against destructive actions. The prompt can be bypassed if the user passes the override flag, which may also be needed in CI/CD environments.'
+            title='Command Confirmation Prompting'
+            info='Rotini will prompt users to confirm (Y/n) commands that have a "force" flag defined in their definition, which can be helpful as a guard against destructive actions. The prompt can be bypassed if the user passes the override flag, which may also be needed in CI/CD environments.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
-            Icon={CheckTypesIcon}
-            title='Value Validation'
-            info='rotini argument and flag definitions can specify a type, which the parser will respect; mismatched value types passed to your program will report errors. Additionally, arguments and flags can have defined allowed values and are each provided with a callback for you to write additional validation for your argument and flag parsing.'
+            Icon={TypedIcon}
+            title='Typed Values'
+            info='Rotini argument and flag definitions can specify a type, which the parser will respect. Mismatched value types passed to your program will report errors. Additionally, arguments and flags can have defined allowed values and are each provided with a callback for you to write additional validation for your argument and flag parsing.'
+          />
+        </Grid>
+      </Grid>
+      <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={ValidationIcon}
+            title='Value Validator'
+            info='validator'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={OperationsIcon}
+            title='Command Operation Handlers'
+            info='Each rotini command can have a beforeHandler, handler, afterHandler, onHandlerSuccess, onHandlerFailure, and onHandlerTimeout operation.'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={ValidationIcon}
+            title='Value Parser'
+            info='value parser'
           />
         </Grid>
       </Grid>
@@ -175,14 +201,37 @@ const Features = () => {
           <Feature
             Icon={ConfigurationIcon}
             title='Configuration File Support'
-            info='rotini returns helper functions for writing and reading a configuration file for your program when a configuration directory and file are defined in the program definition.'
+            info='Rotini returns helper functions for writing and reading a configuration files for your program that are handed to each command operation handler.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
             Icon={AutoUpdateIcon}
             title='Auto-Update Support'
-            info='Once published, rotini can check to see when new versions of your CLI are published and will prompt users to update to the latest version.'
+            info='Once published, rotini can check to see when new versions of your CLI are published to a registry and will prompt users to update to the latest version.'
+          />
+        </Grid>
+      </Grid>
+      <Grid container style={{ maxWidth: 1400, margin: 'auto' }}>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={FlagIcon}
+            title='Positional Flags'
+            info='positional flags'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={FlagIcon}
+            title='Global Flags'
+            info='global flags'
+          />
+        </Grid>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
+          <Feature
+            Icon={FlagIcon}
+            title='Local Flags'
+            info='local flags'
           />
         </Grid>
       </Grid>
@@ -198,14 +247,14 @@ const Features = () => {
           <Feature
             Icon={NoDependenciesIcon}
             title='Dependency Free'
-            info='rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
+            info='Rotini does not have any dependencies. Keeping the bundle size small helps to keep rotini fast at installing, building, and parsing.'
           />
         </Grid>
         <Grid item xs={12} sm={12} md={4} lg={4}>
           <Feature
             Icon={ShipIcon}
             title='Ship Faster'
-            info='rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed.'
+            info='Rotini is a highly-opinionated framework that allows you to focus on your program code without needing to manage how your program is built or parsed.'
           />
         </Grid>
       </Grid>
