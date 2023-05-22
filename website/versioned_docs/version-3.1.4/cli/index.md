@@ -46,7 +46,7 @@ rotini --help
 ```
 
 ```text
-rotini · 3.1.4
+rotini · 3.1.5
 
   The rotini cli framework companion cli.
 
